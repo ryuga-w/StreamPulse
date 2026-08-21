@@ -30,6 +30,7 @@
       "package.json"
     ],
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         "nsis",
         "portable"
@@ -43,6 +44,8 @@
       "createStartMenuShortcut": true,
       "shortcutName": "StreamPulse Downloader",
       "uninstallDisplayName": "StreamPulse Downloader",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
       "runAfterFinish": true
     },
     "portable": {
