@@ -24,6 +24,13 @@ function broadcastEvent(type, data) {
       sseClients.delete(client);
     }
   }
+
+  // Also forward directly to Electron mainWindow WebContents if running in Electron
+  try {
+    if (global.electronMainWindow && !global.electronMainWindow.isDestroyed()) {
+      global.electronMainWindow.webContents.send(type, data);
+    }
+  } catch (e) {}
 }
 
 function resolvePlayableFile(targetPath, title) {

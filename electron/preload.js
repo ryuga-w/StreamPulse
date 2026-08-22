@@ -39,6 +39,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateYtDlp: () => ipcRenderer.invoke('update-ytdlp'),
 
   // Events
+  onDownloadStarted: (callback) => {
+    const handler = (_event, data) => callback(data);
+    ipcRenderer.on('download-started', handler);
+    return () => ipcRenderer.removeListener('download-started', handler);
+  },
   onDownloadProgress: (callback) => {
     const handler = (_event, data) => callback(data);
     ipcRenderer.on('download-progress', handler);

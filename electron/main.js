@@ -138,6 +138,7 @@ function createWindow() {
   }
 
   mainWindow.once('ready-to-show', () => {
+    global.electronMainWindow = mainWindow;
     mainWindow.show();
   });
 

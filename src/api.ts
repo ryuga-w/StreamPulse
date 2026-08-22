@@ -289,19 +289,21 @@ export const api = {
     onUsbProgress?: (data: UsbCopyProgress) => void;
     onUsbComplete?: (data: any) => void;
   }) => {
+    const cleanups: (() => void)[] = [];
+
     if (window.electronAPI) {
-      const c1 = window.electronAPI.onDownloadProgress(callbacks.onProgress);
-      const c2 = window.electronAPI.onDownloadComplete(callbacks.onComplete);
-      const c3 = window.electronAPI.onDownloadError(callbacks.onError);
-      const c4 = window.electronAPI.onUsbProgress?.(callbacks.onUsbProgress || (() => {})) || (() => {});
-      const c5 = window.electronAPI.onUsbComplete?.(callbacks.onUsbComplete || (() => {})) || (() => {});
-      return () => {
-        c1();
-        c2();
-        c3();
-        c4();
-        c5();
-      };
+      if (window.electronAPI.onDownloadStarted && callbacks.onStarted) {
+        cleanups.push(window.electronAPI.onDownloadStarted(callbacks.onStarted));
+      }
+      cleanups.push(window.electronAPI.onDownloadProgress(callbacks.onProgress));
+      cleanups.push(window.electronAPI.onDownloadComplete(callbacks.onComplete));
+      cleanups.push(window.electronAPI.onDownloadError(callbacks.onError));
+      if (callbacks.onUsbProgress && window.electronAPI.onUsbProgress) {
+        cleanups.push(window.electronAPI.onUsbProgress(callbacks.onUsbProgress));
+      }
+      if (callbacks.onUsbComplete && window.electronAPI.onUsbComplete) {
+        cleanups.push(window.electronAPI.onUsbComplete(callbacks.onUsbComplete));
+      }
     }
 
     try {
@@ -317,11 +319,15 @@ export const api = {
           if (parsed.type === 'usb-complete' && callbacks.onUsbComplete) callbacks.onUsbComplete(parsed.data);
         } catch (e) {}
       };
-      return () => {
-        eventSource.close();
-      };
-    } catch (e) {
-      return () => {};
-    }
+      cleanups.push(() => eventSource.close());
+    } catch (e) {}
+
+    return () => {
+      cleanups.forEach((c) => {
+        try {
+          c();
+        } catch (e) {}
+      });
+    };
   },
 };
