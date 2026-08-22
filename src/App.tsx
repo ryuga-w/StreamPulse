@@ -137,10 +137,35 @@ export const App: React.FC = () => {
   useEffect(() => {
     const cleanup = api.subscribeToEvents({
       onStarted: (data) => {
-        showToast(`⚡ Chrome Eklentisi: Medya indirilmeye başlandı (${data.formatType?.toUpperCase() || 'MP3'})`, 'info');
+        const isExt = data.source === 'extension';
+        const msg = isExt
+          ? `⚡ Tarayıcı Eklentisi: "${(data.title || 'Medya').slice(0, 35)}" indirilmeye başlandı`
+          : `🚀 İndirme Başlatıldı: "${(data.title || 'Medya').slice(0, 35)}"`;
+        showToast(msg, 'info');
+
+        const newItem: DownloadItem = {
+          id: data.id,
+          url: data.url || '',
+          title: data.title || 'YouTube Medyası',
+          uploader: data.uploader || 'YouTube',
+          thumbnail: data.thumbnail || '',
+          duration: data.duration || 0,
+          formatType: data.formatType || 'mp3',
+          quality: data.quality || '320',
+          source: data.source || 'app',
+          status: 'downloading',
+          percent: 0,
+          speed: '0 MB/s',
+          eta: '--:--',
+          totalSize: '',
+          createdAt: data.createdAt || Date.now(),
+        };
+
         setQueue((prev) => {
-          if (prev.some((i) => i.id === data.id || (i.url && data.url && i.url === data.url))) return prev;
-          return [data, ...prev];
+          if (prev.some((i) => i.id === data.id || (i.url && data.url && i.url === data.url))) {
+            return prev.map((i) => (i.id === data.id ? { ...i, ...newItem } : i));
+          }
+          return [newItem, ...prev];
         });
       },
       onProgress: (data) => {
@@ -151,11 +176,12 @@ export const App: React.FC = () => {
               id: data.id,
               url: data.url || '',
               title: data.title || 'İndiriliyor...',
-              uploader: 'YouTube',
+              uploader: data.uploader || 'YouTube',
               thumbnail: data.thumbnail || '',
               duration: 0,
               formatType: data.formatType || 'mp3',
               quality: data.quality || '320',
+              source: data.source || 'app',
               status: data.percent >= 99 ? 'converting' : 'downloading',
               percent: data.percent || 0,
               speed: data.speed || '0 MB/s',
@@ -190,6 +216,8 @@ export const App: React.FC = () => {
         setQueue((prev) => {
           const item = prev.find((i) => i.id === data.id);
           const rawTitle = data.title || (data.outputFile ? data.outputFile.split(/[/\\]/).pop().replace(/\.[^/.]+$/, '') : 'İndirilen Medya');
+          const isExt = data.source === 'extension' || item?.source === 'extension';
+
           const completedItem: DownloadItem = item
             ? {
                 ...item,
@@ -197,6 +225,7 @@ export const App: React.FC = () => {
                 percent: 100,
                 outputFile: data.outputFile,
                 completedAt: Date.now(),
+                source: isExt ? 'extension' : (item.source || 'app'),
               }
             : {
                 id: data.id || ('dl_' + Date.now()),
@@ -212,18 +241,23 @@ export const App: React.FC = () => {
                 outputFile: data.outputFile,
                 createdAt: Date.now(),
                 completedAt: Date.now(),
+                source: isExt ? 'extension' : 'app',
               };
 
           setHistory((hist) => [
             completedItem,
-            ...hist.filter((h) => h.id !== completedItem.id),
+            ...hist.filter((h) => h.id !== completedItem.id && h.outputFile !== completedItem.outputFile),
           ]);
 
           if (settings.autoOpenFolder && completedItem.outputFile) {
             api.openFolder(completedItem.outputFile);
           }
 
-          showToast(`"${completedItem.title.slice(0, 30)}..." ${t.downloadSuccess}`, 'success');
+          const successMsg = isExt
+            ? `⚡ Eklenti İndirmesi Tamamlandı: "${completedItem.title.slice(0, 30)}..."`
+            : `"${completedItem.title.slice(0, 30)}..." ${t.downloadSuccess}`;
+
+          showToast(successMsg, 'success');
           return prev.map((i) => (i.id === data.id ? { ...i, status: 'completed', percent: 100, outputFile: data.outputFile } : i));
         });
       },

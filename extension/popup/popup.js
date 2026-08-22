@@ -120,7 +120,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       title: mediaTitle.textContent || 'YouTube Medyası',
       thumbnail: mediaThumb.src || '',
       formatType: selectedType,
-      quality: selectedQuality
+      quality: selectedQuality,
+      source: 'extension'
     };
 
     let sent = false;

@@ -30,13 +30,26 @@
 
   async function triggerDownload(url, formatType, quality) {
     const targetUrl = url || window.location.href;
-    showInPageToast('StreamPulse Pro 🚀', `${formatType.toUpperCase()} indirmesi gönderiliyor...`);
+    const pageTitle = (
+      document.querySelector('h1.ytd-watch-metadata yt-formatted-string')?.innerText ||
+      document.querySelector('ytmusic-player-bar .title')?.innerText ||
+      document.title ||
+      'YouTube Medyası'
+    ).replace(/ - YouTube Music$/i, '').replace(/ - YouTube$/i, '').trim();
+
+    const videoIdMatch = targetUrl.match(/(?:v=|\/embed\/|\/shorts\/|youtu\.be\/|\/v\/)([^&?#/]+)/);
+    const thumbnail = videoIdMatch && videoIdMatch[1] ? `https://i.ytimg.com/vi/${videoIdMatch[1]}/hqdefault.jpg` : '';
+
+    showInPageToast('StreamPulse Pro 🚀', `"${pageTitle.slice(0, 25)}..." (${formatType.toUpperCase()}) masaüstüne gönderiliyor...`);
 
     const payload = {
       id: 'ext_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
       url: targetUrl,
+      title: pageTitle,
+      thumbnail,
       formatType,
-      quality
+      quality,
+      source: 'extension'
     };
 
     let sent = false;

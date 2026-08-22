@@ -207,21 +207,80 @@ app.post('/api/download', async (req, res) => {
     return res.status(400).json({ success: false, error: 'Invalid download options' });
   }
 
+  const downloadId = options.id || ('dl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7));
+  const cleanTitle = options.title || 'YouTube Medyası';
+  const source = options.source || 'extension';
+  const isAudio = options.formatType !== 'video';
+  const effectiveQuality = isAudio ? (options.quality || '320') : (options.quality || '1080');
+
+  const itemPayload = {
+    ...options,
+    id: downloadId,
+    title: cleanTitle,
+    formatType: isAudio ? (options.formatType || 'mp3') : 'video',
+    quality: effectiveQuality,
+    source,
+    status: 'downloading',
+    percent: 0,
+    createdAt: Date.now(),
+  };
+
+  broadcastEvent('download-started', itemPayload);
+
   try {
     engine.startDownload({
       ...options,
+      id: downloadId,
+      formatType: itemPayload.formatType,
+      quality: effectiveQuality,
       onProgress: (progress) => {
-        broadcastEvent('download-progress', progress);
+        broadcastEvent('download-progress', {
+          ...progress,
+          id: downloadId,
+          url: options.url,
+          title: cleanTitle,
+          thumbnail: options.thumbnail,
+          formatType: itemPayload.formatType,
+          quality: effectiveQuality,
+          source,
+        });
       },
       onComplete: (data) => {
-        broadcastEvent('download-complete', data);
+        const fileName = data.outputFile ? path.basename(data.outputFile, path.extname(data.outputFile)) : cleanTitle;
+        const completeTitle = (cleanTitle && cleanTitle !== 'YouTube Medyası') ? cleanTitle : fileName;
+        const completePayload = {
+          ...data,
+          id: downloadId,
+          url: options.url,
+          title: completeTitle,
+          thumbnail: options.thumbnail,
+          formatType: itemPayload.formatType,
+          quality: effectiveQuality,
+          source,
+          completedAt: Date.now(),
+        };
+
+        broadcastEvent('download-complete', completePayload);
+
+        if (global.showNotification) {
+          global.showNotification({
+            title: source === 'extension' ? '⚡ Tarayıcı Eklentisinden İndirildi' : '✅ İndirme Tamamlandı',
+            body: `"${completeTitle}" başarıyla indirildi (${itemPayload.formatType.toUpperCase()})`,
+            source,
+          });
+        }
       },
       onError: (err) => {
-        broadcastEvent('download-error', err);
+        broadcastEvent('download-error', {
+          id: downloadId,
+          error: err?.message || err,
+          source,
+        });
       },
     });
-    res.json({ success: true });
+    res.json({ success: true, id: downloadId });
   } catch (err) {
+    broadcastEvent('download-error', { id: downloadId, error: err.message, source });
     res.json({ success: false, error: err.message });
   }
 });
@@ -236,41 +295,82 @@ app.post('/api/extension/download', async (req, res) => {
     return res.status(400).json({ success: false, error: 'URL is required' });
   }
 
-  const downloadId = 'ext_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+  const downloadId = req.body.id || ('ext_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7));
   const isAudio = formatType !== 'video' && formatType !== 'mp4';
   const effectiveQuality = isAudio ? (quality || '320') : (quality || '1080');
+  const cleanTitle = title || 'YouTube Medyası';
+
+  const itemPayload = {
+    id: downloadId,
+    url,
+    title: cleanTitle,
+    thumbnail: thumbnail || '',
+    formatType: isAudio ? 'mp3' : 'video',
+    quality: effectiveQuality,
+    source: 'extension',
+    status: 'downloading',
+    percent: 0,
+    createdAt: Date.now(),
+  };
+
+  broadcastEvent('download-started', itemPayload);
 
   try {
-    broadcastEvent('download-started', {
-      id: downloadId,
-      url,
-      title: title || 'İndiriliyor...',
-      thumbnail: thumbnail || '',
-      formatType: isAudio ? 'mp3' : 'video',
-      quality: effectiveQuality,
-      status: 'downloading',
-      percent: 0,
-      createdAt: Date.now(),
-    });
-
     engine.startDownload({
+      id: downloadId,
       url,
       formatType: isAudio ? 'mp3' : 'video',
       quality: effectiveQuality,
       subfolderName: subfolderName || '',
       onProgress: (progress) => {
-        broadcastEvent('download-progress', progress);
+        broadcastEvent('download-progress', {
+          ...progress,
+          id: downloadId,
+          url,
+          title: cleanTitle,
+          thumbnail,
+          formatType: isAudio ? 'mp3' : 'video',
+          quality: effectiveQuality,
+          source: 'extension',
+        });
       },
       onComplete: (data) => {
-        broadcastEvent('download-complete', data);
+        const fileName = data.outputFile ? path.basename(data.outputFile, path.extname(data.outputFile)) : cleanTitle;
+        const completeTitle = (cleanTitle && cleanTitle !== 'YouTube Medyası') ? cleanTitle : fileName;
+        const completePayload = {
+          ...data,
+          id: downloadId,
+          url,
+          title: completeTitle,
+          thumbnail,
+          formatType: isAudio ? 'mp3' : 'video',
+          quality: effectiveQuality,
+          source: 'extension',
+          completedAt: Date.now(),
+        };
+
+        broadcastEvent('download-complete', completePayload);
+
+        if (global.showNotification) {
+          global.showNotification({
+            title: '⚡ Tarayıcı Eklentisinden İndirildi',
+            body: `"${completeTitle}" başarıyla indirildi (${isAudio ? 'MP3' : 'VIDEO'})`,
+            source: 'extension',
+          });
+        }
       },
       onError: (err) => {
-        broadcastEvent('download-error', err);
+        broadcastEvent('download-error', {
+          id: downloadId,
+          error: err?.message || err,
+          source: 'extension',
+        });
       },
     });
 
     res.json({ success: true, id: downloadId, message: 'Download initiated in StreamPulse' });
   } catch (err) {
+    broadcastEvent('download-error', { id: downloadId, error: err.message, source: 'extension' });
     res.json({ success: false, error: err.message });
   }
 });

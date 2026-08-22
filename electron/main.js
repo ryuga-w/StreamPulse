@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell, clipboard, protocol, net } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, clipboard, protocol, net, Notification } = require('electron');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
@@ -11,6 +11,37 @@ let mainWindow = null;
 
 // Suppress security warnings
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+
+function showWindowsNotification({ title, body, source = 'app' }) {
+  try {
+    if (Notification.isSupported()) {
+      const defaultTitle = source === 'extension' 
+        ? '⚡ Tarayıcı Eklentisinden İndirildi' 
+        : '✅ StreamPulse İndirme Tamamlandı';
+
+      const notif = new Notification({
+        title: title || defaultTitle,
+        body: body || 'Medya başarıyla kütüphanenize eklendi.',
+        icon: path.join(__dirname, '../build/icon.png'),
+        silent: false,
+      });
+
+      notif.on('click', () => {
+        if (mainWindow) {
+          if (mainWindow.isMinimized()) mainWindow.restore();
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      });
+
+      notif.show();
+    }
+  } catch (e) {
+    console.error('Notification error:', e);
+  }
+}
+
+global.showNotification = showWindowsNotification;
 
 // Register streampulse:// custom protocol client
 if (process.defaultApp) {
@@ -407,28 +438,85 @@ ipcMain.handle('fetch-info', async (_event, url) => {
 
 ipcMain.handle('start-download', async (_event, options) => {
   try {
+    const downloadId = options.id || ('dl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7));
+    const cleanTitle = options.title || 'İndirilen Medya';
+    const source = options.source || 'app';
+
+    const itemPayload = {
+      ...options,
+      id: downloadId,
+      title: cleanTitle,
+      source,
+      status: 'downloading',
+      percent: 0,
+      createdAt: Date.now(),
+    };
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('download-started', itemPayload);
+    }
+
     engine.startDownload({
       ...options,
+      id: downloadId,
       onProgress: (progress) => {
         if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.send('download-progress', progress);
+          mainWindow.webContents.send('download-progress', {
+            ...progress,
+            id: downloadId,
+            url: options.url,
+            title: cleanTitle,
+            thumbnail: options.thumbnail,
+            formatType: options.formatType,
+            quality: options.quality,
+            source,
+          });
         }
       },
       onComplete: (data) => {
+        const fileName = data.outputFile ? path.basename(data.outputFile, path.extname(data.outputFile)) : cleanTitle;
+        const completeTitle = (cleanTitle && cleanTitle !== 'İndirilen Medya') ? cleanTitle : fileName;
+        const completePayload = {
+          ...data,
+          id: downloadId,
+          url: options.url,
+          title: completeTitle,
+          thumbnail: options.thumbnail,
+          formatType: options.formatType,
+          quality: options.quality,
+          source,
+          completedAt: Date.now(),
+        };
+
         if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.send('download-complete', data);
+          mainWindow.webContents.send('download-complete', completePayload);
         }
+
+        showWindowsNotification({
+          title: source === 'extension' ? '⚡ Tarayıcı Eklentisinden İndirildi' : '✅ İndirme Tamamlandı',
+          body: `"${completeTitle}" başarıyla indirildi (${options.formatType?.toUpperCase()})`,
+          source,
+        });
       },
       onError: (err) => {
         if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.send('download-error', err);
+          mainWindow.webContents.send('download-error', {
+            id: downloadId,
+            error: err?.message || err,
+            source,
+          });
         }
       },
     });
-    return { success: true };
+    return { success: true, id: downloadId };
   } catch (error) {
     return { success: false, error: error.message };
   }
+});
+
+ipcMain.handle('show-notification', (_event, opts) => {
+  showWindowsNotification(opts || {});
+  return true;
 });
 
 ipcMain.handle('cancel-download', (_event, downloadId) => {

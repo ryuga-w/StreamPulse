@@ -42,6 +42,7 @@ export interface DownloadItem {
   totalSize: string;
   outputFile?: string;
   error?: string;
+  source?: 'app' | 'extension';
   createdAt: number;
   completedAt?: number;
 }
