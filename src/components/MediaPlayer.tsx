@@ -22,6 +22,10 @@ import {
   ChevronUp,
   ChevronDown,
   AlertCircle,
+  Maximize2,
+  Minimize2,
+  PictureInPicture,
+  Film,
 } from 'lucide-react';
 
 interface MediaPlayerProps {
@@ -49,6 +53,7 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
   const [playbackRate, setPlaybackRate] = useState(1);
   const [hasError, setHasError] = useState(false);
   const [showQueueDrawer, setShowQueueDrawer] = useState(false);
+  const [videoMode, setVideoMode] = useState<'mini' | 'theater'>('mini');
   const [resolvedPath, setResolvedPath] = useState<string>('');
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -188,6 +193,18 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
     }
   };
 
+  const toggleNativePip = async () => {
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (videoRef.current) {
+        await videoRef.current.requestPictureInPicture();
+      }
+    } catch (e) {
+      console.log('PiP note:', e);
+    }
+  };
+
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return '00:00';
     const mins = Math.floor(seconds / 60);
@@ -218,38 +235,116 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
         />
       )}
 
-      {/* Video Modal Player */}
+      {/* ========================================================================= */}
+      {/* MODERN FLOATING PiP & THEATER VIDEO PLAYER (Responsive & Dockable)       */}
+      {/* ========================================================================= */}
       {isVideo && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200">
-          <div className="relative w-full max-w-4xl bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between p-3.5 bg-slate-950/80 border-b border-white/5">
-              <div className="flex items-center gap-2.5 truncate">
-                <Video className="w-4 h-4 text-indigo-400 shrink-0" />
-                <span className="text-xs font-semibold text-white truncate">{currentItem.title}</span>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+        <>
+          {/* THEATER MODE OVERLAY */}
+          {videoMode === 'theater' && (
+            <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200">
+              <div className="relative w-full max-w-4xl bg-slate-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+                <div className="flex items-center justify-between p-3.5 bg-slate-900/90 border-b border-white/5">
+                  <div className="flex items-center gap-2.5 truncate">
+                    <Video className="w-4 h-4 text-indigo-400 shrink-0" />
+                    <span className="text-xs font-semibold text-white truncate">{currentItem.title}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={toggleNativePip}
+                      className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                      title="Resim İçinde Resim (Native PiP)"
+                    >
+                      <PictureInPicture className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setVideoMode('mini')}
+                      className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                      title="Küçük Kayan Pencereye Küçült"
+                    >
+                      <Minimize2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={onClose}
+                      className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                      title="Kapat"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
 
-            <div className="relative bg-black aspect-video flex items-center justify-center">
-              <video
-                ref={videoRef}
-                src={streamUrl}
-                autoPlay
-                controls
-                className="w-full h-full object-contain"
-                onTimeUpdate={handleTimeUpdate}
-                onLoadedMetadata={handleTimeUpdate}
-                onEnded={handleEnded}
-                onError={() => setHasError(true)}
-              />
+                <div className="relative bg-black aspect-video max-h-[70vh] flex items-center justify-center">
+                  <video
+                    ref={videoRef}
+                    src={streamUrl}
+                    autoPlay
+                    controls
+                    className="w-full h-full object-contain"
+                    onTimeUpdate={handleTimeUpdate}
+                    onLoadedMetadata={handleTimeUpdate}
+                    onEnded={handleEnded}
+                    onError={() => setHasError(true)}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+
+          {/* FLOATING MINI-PLAYER (PiP DOCK ON BOTTOM-RIGHT) */}
+          {videoMode === 'mini' && (
+            <div className="fixed bottom-20 right-6 z-40 w-80 sm:w-96 bg-[#0a0f1e]/95 border border-purple-500/30 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
+              {/* Mini Header */}
+              <div className="p-2.5 px-3 bg-purple-950/40 border-b border-white/10 flex items-center justify-between">
+                <div className="flex items-center gap-2 truncate">
+                  <Film className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                  <span className="text-[11px] font-bold text-white truncate max-w-[180px]">
+                    {currentItem.title}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={toggleNativePip}
+                    className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                    title="Masaüstü PiP Modu"
+                  >
+                    <PictureInPicture className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setVideoMode('theater')}
+                    className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                    title="Genişlet (Sinema Modu)"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                    title="Kapat"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Video Player */}
+              <div className="relative bg-black aspect-video max-h-56 flex items-center justify-center">
+                <video
+                  ref={videoRef}
+                  src={streamUrl}
+                  autoPlay
+                  controls
+                  className="w-full h-full object-contain"
+                  onTimeUpdate={handleTimeUpdate}
+                  onLoadedMetadata={handleTimeUpdate}
+                  onEnded={handleEnded}
+                  onError={() => setHasError(true)}
+                />
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* ========================================================================= */}
@@ -334,219 +429,223 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* BOTTOM DOCKED GLASSMORHPIC AUDIO PLAYER BAR */}
+      {/* BOTTOM DOCKED GLASSMORHPIC AUDIO/VIDEO PLAYER BAR                         */}
       {/* ========================================================================= */}
-      {!isVideo && (
-        <div className="media-player-dock fixed bottom-0 left-0 right-0 z-40 p-3 bg-[#0a0f1e]/95 backdrop-blur-2xl border-t border-purple-500/30 shadow-[0_-10px_35px_rgba(0,0,0,0.7)] animate-in slide-in-from-bottom duration-300 select-none">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-            {/* Left: Thumbnail & Info - Clicking toggles Right-Side Up Next Drawer */}
-            <div
-              onClick={() => setShowQueueDrawer(!showQueueDrawer)}
-              className="flex items-center gap-3 w-full md:w-1/4 min-w-0 cursor-pointer group"
-              title="Sıradaki Parçalar Listesini Aç/Kapat"
-            >
-              <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-800 border border-white/10 shrink-0 shadow-glow-purple/30 group-hover:border-purple-500/50 transition-colors">
-                <img
-                  src={currentThumbnail}
-                  alt={currentItem.title}
-                  className={`w-full h-full object-cover ${isPlaying ? 'scale-105' : ''} transition-transform duration-500`}
-                />
-                {isPlaying && !hasError && (
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-0.5">
-                    <div className="w-1 h-3 bg-purple-400 rounded-full animate-bounce"></div>
-                    <div className="w-1 h-5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.15s]"></div>
-                    <div className="w-1 h-2 bg-pink-400 rounded-full animate-bounce [animation-delay:0.3s]"></div>
-                  </div>
-                )}
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <h4 className="player-track-title text-xs font-bold text-white truncate group-hover:text-purple-400 transition-colors">
-                  {currentItem.title}
-                </h4>
-                <div className="flex items-center gap-2 text-[10px] text-purple-300 mt-0.5 player-track-meta">
-                  <span className="truncate">{currentItem.uploader}</span>
-                  {currentItem.subfolderName && (
-                    <>
-                      <span>•</span>
-                      <span className="truncate text-indigo-300 font-semibold">📁 {currentItem.subfolderName}</span>
-                    </>
-                  )}
-                  <span>•</span>
-                  <span className="font-mono uppercase font-semibold text-purple-400">
-                    {currentItem.formatType} ({currentItem.quality}k)
-                  </span>
+      <div className="media-player-dock fixed bottom-0 left-0 right-0 z-40 p-3 bg-[#0a0f1e]/95 backdrop-blur-2xl border-t border-purple-500/30 shadow-[0_-10px_35px_rgba(0,0,0,0.7)] animate-in slide-in-from-bottom duration-300 select-none">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+          {/* Left: Thumbnail & Info */}
+          <div
+            onClick={() => {
+              if (isVideo) {
+                setVideoMode(videoMode === 'mini' ? 'theater' : 'mini');
+              } else {
+                setShowQueueDrawer(!showQueueDrawer);
+              }
+            }}
+            className="flex items-center gap-3 w-full md:w-1/4 min-w-0 cursor-pointer group"
+            title={isVideo ? 'Video Boyutunu Değiştir' : 'Sıradaki Parçalar Listesini Aç/Kapat'}
+          >
+            <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-800 border border-white/10 shrink-0 shadow-glow-purple/30 group-hover:border-purple-500/50 transition-colors">
+              <img
+                src={currentThumbnail}
+                alt={currentItem.title}
+                className={`w-full h-full object-cover ${isPlaying ? 'scale-105' : ''} transition-transform duration-500`}
+              />
+              {isPlaying && !hasError && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-0.5">
+                  <div className="w-1 h-3 bg-purple-400 rounded-full animate-bounce"></div>
+                  <div className="w-1 h-5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.15s]"></div>
+                  <div className="w-1 h-2 bg-pink-400 rounded-full animate-bounce [animation-delay:0.3s]"></div>
                 </div>
-                {hasError && (
-                  <div className="text-[10px] text-rose-400 flex items-center gap-1 mt-0.5">
-                    <AlertCircle className="w-3 h-3" />
-                    <span>Dosya yüklenemedi.</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Center: Controls & Scrubber */}
-            <div className="flex-1 w-full max-w-xl space-y-1.5 flex flex-col items-center">
-              <div className="flex items-center gap-3">
-                {/* Shuffle Button */}
-                <button
-                  onClick={() => setIsShuffled(!isShuffled)}
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                    isShuffled ? 'text-purple-400 bg-purple-500/20' : 'text-slate-400 hover:text-white'
-                  }`}
-                  title={isShuffled ? 'Karışık Çalma: Açık' : 'Karışık Çalma: Kapalı'}
-                >
-                  <Shuffle className="w-3.5 h-3.5" />
-                </button>
-
-                {/* Previous Track Button */}
-                <button
-                  onClick={handlePrev}
-                  className="player-control-btn p-1.5 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                  title="Önceki Parça (Previous Track)"
-                >
-                  <SkipBack className="w-4 h-4 fill-current" />
-                </button>
-
-                {/* 10s Rewind */}
-                <button
-                  onClick={() => skipTime(-10)}
-                  className="player-control-btn p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                  title="10s Geri"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </button>
-
-                {/* Play / Pause Primary Button */}
-                <button
-                  onClick={togglePlay}
-                  className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white flex items-center justify-center shadow-glow-purple transition-all duration-200 cursor-pointer"
-                  title={isPlaying ? 'Durdur' : 'Oynat'}
-                >
-                  {isPlaying ? (
-                    <Pause className="w-4 h-4 fill-current" />
-                  ) : (
-                    <Play className="w-4 h-4 fill-current ml-0.5" />
-                  )}
-                </button>
-
-                {/* 10s Forward */}
-                <button
-                  onClick={() => skipTime(10)}
-                  className="player-control-btn p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                  title="10s İleri"
-                >
-                  <RotateCw className="w-3.5 h-3.5" />
-                </button>
-
-                {/* Next Track Button */}
-                <button
-                  onClick={handleNext}
-                  className="player-control-btn p-1.5 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                  title="Sonraki Parça (Next Track)"
-                >
-                  <SkipForward className="w-4 h-4 fill-current" />
-                </button>
-
-                {/* Loop Mode Toggle */}
-                <button
-                  onClick={cycleLoopMode}
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                    loopMode !== 'off' ? 'text-purple-400 bg-purple-500/20' : 'text-slate-400 hover:text-white'
-                  }`}
-                  title={
-                    loopMode === 'one'
-                      ? 'Tek Şarkı Tekrarı'
-                      : loopMode === 'all'
-                      ? 'Tüm Listeyi Tekrarla'
-                      : 'Tekrar Kapalı'
-                  }
-                >
-                  {loopMode === 'one' ? <Repeat1 className="w-3.5 h-3.5" /> : <Repeat className="w-3.5 h-3.5" />}
-                </button>
-
-                {/* Playback Speed Selector */}
-                <button
-                  onClick={cyclePlaybackRate}
-                  className="player-speed-btn px-2 py-0.5 rounded text-[10px] font-mono text-purple-300 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                  title="Oynatma Hızı"
-                >
-                  {playbackRate}x
-                </button>
-              </div>
-
-              {/* Progress Slider */}
-              <div className="w-full flex items-center gap-2.5 text-[10px] font-mono text-slate-400">
-                <span className="player-time">{formatTime(currentTime)}</span>
-                <div className="relative flex-1 group flex items-center">
-                  <input
-                    type="range"
-                    min="0"
-                    max={duration || currentItem.duration || 100}
-                    value={currentTime}
-                    onChange={handleSeek}
-                    className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                  />
-                </div>
-                <span className="player-time">{formatTime(duration || currentItem.duration || 0)}</span>
-              </div>
-            </div>
-
-            {/* Right: Queue Drawer Toggle, Volume & Close */}
-            <div className="flex items-center justify-end gap-3 w-full md:w-1/4">
-              {/* Up Next Drawer Toggle Button */}
-              {playlist.length > 1 && (
-                <button
-                  onClick={() => setShowQueueDrawer(!showQueueDrawer)}
-                  className={`px-2.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
-                    showQueueDrawer
-                      ? 'bg-purple-600 border-purple-400 text-white shadow-glow-purple'
-                      : 'bg-white/5 hover:bg-white/10 border-white/10 text-purple-300 hover:text-white'
-                  }`}
-                  title="Sıradaki Şarkılar Listesini Göster"
-                >
-                  <ListMusic className="w-3.5 h-3.5" />
-                  <span className="text-[11px] font-mono">{currentIndex + 1}/{playlist.length}</span>
-                  {showQueueDrawer ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
-                </button>
               )}
+            </div>
 
-              {/* Volume */}
-              <div className="flex items-center gap-1.5 text-slate-400">
-                <button
-                  onClick={toggleMute}
-                  className="player-control-btn p-1.5 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                >
-                  {isMuted || volume === 0 ? (
-                    <VolumeX className="w-4 h-4 text-rose-400" />
-                  ) : (
-                    <Volume2 className="w-4 h-4" />
-                  )}
-                </button>
+            <div className="min-w-0 flex-1">
+              <h4 className="player-track-title text-xs font-bold text-white truncate group-hover:text-purple-400 transition-colors">
+                {currentItem.title}
+              </h4>
+              <div className="flex items-center gap-2 text-[10px] text-purple-300 mt-0.5 player-track-meta">
+                <span className="truncate">{currentItem.uploader}</span>
+                {currentItem.subfolderName && (
+                  <>
+                    <span>•</span>
+                    <span className="truncate text-indigo-300 font-semibold">📁 {currentItem.subfolderName}</span>
+                  </>
+                )}
+                <span>•</span>
+                <span className="font-mono uppercase font-semibold text-purple-400">
+                  {currentItem.formatType} ({currentItem.quality}{isVideo ? 'p' : 'k'})
+                </span>
+              </div>
+              {hasError && (
+                <div className="text-[10px] text-rose-400 flex items-center gap-1 mt-0.5">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>Dosya yüklenemedi.</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Center: Controls & Scrubber */}
+          <div className="flex-1 w-full max-w-xl space-y-1.5 flex flex-col items-center">
+            <div className="flex items-center gap-3">
+              {/* Shuffle Button */}
+              <button
+                onClick={() => setIsShuffled(!isShuffled)}
+                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                  isShuffled ? 'text-purple-400 bg-purple-500/20' : 'text-slate-400 hover:text-white'
+                }`}
+                title={isShuffled ? 'Karışık Çalma: Açık' : 'Karışık Çalma: Kapalı'}
+              >
+                <Shuffle className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Previous Track Button */}
+              <button
+                onClick={handlePrev}
+                className="player-control-btn p-1.5 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                title="Önceki Parça (Previous Track)"
+              >
+                <SkipBack className="w-4 h-4 fill-current" />
+              </button>
+
+              {/* 10s Rewind */}
+              <button
+                onClick={() => skipTime(-10)}
+                className="player-control-btn p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                title="10s Geri"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Play / Pause Primary Button */}
+              <button
+                onClick={togglePlay}
+                className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white flex items-center justify-center shadow-glow-purple transition-all duration-200 cursor-pointer"
+                title={isPlaying ? 'Durdur' : 'Oynat'}
+              >
+                {isPlaying ? (
+                  <Pause className="w-4 h-4 fill-current" />
+                ) : (
+                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                )}
+              </button>
+
+              {/* 10s Forward */}
+              <button
+                onClick={() => skipTime(10)}
+                className="player-control-btn p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                title="10s İleri"
+              >
+                <RotateCw className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Next Track Button */}
+              <button
+                onClick={handleNext}
+                className="player-control-btn p-1.5 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                title="Sonraki Parça (Next Track)"
+              >
+                <SkipForward className="w-4 h-4 fill-current" />
+              </button>
+
+              {/* Loop Mode Toggle */}
+              <button
+                onClick={cycleLoopMode}
+                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                  loopMode !== 'off' ? 'text-purple-400 bg-purple-500/20' : 'text-slate-400 hover:text-white'
+                }`}
+                title={
+                  loopMode === 'one'
+                    ? 'Tek Şarkı Tekrarı'
+                    : loopMode === 'all'
+                    ? 'Tüm Listeyi Tekrarla'
+                    : 'Tekrar Kapalı'
+                }
+              >
+                {loopMode === 'one' ? <Repeat1 className="w-3.5 h-3.5" /> : <Repeat className="w-3.5 h-3.5" />}
+              </button>
+
+              {/* Playback Speed Selector */}
+              <button
+                onClick={cyclePlaybackRate}
+                className="player-speed-btn px-2 py-0.5 rounded text-[10px] font-mono text-purple-300 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                title="Oynatma Hızı"
+              >
+                {playbackRate}x
+              </button>
+            </div>
+
+            {/* Progress Slider */}
+            <div className="w-full flex items-center gap-2.5 text-[10px] font-mono text-slate-400">
+              <span className="player-time">{formatTime(currentTime)}</span>
+              <div className="relative flex-1 group flex items-center">
                 <input
                   type="range"
                   min="0"
-                  max="1"
-                  step="0.05"
-                  value={isMuted ? 0 : volume}
-                  onChange={handleVolumeChange}
-                  className="w-16 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                  max={duration || currentItem.duration || 100}
+                  value={currentTime}
+                  onChange={handleSeek}
+                  className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
                 />
               </div>
-
-              {/* Close Button */}
-              <button
-                onClick={onClose}
-                className="player-control-btn p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-                title={t.closePlayer}
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <span className="player-time">{formatTime(duration || currentItem.duration || 0)}</span>
             </div>
           </div>
+
+          {/* Right: Queue / Mode Toggle, Volume & Close */}
+          <div className="flex items-center justify-end gap-3 w-full md:w-1/4">
+            {/* Up Next Drawer Toggle Button */}
+            {playlist.length > 1 && (
+              <button
+                onClick={() => setShowQueueDrawer(!showQueueDrawer)}
+                className={`px-2.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
+                  showQueueDrawer
+                    ? 'bg-purple-600 border-purple-400 text-white shadow-glow-purple'
+                    : 'bg-white/5 hover:bg-white/10 border-white/10 text-purple-300 hover:text-white'
+                }`}
+                title="Sıradaki Parçalar Listesini Göster"
+              >
+                <ListMusic className="w-3.5 h-3.5" />
+                <span className="text-[11px] font-mono">{currentIndex + 1}/{playlist.length}</span>
+                {showQueueDrawer ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+              </button>
+            )}
+
+            {/* Volume */}
+            <div className="flex items-center gap-1.5 text-slate-400">
+              <button
+                onClick={toggleMute}
+                className="player-control-btn p-1.5 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+              >
+                {isMuted || volume === 0 ? (
+                  <VolumeX className="w-4 h-4 text-rose-400" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
+              </button>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={isMuted ? 0 : volume}
+                onChange={handleVolumeChange}
+                className="w-16 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
+              />
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              className="player-control-btn p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+              title={t.closePlayer}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </>
   );
 };
