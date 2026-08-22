@@ -25,7 +25,7 @@
 
 **StreamPulse Downloader Pro**, YouTube ve YouTube Music platformlarından tekli parçaları, albümleri ve 50+ parçalık dev oynatma listelerini **320kbps stüdyo ses kalitesinde** ve **4K 60FPS kayıpsız video formatında** indiren modern, yeni nesil bir masaüstü uygulaması ve Chrome eklentisidir.
 
-Gelişmiş **Google Gemini akışkan parıltı (Aurora Flowing Glow) arayüzü**, **Canlı Ses Ekolayzerli Kuantum Sıvı Müzik Tanıma Motoru**, **Gruplandırılmış Akordeon Çalma Listesi Kuyruğu**, **Dahili YouTube Music tarzı Medya Oynatıcısı**, **Tek Tıkla USB / Araç Belleğine Senkronizasyon Motoru** ve **Karanlık / Aydınlık mod** desteğiyle donatılmıştır.
+Gelişmiş **StreamPulse Aurora akışkan parıltı arayüzü**, **Canlı Ses Ekolayzerli Kuantum Sıvı Müzik Tanıma Motoru**, **Gruplandırılmış Akordeon Çalma Listesi Kuyruğu**, **Dahili YouTube Music tarzı Medya Oynatıcısı**, **Tek Tıkla USB / Araç Belleğine Senkronizasyon Motoru** ve **Karanlık / Aydınlık mod** desteğiyle donatılmıştır.
 
 ---
 
@@ -33,7 +33,7 @@ Gelişmiş **Google Gemini akışkan parıltı (Aurora Flowing Glow) arayüzü**
 
 <div align="center">
   <img src="screenshots/downloader_main.png" width="100%" alt="StreamPulse Ana İndirici" />
-  <p><i>Google Gemini Aurora Akışkan Işıltılı Arama Kutusu, 320kbps MP3 / 4K Video İndirici ve Dahili Medya Oynatıcısı</i></p>
+  <p><i>StreamPulse Aurora Akışkan Işıltılı Arama Kutusu, 320kbps MP3 / 4K Video İndirici ve Dahili Medya Oynatıcısı</i></p>
 
   <br/>
 
@@ -69,7 +69,7 @@ Gelişmiş **Google Gemini akışkan parıltı (Aurora Flowing Glow) arayüzü**
 
 ### 🔮 2. Chrome Eklentisi & Canlı Kuantum AI Müzik Tanıma
 - **Sekme Sesi Dinleme:** TikTok, Instagram, Twitter/X, YouTube veya herhangi bir web sekmesinde çalan şarkıyı anında akustik parmak iziyle tanır.
-- **Canlı Ekolayzır Reaktif Aurora Sıvı Dalgası:** Şarkının bas, mid ve tiz frekanslarına göre gerçek zamanlı dalgalanan Google Gemini seviyesinde akışkan ışık animasyonu.
+- **Canlı Ekolayzır Reaktif Aurora Sıvı Dalgası:** Şarkının bas, mid ve tiz frekanslarına göre gerçek zamanlı dalgalanan akışkan ışık animasyonu ve kuantum yıldız tozu ışıltıları.
 - **Tek Tıkla Masaüstüne Aktarma:** Web sekmesindeki herhangi bir YouTube videosunu veya tanınan şarkıyı doğrudan masaüstü uygulamasının indirme kuyruğuna fırlatır.
 
 ### 📦 3. Gruplandırılmış Akordeon Çalma Listesi Kuyruğu
@@ -88,7 +88,7 @@ Gelişmiş **Google Gemini akışkan parıltı (Aurora Flowing Glow) arayüzü**
 - Canlı ekolayzır animasyonu, 10s ileri/geri sarma, hız ayarı (`0.75x - 2x`), karışık ve tekrar modları.
 
 ### 🎨 6. Yeni Nesil Arayüz (UI & UX)
-- **Google Material 3 Expressive:** Yüksek kontrastlı, göz yormayan Açık (`Light`) ve Koyu (`OLED Dark`) temalar.
+- **Modern Expressive Tasarım:** Yüksek kontrastlı, göz yormayan Açık (`Light`) ve Koyu (`OLED Dark`) temalar.
 - **Çift Dil Desteği:** Türkçe & İngilizce tek tıkla dinamik geçiş.
 
 ---

@@ -29,7 +29,7 @@
 
 **StreamPulse Downloader Pro** is a modern, ultra-fast desktop application and companion Chrome Extension designed to download single tracks, albums, and massive 200+ track playlists from YouTube and YouTube Music in **320kbps studio audio quality** and **up to 4K 60FPS lossless video**.
 
-Engineered with a **Google Material 3 Expressive UI**, **Real-Time Equalizer-Reactive Quantum Fluid AI Music Recognition**, an **Accordion-Grouped Playlist Queue**, an **Integrated YouTube Music-style Media Player**, and **One-Click Flash Drive / Car Audio Sync**.
+Engineered with a **Modern Expressive UI**, **Real-Time Equalizer-Reactive Quantum Fluid AI Music Recognition**, an **Accordion-Grouped Playlist Queue**, an **Integrated YouTube Music-style Media Player**, and **One-Click Flash Drive / Car Audio Sync**.
 
 ---
 
@@ -37,7 +37,7 @@ Engineered with a **Google Material 3 Expressive UI**, **Real-Time Equalizer-Rea
 
 <div align="center">
   <img src="screenshots/downloader_main.png" width="100%" alt="StreamPulse Main Downloader" />
-  <p><i>Google Gemini Aurora Glow Search, 320kbps MP3 / 4K Video Downloader & Built-in Media Player</i></p>
+  <p><i>StreamPulse Aurora Glow Search, 320kbps MP3 / 4K Video Downloader & Built-in Media Player</i></p>
 
   <br/>
 
@@ -73,7 +73,7 @@ Engineered with a **Google Material 3 Expressive UI**, **Real-Time Equalizer-Rea
 
 ### 🔮 2. Chrome Extension & Live Quantum AI Music Recognition
 - **Tab Audio Capture:** Identify any song playing on TikTok, Instagram Reels, Twitter/X, YouTube, or any browser tab using acoustic fingerprinting.
-- **Live Equalizer-Reactive Aurora Fluid Visualizer:** Real-time Web Audio FFT analysis that dances to live bass, mids, and treble bands with Google Gemini-tier silky light ribbons and cosmic star dust.
+- **Live Equalizer-Reactive Aurora Fluid Visualizer:** Real-time Web Audio FFT analysis that dances to live bass, mids, and treble bands with silky fluid light ribbons and celestial quantum star dust.
 - **One-Click Desktop Handoff:** Instantly send identified tracks or browser video downloads directly to the desktop queue over local IPC.
 
 ### 📦 3. Grouped Accordion Playlist Queue
@@ -90,7 +90,7 @@ Engineered with a **Google Material 3 Expressive UI**, **Real-Time Equalizer-Rea
 - Listen to your downloads directly inside the application.
 - Interactive slide-out **Up Next Queue Drawer** with live audio equalizer animations, 10s seek, speed controls (`0.75x - 2.0x`), and shuffle/repeat modes.
 
-### 🎨 6. Material 3 Expressive Dual Themes
+### 🎨 6. Expressive Dual Themes (Dark & Light)
 - **Adaptive Contrast:** Sleek OLED Dark and Clean High-Contrast Light themes.
 - **Dual-Language:** Instant 1-click toggle between English and Turkish.
 
