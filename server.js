@@ -26,18 +26,52 @@ function broadcastEvent(type, data) {
   }
 }
 
-function resolvePlayableFile(targetPath) {
+function resolvePlayableFile(targetPath, title) {
   try {
     if (!targetPath) return null;
-    const stat = fs.statSync(targetPath);
-    if (!stat.isDirectory()) return targetPath;
+    const resolved = path.resolve(targetPath);
+    if (fs.existsSync(resolved)) {
+      const stat = fs.statSync(resolved);
+      if (!stat.isDirectory()) return resolved;
 
-    const files = fs.readdirSync(targetPath);
-    const mediaExts = ['.mp3', '.m4a', '.flac', '.wav', '.mp4', '.webm', '.mkv'];
-    for (const file of files) {
-      const ext = path.extname(file).toLowerCase();
-      if (mediaExts.includes(ext)) {
-        return path.join(targetPath, file);
+      const files = fs.readdirSync(resolved);
+      const mediaExts = ['.mp3', '.m4a', '.flac', '.wav', '.mp4', '.webm', '.mkv'];
+      const mediaFiles = files.filter(f => mediaExts.includes(path.extname(f).toLowerCase()));
+      if (mediaFiles.length > 0) return path.join(resolved, mediaFiles[0]);
+    }
+
+    // Try finding in Downloads folder
+    const defaultDownloads = path.join(os.homedir(), 'Downloads');
+    const baseName = path.basename(targetPath);
+    const inDownloads = path.join(defaultDownloads, baseName);
+    if (fs.existsSync(inDownloads)) {
+      const stat = fs.statSync(inDownloads);
+      if (!stat.isDirectory()) return inDownloads;
+    }
+
+    // Search by title or partial filename in Downloads
+    if (fs.existsSync(defaultDownloads)) {
+      const allEntries = fs.readdirSync(defaultDownloads, { withFileTypes: true });
+      const searchKey = (title || baseName).toLowerCase().replace(/[^a-z0-9]/g, '');
+      
+      for (const entry of allEntries) {
+        if (entry.isFile()) {
+          const cleanName = entry.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (cleanName.includes(searchKey) || searchKey.includes(cleanName)) {
+            return path.join(defaultDownloads, entry.name);
+          }
+        } else if (entry.isDirectory()) {
+          const subDir = path.join(defaultDownloads, entry.name);
+          try {
+            const subFiles = fs.readdirSync(subDir);
+            for (const sf of subFiles) {
+              const cleanSf = sf.toLowerCase().replace(/[^a-z0-9]/g, '');
+              if (cleanSf.includes(searchKey) || searchKey.includes(cleanSf)) {
+                return path.join(subDir, sf);
+              }
+            }
+          } catch (e) {}
+        }
       }
     }
   } catch (e) {}
@@ -331,6 +365,16 @@ app.post('/api/scan-history', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`[StreamPulse API Engine] Running on http://localhost:${PORT}`);
 });
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`[StreamPulse API Engine] Port ${PORT} already active, continuing.`);
+  } else {
+    console.error('[StreamPulse API Engine] Error:', err);
+  }
+});
+
+module.exports = { app, server };

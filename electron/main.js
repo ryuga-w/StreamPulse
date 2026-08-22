@@ -108,6 +108,13 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Start internal Express backend streaming server
+  try {
+    require('../server');
+  } catch (e) {
+    console.log('[Main] Server startup note:', e.message);
+  }
+
   protocol.handle('media', (request) => {
     try {
       let rawUrl = request.url.replace(/^media:\/\/*/i, '');
