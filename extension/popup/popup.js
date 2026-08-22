@@ -237,6 +237,14 @@ document.addEventListener('DOMContentLoaded', () => {
       clearTimeout(timeoutId);
 
       if (res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data) {
+          const appLang = data.language || (data.settings && data.settings.language);
+          if (appLang && appLang !== currentLanguage) {
+            applyLanguage(appLang);
+            chrome.storage.local.set({ streampulse_language: appLang });
+          }
+        }
         updateAppConnectionState(true);
         return;
       }
@@ -250,8 +258,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (res2.ok) {
           const data = await res2.json().catch(() => null);
           if (data && data.settings && data.settings.language) {
-            applyLanguage(data.settings.language);
-            chrome.storage.local.set({ streampulse_language: data.settings.language });
+            const appLang = data.settings.language;
+            if (appLang !== currentLanguage) {
+              applyLanguage(appLang);
+              chrome.storage.local.set({ streampulse_language: appLang });
+            }
           }
           updateAppConnectionState(true);
           return;

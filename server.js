@@ -28,7 +28,15 @@ app.use(express.json());
 
 // Ultra-fast Health / Status Check for Browser Extension
 app.get(['/api/health', '/api/ping', '/api/status'], (_req, res) => {
-  res.json({ success: true, status: 'online', app: 'StreamPulse Downloader', version: '1.2.0' });
+  res.json({
+    success: true,
+    status: 'online',
+    app: 'StreamPulse Downloader',
+    version: '1.2.0',
+    language: globalSettings.language || 'tr',
+    themeMode: globalSettings.themeMode || 'system',
+    settings: globalSettings,
+  });
 });
 
 const sseClients = new Set();

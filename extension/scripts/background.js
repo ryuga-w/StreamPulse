@@ -83,16 +83,14 @@ chrome.runtime.onInstalled.addListener(async () => {
 // Periodic & Event-based Sync from Desktop App
 async function syncLanguageFromDesktop() {
   try {
-    const res = await fetch(`${API_URL}/settings`);
+    const res = await fetch(`${API_URL}/health`);
     if (res.ok) {
       const data = await res.json();
-      if (data && data.success && data.settings && data.settings.language) {
-        const newLang = data.settings.language;
-        if (newLang !== currentLanguage) {
-          currentLanguage = newLang;
-          chrome.storage.local.set({ streampulse_language: newLang });
-          updateContextMenus(newLang);
-        }
+      const newLang = data.language || (data.settings && data.settings.language);
+      if (newLang && newLang !== currentLanguage) {
+        currentLanguage = newLang;
+        chrome.storage.local.set({ streampulse_language: newLang });
+        updateContextMenus(newLang);
       }
     }
   } catch (e) {}
