@@ -38,26 +38,35 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // Helper function to send download request to local StreamPulse API
 async function sendToStreamPulse(url, formatType = 'mp3', quality = '320') {
+  const payload = {
+    id: 'ext_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+    url,
+    formatType,
+    quality
+  };
+
   try {
-    const res = await fetch(`${API_URL}/extension/download`, {
+    let res = await fetch(`${API_URL}/extension/download`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url,
-        formatType,
-        quality
-      })
+      body: JSON.stringify(payload)
     });
 
-    const data = await res.json();
-    if (data && data.success) {
-      notifyUser('İndirme Başlatıldı 🚀', `Medyayı StreamPulse uygulaması indirmeye başladı (${formatType.toUpperCase()})`);
-      return { success: true };
-    } else {
-      throw new Error(data?.error || 'Uygulama yanıt vermedi');
+    if (!res.ok) {
+      res = await fetch(`${API_URL}/download`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
     }
-  } catch (err) {
-    // Fallback to custom protocol deep link if API fails
+
+    if (res.ok) {
+      notifyUser('İndirme Başlatıldı 🚀', `StreamPulse medyayı indirmeye başladı (${formatType.toUpperCase()})`);
+      return { success: true };
+    }
+  } catch (err) {}
+
+  // Fallback to custom protocol deep link if API fails
     const deepLink = `streampulse://download?url=${encodeURIComponent(url)}&format=${formatType}&quality=${quality}`;
     chrome.tabs.create({ url: deepLink, active: false }, (tab) => {
       setTimeout(() => {

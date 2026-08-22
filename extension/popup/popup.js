@@ -17,19 +17,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 1. Check Desktop App Status
   async function checkAppStatus() {
-    try {
-      const res = await fetch('http://127.0.0.1:3001/api/ping');
-      const data = await res.json();
-      if (data && data.success) {
-        statusIndicator.className = 'status-indicator online';
-        statusText.textContent = 'Masaüstü Bağlı';
-        return true;
-      }
-    } catch (e) {
-      statusIndicator.className = 'status-indicator offline';
-      statusText.textContent = 'Masaüstü Kapalı';
-      return false;
+    const endpoints = [
+      'http://127.0.0.1:3001/api/ping',
+      'http://127.0.0.1:3001/api/default-dir',
+      'http://localhost:3001/api/default-dir',
+    ];
+
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, { method: 'GET' });
+        if (res.ok) {
+          statusIndicator.className = 'status-indicator online';
+          statusText.textContent = 'Masaüstü Bağlı';
+          return true;
+        }
+      } catch (e) {}
     }
+
+    statusIndicator.className = 'status-indicator offline';
+    statusText.textContent = 'Masaüstü Kapalı';
+    return false;
   }
 
   await checkAppStatus();
