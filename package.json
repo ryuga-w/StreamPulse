@@ -29,6 +29,13 @@
       "server.js",
       "package.json"
     ],
+    "extraResources": [
+      {
+        "from": "bin",
+        "to": "bin",
+        "filter": ["**/*"]
+      }
+    ],
     "win": {
       "icon": "build/icon.ico",
       "target": [

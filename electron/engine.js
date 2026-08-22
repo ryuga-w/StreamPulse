@@ -26,12 +26,21 @@ class YtDlpEngine {
   }
 
   getFfmpegDir() {
+    const resPath = process.resourcesPath || '';
     const candidateDirs = [
+      path.join(resPath, 'bin'),
+      path.join(resPath, 'app.asar.unpacked', 'bin'),
       path.resolve(__dirname, '../bin'),
       path.resolve(process.cwd(), 'bin'),
       path.resolve(__dirname, '../../bin'),
       path.resolve(__dirname, '../node_modules/@ffmpeg-installer/win32-x64'),
     ];
+
+    for (const dir of candidateDirs) {
+      if (fs.existsSync(path.join(dir, 'ffmpeg.exe')) && fs.existsSync(path.join(dir, 'ffprobe.exe'))) {
+        return dir;
+      }
+    }
 
     for (const dir of candidateDirs) {
       if (fs.existsSync(path.join(dir, 'ffmpeg.exe'))) {
