@@ -50,12 +50,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tab = tabs[0];
     currentTabUrl = tab.url || '';
 
-    const isYouTube = currentTabUrl.includes('youtube.com/watch') || currentTabUrl.includes('youtu.be/') || currentTabUrl.includes('youtube.com/shorts');
-    const isYtMusic = currentTabUrl.includes('music.youtube.com/watch');
+    const isYouTube = currentTabUrl.includes('youtube.com') || currentTabUrl.includes('youtu.be');
+    const isYtMusic = currentTabUrl.includes('music.youtube.com');
 
     if (isYouTube || isYtMusic) {
       isYouTubeTab = true;
-      mediaTitle.textContent = tab.title ? tab.title.replace(' - YouTube', '').replace(' - YouTube Music', '') : 'YouTube Medyası';
+      const cleanTitle = tab.title ? tab.title.replace(/ - YouTube Music$/i, '').replace(/ - YouTube$/i, '') : 'YouTube Medyası';
+      mediaTitle.textContent = cleanTitle;
       mediaChannel.textContent = isYtMusic ? '🎵 YouTube Music' : '🎬 YouTube Video';
 
       // Extract YouTube Video ID for instant thumbnail preview
@@ -116,6 +117,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const payload = {
       id: 'ext_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
       url: downloadUrl,
+      title: mediaTitle.textContent || 'YouTube Medyası',
+      thumbnail: mediaThumb.src || '',
       formatType: selectedType,
       quality: selectedQuality
     };

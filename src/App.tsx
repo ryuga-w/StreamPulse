@@ -137,15 +137,35 @@ export const App: React.FC = () => {
   useEffect(() => {
     const cleanup = api.subscribeToEvents({
       onStarted: (data) => {
-        showToast(`⚡ Chrome Eklentisi: Medya indirilmeye başlandı (${data.formatType?.toUpperCase()})`, 'info');
+        showToast(`⚡ Chrome Eklentisi: Medya indirilmeye başlandı (${data.formatType?.toUpperCase() || 'MP3'})`, 'info');
         setQueue((prev) => {
-          if (prev.some((i) => i.id === data.id || (i.url && i.url === data.url))) return prev;
+          if (prev.some((i) => i.id === data.id || (i.url && data.url && i.url === data.url))) return prev;
           return [data, ...prev];
         });
       },
       onProgress: (data) => {
-        setQueue((prev) =>
-          prev.map((item) => {
+        setQueue((prev) => {
+          const exists = prev.some((item) => item.id === data.id);
+          if (!exists) {
+            const newItem: DownloadItem = {
+              id: data.id,
+              url: data.url || '',
+              title: data.title || 'İndiriliyor...',
+              uploader: 'YouTube',
+              thumbnail: data.thumbnail || '',
+              duration: 0,
+              formatType: data.formatType || 'mp3',
+              quality: data.quality || '320',
+              status: data.percent >= 99 ? 'converting' : 'downloading',
+              percent: data.percent || 0,
+              speed: data.speed || '0 MB/s',
+              eta: data.eta || '--:--',
+              totalSize: data.totalSize || '',
+              createdAt: Date.now(),
+            };
+            return [newItem, ...prev];
+          }
+          return prev.map((item) => {
             if (item.id === data.id) {
               return {
                 ...item,
@@ -157,8 +177,8 @@ export const App: React.FC = () => {
               };
             }
             return item;
-          })
-        );
+          });
+        });
       },
       onComplete: (data) => {
         confetti({
@@ -169,26 +189,41 @@ export const App: React.FC = () => {
 
         setQueue((prev) => {
           const item = prev.find((i) => i.id === data.id);
-          if (item) {
-            const completedItem: DownloadItem = {
-              ...item,
-              status: 'completed',
-              percent: 100,
-              outputFile: data.outputFile,
-              completedAt: Date.now(),
-            };
+          const rawTitle = data.title || (data.outputFile ? data.outputFile.split(/[/\\]/).pop().replace(/\.[^/.]+$/, '') : 'İndirilen Medya');
+          const completedItem: DownloadItem = item
+            ? {
+                ...item,
+                status: 'completed',
+                percent: 100,
+                outputFile: data.outputFile,
+                completedAt: Date.now(),
+              }
+            : {
+                id: data.id || ('dl_' + Date.now()),
+                url: data.url || '',
+                title: rawTitle,
+                uploader: 'YouTube',
+                thumbnail: data.thumbnail || '',
+                duration: 0,
+                formatType: data.formatType || 'mp3',
+                quality: data.quality || '320',
+                status: 'completed',
+                percent: 100,
+                outputFile: data.outputFile,
+                createdAt: Date.now(),
+                completedAt: Date.now(),
+              };
 
-            setHistory((hist) => [
-              completedItem,
-              ...hist.filter((h) => h.id !== completedItem.id),
-            ]);
+          setHistory((hist) => [
+            completedItem,
+            ...hist.filter((h) => h.id !== completedItem.id),
+          ]);
 
-            if (settings.autoOpenFolder && completedItem.outputFile) {
-              api.openFolder(completedItem.outputFile);
-            }
-
-            showToast(`"${item.title.slice(0, 30)}..." ${t.downloadSuccess}`, 'success');
+          if (settings.autoOpenFolder && completedItem.outputFile) {
+            api.openFolder(completedItem.outputFile);
           }
+
+          showToast(`"${completedItem.title.slice(0, 30)}..." ${t.downloadSuccess}`, 'success');
           return prev.map((i) => (i.id === data.id ? { ...i, status: 'completed', percent: 100, outputFile: data.outputFile } : i));
         });
       },
