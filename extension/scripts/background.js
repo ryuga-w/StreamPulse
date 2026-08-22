@@ -269,6 +269,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
   }
+  if (request.type === 'CHECK_DESKTOP_STATUS') {
+    (async () => {
+      const syncUrls = ['http://127.0.0.1:3001/api/health', 'http://localhost:3001/api/health'];
+      for (const u of syncUrls) {
+        try {
+          const res = await fetch(u);
+          if (res.ok) {
+            const data = await res.json();
+            const lang = data.language || (data.settings && data.settings.language) || currentLanguage;
+            currentLanguage = lang;
+            sendResponse({ online: true, language: lang, settings: data.settings });
+            return;
+          }
+        } catch (e) {}
+      }
+      sendResponse({ online: false });
+    })();
+    return true;
+  }
   if (request.type === 'SYNC_SETTINGS') {
     syncLanguageFromDesktop().then(() => sendResponse({ success: true, language: currentLanguage }));
     return true;

@@ -227,6 +227,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function checkAppStatusAsync() {
+    chrome.runtime.sendMessage({ type: 'CHECK_DESKTOP_STATUS' }, (resp) => {
+      if (!chrome.runtime.lastError && resp && resp.online) {
+        if (resp.language && resp.language !== currentLanguage) {
+          applyLanguage(resp.language);
+          chrome.storage.local.set({ streampulse_language: resp.language });
+        }
+        updateAppConnectionState(true);
+        return;
+      }
+      runDirectFetchCheck();
+    });
+  }
+
+  async function runDirectFetchCheck() {
     const checkUrls = [
       'http://127.0.0.1:3001/api/health',
       'http://localhost:3001/api/health',

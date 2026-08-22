@@ -43,6 +43,10 @@
     "notifications"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "<all_urls>",
+    "http://127.0.0.1/*",
+    "http://127.0.0.1:3001/*",
+    "http://localhost/*",
+    "http://localhost:3001/*"
   ]
 }
