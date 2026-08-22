@@ -113,24 +113,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnDownload.style.opacity = '0.7';
     showFeedback('İndirme masaüstüne gönderiliyor...', 'info');
 
-    chrome.runtime.sendMessage(
-      {
-        type: 'START_DOWNLOAD',
-        url: downloadUrl,
-        formatType: selectedType,
-        quality: selectedQuality
-      },
-      (response) => {
+    const payload = {
+      id: 'ext_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      url: downloadUrl,
+      formatType: selectedType,
+      quality: selectedQuality
+    };
+
+    let sent = false;
+
+    // 1. Direct HTTP Post
+    try {
+      const res = await fetch('http://127.0.0.1:3001/api/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        sent = true;
         btnDownload.disabled = false;
         btnDownload.style.opacity = '1';
-
-        if (response && response.success) {
-          showFeedback('⚡ StreamPulse Pro kuyruğa aldı! İndirme başladı.', 'success');
-        } else {
-          showFeedback('🚀 StreamPulse uygulamasına aktarıldı.', 'success');
-        }
+        showFeedback('⚡ StreamPulse indirmeye başladı!', 'success');
       }
-    );
+    } catch (e) {}
+
+    // 2. Service Worker Fallback
+    if (!sent) {
+      try {
+        chrome.runtime.sendMessage(
+          {
+            type: 'START_DOWNLOAD',
+            url: downloadUrl,
+            formatType: selectedType,
+            quality: selectedQuality
+          },
+          (response) => {
+            btnDownload.disabled = false;
+            btnDownload.style.opacity = '1';
+
+            if (response && response.success) {
+              showFeedback('⚡ StreamPulse Pro kuyruğa aldı! İndirme başladı.', 'success');
+            } else {
+              window.location.href = `streampulse://download?url=${encodeURIComponent(downloadUrl)}&format=${selectedType}&quality=${selectedQuality}`;
+              showFeedback('🚀 StreamPulse uygulamasına aktarıldı.', 'success');
+            }
+          }
+        );
+      } catch (err) {
+        btnDownload.disabled = false;
+        btnDownload.style.opacity = '1';
+        window.location.href = `streampulse://download?url=${encodeURIComponent(downloadUrl)}&format=${selectedType}&quality=${selectedQuality}`;
+        showFeedback('🚀 StreamPulse uygulamasına aktarıldı.', 'success');
+      }
+    }
   });
 
   // 5. Open Desktop App Button

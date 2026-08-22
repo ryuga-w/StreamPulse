@@ -28,24 +28,55 @@
     }, 4000);
   }
 
-  function triggerDownload(url, formatType, quality) {
-    showInPageToast('StreamPulse Pro 🚀', `${formatType.toUpperCase()} indirmesi masaüstü uygulamasına aktarılıyor...`);
+  async function triggerDownload(url, formatType, quality) {
+    const targetUrl = url || window.location.href;
+    showInPageToast('StreamPulse Pro 🚀', `${formatType.toUpperCase()} indirmesi gönderiliyor...`);
 
-    chrome.runtime.sendMessage(
-      {
-        type: 'START_DOWNLOAD',
-        url: url || window.location.href,
-        formatType,
-        quality
-      },
-      (response) => {
-        if (response && response.success) {
-          showInPageToast('İndirme Başlatıldı! ⚡', `StreamPulse Pro kuyruğa ekledi (${formatType.toUpperCase()})`);
-        } else {
-          showInPageToast('Aktarım Başarılı 🚀', 'StreamPulse uygulaması açılıyor.');
-        }
+    const payload = {
+      id: 'ext_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      url: targetUrl,
+      formatType,
+      quality
+    };
+
+    let sent = false;
+
+    // 1. Direct fetch to local engine (Bypasses sleeping Service Worker)
+    try {
+      const res = await fetch('http://127.0.0.1:3001/api/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        sent = true;
+        showInPageToast('İndirme Başlatıldı! ⚡', `StreamPulse Pro indirmeye başladı (${formatType.toUpperCase()})`);
       }
-    );
+    } catch (e) {}
+
+    // 2. Service Worker fallback
+    if (!sent) {
+      try {
+        chrome.runtime.sendMessage(
+          {
+            type: 'START_DOWNLOAD',
+            url: targetUrl,
+            formatType,
+            quality
+          },
+          (response) => {
+            if (response && response.success) {
+              showInPageToast('İndirme Başlatıldı! ⚡', `StreamPulse Pro kuyruğa aldı (${formatType.toUpperCase()})`);
+            } else {
+              window.location.href = `streampulse://download?url=${encodeURIComponent(targetUrl)}&format=${formatType}&quality=${quality}`;
+              showInPageToast('Aktarım Başarılı 🚀', 'StreamPulse uygulaması başlatılıyor.');
+            }
+          }
+        );
+      } catch (err) {
+        window.location.href = `streampulse://download?url=${encodeURIComponent(targetUrl)}&format=${formatType}&quality=${quality}`;
+      }
+    }
   }
 
   function createStreamPulseDropdown(parentBtn) {
