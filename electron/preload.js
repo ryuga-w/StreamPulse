@@ -37,6 +37,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   readClipboard: () => ipcRenderer.invoke('read-clipboard'),
   checkDependencies: () => ipcRenderer.invoke('check-dependencies'),
   updateYtDlp: () => ipcRenderer.invoke('update-ytdlp'),
+  showNotification: (options) => ipcRenderer.invoke('show-notification', options),
 
   // Events
   onDownloadStarted: (callback) => {

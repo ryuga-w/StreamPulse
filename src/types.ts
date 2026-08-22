@@ -81,6 +81,7 @@ declare global {
       readClipboard: () => Promise<string | null>;
       checkDependencies: () => Promise<DependencyStatus>;
       updateYtDlp: () => Promise<{ success: boolean; message?: string; error?: string }>;
+      showNotification?: (options: { title: string; body: string; source?: 'app' | 'extension' }) => Promise<boolean>;
       onDownloadStarted?: (callback: (data: any) => void) => () => void;
       onDownloadProgress: (callback: (data: any) => void) => () => void;
       onDownloadComplete: (callback: (data: any) => void) => () => void;

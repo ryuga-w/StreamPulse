@@ -213,52 +213,68 @@ export const App: React.FC = () => {
           origin: { y: 0.8 },
         });
 
+        const rawTitle = data.title || (data.outputFile ? data.outputFile.split(/[/\\]/).pop().replace(/\.[^/.]+$/, '') : 'İndirilen Medya');
+        const isExt = data.source === 'extension';
+
+        let completedItem: DownloadItem = {
+          id: data.id || ('dl_' + Date.now()),
+          url: data.url || '',
+          title: rawTitle,
+          uploader: 'YouTube',
+          thumbnail: data.thumbnail || '',
+          duration: 0,
+          formatType: data.formatType || 'mp3',
+          quality: data.quality || '320',
+          status: 'completed',
+          percent: 100,
+          outputFile: data.outputFile,
+          createdAt: Date.now(),
+          completedAt: Date.now(),
+          source: isExt ? 'extension' : 'app',
+        };
+
         setQueue((prev) => {
           const item = prev.find((i) => i.id === data.id);
-          const rawTitle = data.title || (data.outputFile ? data.outputFile.split(/[/\\]/).pop().replace(/\.[^/.]+$/, '') : 'İndirilen Medya');
-          const isExt = data.source === 'extension' || item?.source === 'extension';
+          if (item) {
+            completedItem = {
+              ...item,
+              status: 'completed',
+              percent: 100,
+              outputFile: data.outputFile,
+              completedAt: Date.now(),
+              source: isExt ? 'extension' : (item.source || 'app'),
+            };
+          }
+          return prev.map((i) => (i.id === data.id ? { ...i, status: 'completed', percent: 100, outputFile: data.outputFile } : i));
+        });
 
-          const completedItem: DownloadItem = item
-            ? {
-                ...item,
-                status: 'completed',
-                percent: 100,
-                outputFile: data.outputFile,
-                completedAt: Date.now(),
-                source: isExt ? 'extension' : (item.source || 'app'),
-              }
-            : {
-                id: data.id || ('dl_' + Date.now()),
-                url: data.url || '',
-                title: rawTitle,
-                uploader: 'YouTube',
-                thumbnail: data.thumbnail || '',
-                duration: 0,
-                formatType: data.formatType || 'mp3',
-                quality: data.quality || '320',
-                status: 'completed',
-                percent: 100,
-                outputFile: data.outputFile,
-                createdAt: Date.now(),
-                completedAt: Date.now(),
-                source: isExt ? 'extension' : 'app',
-              };
-
-          setHistory((hist) => [
+        setHistory((hist) => {
+          const nextHist = [
             completedItem,
             ...hist.filter((h) => h.id !== completedItem.id && h.outputFile !== completedItem.outputFile),
-          ]);
+          ];
+          try {
+            localStorage.setItem('streampulse_history', JSON.stringify(nextHist));
+          } catch (e) {}
+          return nextHist;
+        });
 
-          if (settings.autoOpenFolder && completedItem.outputFile) {
-            api.openFolder(completedItem.outputFile);
-          }
+        if (settings.autoOpenFolder && completedItem.outputFile) {
+          api.openFolder(completedItem.outputFile);
+        }
 
-          const successMsg = isExt
-            ? `⚡ Eklenti İndirmesi Tamamlandı: "${completedItem.title.slice(0, 30)}..."`
-            : `"${completedItem.title.slice(0, 30)}..." ${t.downloadSuccess}`;
+        const toastMsg = isExt
+          ? `⚡ Tarayıcı eklentisinden indirdiğiniz "${completedItem.title}" başarıyla kütüphaneye eklendi!`
+          : `✅ "${completedItem.title}" başarıyla kütüphaneye eklendi!`;
 
-          showToast(successMsg, 'success');
-          return prev.map((i) => (i.id === data.id ? { ...i, status: 'completed', percent: 100, outputFile: data.outputFile } : i));
+        showToast(toastMsg, 'success');
+
+        api.showNotification({
+          title: isExt ? '⚡ Tarayıcı Eklentisinden İndirildi' : '✅ İndirme Tamamlandı',
+          body: isExt 
+            ? `Eklentiden indirdiğiniz "${completedItem.title}" başarıyla kütüphaneye eklendi!`
+            : `"${completedItem.title}" başarıyla indirildi.`,
+          source: isExt ? 'extension' : 'app',
         });
       },
       onError: (data) => {

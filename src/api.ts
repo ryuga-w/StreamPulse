@@ -281,6 +281,16 @@ export const api = {
     }
   },
 
+  showNotification: (options: { title: string; body: string; source?: 'app' | 'extension' }) => {
+    if (window.electronAPI && window.electronAPI.showNotification) {
+      window.electronAPI.showNotification(options);
+    } else if ('Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification(options.title, { body: options.body });
+      } catch (e) {}
+    }
+  },
+
   subscribeToEvents: (callbacks: {
     onStarted?: (data: any) => void;
     onProgress: (data: any) => void;
