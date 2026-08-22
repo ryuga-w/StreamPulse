@@ -149,10 +149,24 @@
 
     document.body.appendChild(menu);
 
-    // Position dropdown relative to button
+    // Position dropdown relative to button (Smart Dropup if near bottom or on YouTube Music)
     const rect = parentBtn.getBoundingClientRect();
-    menu.style.top = `${rect.bottom + window.scrollY + 8}px`;
-    menu.style.left = `${Math.max(10, rect.left + window.scrollX - 40)}px`;
+    const menuHeight = menu.offsetHeight || 280;
+    const isNearBottom = (window.innerHeight - rect.bottom) < (menuHeight + 30) || window.location.hostname.includes('music.youtube.com');
+
+    if (isNearBottom) {
+      menu.classList.add('dropup');
+      menu.style.position = 'fixed';
+      menu.style.top = 'auto';
+      menu.style.bottom = `${Math.max(10, window.innerHeight - rect.top + 10)}px`;
+    } else {
+      menu.style.position = 'absolute';
+      menu.style.top = `${rect.bottom + window.scrollY + 8}px`;
+      menu.style.bottom = 'auto';
+    }
+
+    const leftPos = Math.max(10, Math.min(window.innerWidth - 290, isNearBottom ? rect.left : (rect.left + window.scrollX - 40)));
+    menu.style.left = `${leftPos}px`;
 
     menu.querySelector('#sp-dl-mp3').addEventListener('click', (e) => {
       e.stopPropagation();
