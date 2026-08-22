@@ -52,6 +52,8 @@ class YtDlpEngine {
         resolve(!err);
       });
     });
+  }
+
   sanitizeUrl(rawUrl) {
     let cleanUrl = rawUrl.trim();
 
