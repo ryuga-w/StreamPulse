@@ -160,6 +160,32 @@ body {
   text-overflow: ellipsis;
 }
 
+.custom-url-container {
+  margin-top: 6px;
+  width: 100%;
+}
+
+.custom-url-container input {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 11px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.custom-url-container input:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+}
+
+.custom-url-container input::placeholder {
+  color: #64748b;
+}
+
 /* Format Section */
 .format-section {
   display: flex;

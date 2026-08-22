@@ -6,12 +6,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const mediaChannel = document.getElementById('media-channel');
   const mediaThumb = document.getElementById('media-thumb');
   const mediaPlaceholder = document.getElementById('media-placeholder');
+  const customUrlBox = document.getElementById('custom-url-box');
+  const customUrlInput = document.getElementById('custom-url-input');
   const formatButtons = document.querySelectorAll('.format-btn');
   const btnDownload = document.getElementById('btn-download');
   const btnOpenApp = document.getElementById('btn-open-app');
   const feedbackMsg = document.getElementById('feedback-msg');
 
   let currentTabUrl = '';
+  let isYouTubeTab = false;
   let selectedType = 'mp3';
   let selectedQuality = '320';
 
@@ -47,10 +50,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tab = tabs[0];
     currentTabUrl = tab.url || '';
 
-    const isYouTube = currentTabUrl.includes('youtube.com') || currentTabUrl.includes('youtu.be');
-    const isYtMusic = currentTabUrl.includes('music.youtube.com');
+    const isYouTube = currentTabUrl.includes('youtube.com/watch') || currentTabUrl.includes('youtu.be/') || currentTabUrl.includes('youtube.com/shorts');
+    const isYtMusic = currentTabUrl.includes('music.youtube.com/watch');
 
     if (isYouTube || isYtMusic) {
+      isYouTubeTab = true;
       mediaTitle.textContent = tab.title ? tab.title.replace(' - YouTube', '').replace(' - YouTube Music', '') : 'YouTube Medyası';
       mediaChannel.textContent = isYtMusic ? '🎵 YouTube Music' : '🎬 YouTube Video';
 
@@ -62,10 +66,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         mediaThumb.style.display = 'block';
         mediaPlaceholder.style.display = 'none';
       }
+      customUrlBox.style.display = 'none';
     } else {
-      mediaTitle.textContent = 'Masaüstü İndiriciye Gönder';
-      mediaChannel.textContent = 'Herhangi bir medya veya sayfa linki';
-      mediaPlaceholder.textContent = '🌐 ' + (new URL(currentTabUrl || 'https://google.com')).hostname;
+      isYouTubeTab = false;
+      mediaTitle.textContent = 'Medya Linki Yapıştırın';
+      mediaChannel.textContent = 'YouTube, YouTube Music veya Şarkı Adı';
+      mediaThumb.style.display = 'none';
+      mediaPlaceholder.style.display = 'flex';
+      mediaPlaceholder.textContent = '🔗 İstediğiniz linki girin';
+      customUrlBox.style.display = 'block';
+      setTimeout(() => customUrlInput.focus(), 100);
     }
   });
 
@@ -81,16 +91,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 4. Trigger Download
   btnDownload.addEventListener('click', async () => {
-    if (!currentTabUrl) return;
+    let downloadUrl = '';
+
+    if (isYouTubeTab && currentTabUrl) {
+      downloadUrl = currentTabUrl;
+    } else if (customUrlInput.value.trim()) {
+      downloadUrl = customUrlInput.value.trim();
+    } else {
+      showFeedback('Lütfen geçerli bir YouTube linki veya şarkı adı girin.', 'error');
+      customUrlBox.style.display = 'block';
+      customUrlInput.focus();
+      return;
+    }
+
+    if (downloadUrl.startsWith('chrome://') || downloadUrl.startsWith('edge://') || downloadUrl.startsWith('about:')) {
+      showFeedback('Tarayıcı iç sayfaları indirilemez. Bir YouTube linki girin.', 'error');
+      return;
+    }
 
     btnDownload.disabled = true;
     btnDownload.style.opacity = '0.7';
-    showFeedback('İndirme gönderiliyor...', 'info');
+    showFeedback('İndirme masaüstüne gönderiliyor...', 'info');
 
     chrome.runtime.sendMessage(
       {
         type: 'START_DOWNLOAD',
-        url: currentTabUrl,
+        url: downloadUrl,
         formatType: selectedType,
         quality: selectedQuality
       },
@@ -99,9 +125,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnDownload.style.opacity = '1';
 
         if (response && response.success) {
-          showFeedback('⚡ StreamPulse kuyruğa aldı! İndirme başladı.', 'success');
+          showFeedback('⚡ StreamPulse Pro kuyruğa aldı! İndirme başladı.', 'success');
         } else {
-          showFeedback('🚀 StreamPulse uygulaması başlatılıyor...', 'success');
+          showFeedback('🚀 StreamPulse uygulamasına aktarıldı.', 'success');
         }
       }
     );
