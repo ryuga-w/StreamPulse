@@ -3,9 +3,12 @@ const cors = require('cors');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const { Shazam } = require('node-shazam');
 const engine = require('./electron/engine');
 const usbManager = require('./electron/usbManager');
 const { exec } = require('child_process');
+
+const shazamEngine = new Shazam();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,6 +25,11 @@ app.use((req, res, next) => {
 });
 app.use(cors());
 app.use(express.json());
+
+// Ultra-fast Health / Status Check for Browser Extension
+app.get(['/api/health', '/api/ping', '/api/status'], (_req, res) => {
+  res.json({ success: true, status: 'online', app: 'StreamPulse Downloader', version: '1.2.0' });
+});
 
 const sseClients = new Set();
 
@@ -201,10 +209,175 @@ app.post('/api/fetch-info', async (req, res) => {
   }
 });
 
+let globalSettings = {
+  language: 'tr',
+  themeMode: 'system',
+};
+
+app.get('/api/settings', (_req, res) => {
+  res.json({ success: true, settings: globalSettings });
+});
+
+app.post('/api/settings', (req, res) => {
+  const newSettings = req.body || {};
+  globalSettings = { ...globalSettings, ...newSettings };
+  broadcastEvent('settings-updated', globalSettings);
+  res.json({ success: true, settings: globalSettings });
+});
+
+function convertBufferToPcmSamples(audioBuffer) {
+  return new Promise((resolve, reject) => {
+    try {
+      const ffmpegDir = engine.getFfmpegDir();
+      const ffmpegExe = path.join(ffmpegDir, 'ffmpeg.exe');
+      const tempIn = path.join(os.tmpdir(), `streampulse_in_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.webm`);
+      const tempOut = path.join(os.tmpdir(), `streampulse_out_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.pcm`);
+
+      fs.writeFileSync(tempIn, audioBuffer);
+      const cmd = `"${ffmpegExe}" -y -i "${tempIn}" -f s16le -acodec pcm_s16le -ar 16000 -ac 1 "${tempOut}"`;
+
+      exec(cmd, (err) => {
+        try { if (fs.existsSync(tempIn)) fs.unlinkSync(tempIn); } catch (e) {}
+        if (err) {
+          return reject(err);
+        }
+        try {
+          if (!fs.existsSync(tempOut)) return reject(new Error('PCM output missing'));
+          const pcm = fs.readFileSync(tempOut);
+          fs.unlinkSync(tempOut);
+          const samples = [];
+          for (let i = 0; i < pcm.length; i += 2) {
+            samples.push(pcm.readInt16LE(i));
+          }
+          resolve(samples);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+app.post('/api/recognize-audio', async (req, res) => {
+  try {
+    const { audioBase64, hintText } = req.body || {};
+
+    if (audioBase64) {
+      const audioBuffer = Buffer.from(audioBase64, 'base64');
+
+      // 1. Primary Engine: Official Shazam AI Recognition via direct PCM samples
+      try {
+        const samples = await convertBufferToPcmSamples(audioBuffer);
+        if (samples && samples.length > 8000) {
+          const shazamResult = await shazamEngine.recognizeSong(samples);
+          if (shazamResult && shazamResult.track) {
+            const trk = shazamResult.track;
+            const albumName = trk.sections?.find(s => s.type === 'SONG')?.metadata?.find(m => m.title === 'Album')?.text || trk.subtitle || '';
+            const releaseDate = trk.sections?.find(s => s.type === 'SONG')?.metadata?.find(m => m.title === 'Released')?.text || '';
+            const coverArt = trk.images?.coverart || trk.images?.background || trk.share?.image || '';
+
+            return res.json({
+              success: true,
+              track: {
+                title: trk.title,
+                artist: trk.subtitle,
+                album: albumName,
+                releaseDate: releaseDate,
+                artwork: coverArt,
+                youtubeQuery: `${trk.subtitle} - ${trk.title}`
+              },
+              engine: 'Official Shazam Core AI'
+            });
+          }
+        }
+      } catch (shazamErr) {
+        console.error('[Shazam Core] Recognition note:', shazamErr.message);
+      }
+
+      // 2. Secondary Engine: AudD Neural Database
+      try {
+        const formData = new FormData();
+        const blob = new Blob([audioBuffer], { type: 'audio/webm' });
+        formData.append('file', blob, 'sample.webm');
+        formData.append('return', 'apple_music,spotify');
+        formData.append('api_token', '91a99540b0805187ff6a2aa73fa0599a');
+
+        const auddRes = await fetch('https://api.audd.io/', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (auddRes.ok) {
+          const data = await auddRes.json();
+          if (data && data.status === 'success' && data.result) {
+            const r = data.result;
+            return res.json({
+              success: true,
+              track: {
+                title: r.title || 'Unknown Title',
+                artist: r.artist || 'Unknown Artist',
+                album: r.album || '',
+                releaseDate: r.release_date || '',
+                artwork: r.spotify?.album?.images?.[0]?.url || r.apple_music?.artwork?.url?.replace('{w}x{h}', '600x600') || '',
+                youtubeQuery: `${r.artist} - ${r.title}`
+              },
+              engine: 'AudD Edit Intelligence'
+            });
+          }
+        }
+      } catch (e) {}
+    }
+
+    // 3. Contextual metadata fallback
+    if (hintText && hintText.trim().length > 3) {
+      try {
+        const cleanQuery = hintText.trim().replace(/https?:\/\/\S+/gi, '').slice(0, 80);
+        const info = await engine.fetchInfo(`ytsearch1:${cleanQuery}`);
+        if (info && info.title) {
+          return res.json({
+            success: true,
+            track: {
+              title: info.title,
+              artist: info.uploader || 'YouTube Music',
+              album: 'Web Match',
+              artwork: info.thumbnail || '',
+              youtubeQuery: info.title
+            },
+            engine: 'Smart Context Match'
+          });
+        }
+      } catch (e) {}
+    }
+
+    res.json({ success: false, error: 'Müzik tespit edilemedi. Lütfen sesin daha net olduğu bir anda tekrar deneyin.' });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/focus', (_req, res) => {
+  try {
+    if (global.electronMainWindow && !global.electronMainWindow.isDestroyed()) {
+      if (global.electronMainWindow.isMinimized()) global.electronMainWindow.restore();
+      global.electronMainWindow.show();
+      global.electronMainWindow.focus();
+      return res.json({ success: true, focused: true });
+    }
+  } catch (e) {}
+  res.json({ success: false });
+});
+
 app.post('/api/download', async (req, res) => {
   const options = req.body;
   if (!options || !options.url) {
     return res.status(400).json({ success: false, error: 'Invalid download options' });
+  }
+
+  let downloadUrl = options.url.trim();
+  if (!downloadUrl.startsWith('http://') && !downloadUrl.startsWith('https://') && !downloadUrl.startsWith('ytsearch')) {
+    downloadUrl = `ytsearch1:${downloadUrl}`;
   }
 
   const downloadId = options.id || ('dl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7));
@@ -215,6 +388,7 @@ app.post('/api/download', async (req, res) => {
 
   const itemPayload = {
     ...options,
+    url: downloadUrl,
     id: downloadId,
     title: cleanTitle,
     formatType: isAudio ? (options.formatType || 'mp3') : 'video',
@@ -230,6 +404,7 @@ app.post('/api/download', async (req, res) => {
   try {
     engine.startDownload({
       ...options,
+      url: downloadUrl,
       id: downloadId,
       formatType: itemPayload.formatType,
       quality: effectiveQuality,

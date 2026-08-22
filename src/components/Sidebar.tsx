@@ -2,10 +2,8 @@ import React from 'react';
 import {
   Download,
   ListOrdered,
-  History,
+  Library,
   Settings,
-  Sparkles,
-  Zap,
 } from 'lucide-react';
 import { Language } from '../types';
 import { translations } from '../i18n';
@@ -48,7 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'history' as TabType,
       label: t.library,
       subtitle: t.librarySub,
-      icon: History,
+      icon: Library,
       count: historyCount,
     },
     {
@@ -61,10 +59,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside className="w-56 h-full bg-[#070a12]/80 border-r border-white/5 flex flex-col justify-between p-3.5 select-none shrink-0">
-      <div className="space-y-1">
-        <div className="px-2.5 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider sidebar-menu-header">
-          MENU
+    <aside className="w-60 h-full bg-[#0f0f0f] border-r border-[#282828] flex flex-col justify-between p-3 select-none shrink-0 font-['Roboto','YouTube_Sans']">
+      <div className="space-y-1.5">
+        <div className="px-3 py-1.5 text-[11px] font-bold text-[#717171] uppercase tracking-wider">
+          MENÜ
         </div>
 
         {menuItems.map((item) => {
@@ -75,28 +73,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`sidebar-nav-item w-full flex items-center justify-between p-2.5 rounded-xl transition-all duration-200 group text-left cursor-pointer ${
+              className={`sidebar-nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all duration-150 group text-left cursor-pointer ${
                 isActive
-                  ? 'sidebar-nav-active bg-gradient-to-r from-purple-600/20 to-indigo-600/10 border border-purple-500/30 text-white shadow-glow-purple/20'
-                  : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                  ? 'bg-gradient-to-r from-purple-600/20 via-indigo-600/15 to-pink-600/20 border border-purple-500/30 text-white font-medium shadow-sm'
+                  : 'text-[#aaaaaa] hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className={`nav-icon-box w-7 h-7 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
                     isActive
-                      ? 'bg-purple-600 text-white shadow-glow-purple'
-                      : 'bg-white/5 text-slate-400 group-hover:text-purple-300'
+                      ? 'text-purple-400'
+                      : 'text-[#aaaaaa] group-hover:text-white'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-5 h-5" />
                 </div>
 
                 <div className="min-w-0">
-                  <div className="nav-label text-xs font-semibold truncate leading-none">
+                  <div className={`text-[13px] truncate leading-tight ${isActive ? 'font-semibold text-white' : 'font-normal'}`}>
                     {item.label}
                   </div>
-                  <div className="nav-subtitle text-[9px] text-slate-500 truncate mt-0.5">
+                  <div className="text-[10px] text-[#717171] truncate mt-0.5">
                     {item.subtitle}
                   </div>
                 </div>
@@ -104,10 +102,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               {item.count > 0 && (
                 <span
-                  className={`nav-badge text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                  className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
                     isActive
-                      ? 'bg-purple-500 text-white'
-                      : 'bg-white/10 text-purple-300'
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-sm'
+                      : 'bg-white/10 text-[#f1f1f1]'
                   }`}
                 >
                   {item.count}
@@ -119,17 +117,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Bottom Section */}
-      <div>
-        {/* Engine Status Pill */}
-        <div className="p-3 rounded-xl bg-purple-950/20 border border-purple-500/20 space-y-1">
+      <div className="pt-2">
+        <div className="p-3 rounded-xl bg-[#181818] border border-[#282828] space-y-1.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-purple-300 engine-title">
-              <Zap className="w-3.5 h-3.5 text-purple-400 fill-current" />
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-white">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
               <span>{t.engineBadge}</span>
             </div>
-            <span className="text-[9px] font-mono text-slate-500">v1.0.0</span>
+            <span className="text-[10px] text-[#717171] font-mono">v1.0.0</span>
           </div>
-          <p className="text-[10px] text-slate-400 leading-tight engine-desc">
+          <p className="text-[11px] text-[#aaaaaa] leading-relaxed">
             {t.engineBadgeDesc}
           </p>
         </div>

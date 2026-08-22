@@ -240,33 +240,33 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
       {/* ========================================================================= */}
       {isVideo && (
         <>
-          {/* THEATER MODE OVERLAY */}
+          {/* EXPANDED THEATER / MODAL VIDEO MODE */}
           {videoMode === 'theater' && (
-            <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200">
-              <div className="relative w-full max-w-4xl bg-slate-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
-                <div className="flex items-center justify-between p-3.5 bg-slate-900/90 border-b border-white/5">
-                  <div className="flex items-center gap-2.5 truncate">
-                    <Video className="w-4 h-4 text-indigo-400 shrink-0" />
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+              <div className="relative w-full max-w-4xl bg-[#212121] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
+                <div className="p-3 bg-[#181818] border-b border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2 truncate">
+                    <Film className="w-4 h-4 text-[#3ea6ff] shrink-0" />
                     <span className="text-xs font-semibold text-white truncate">{currentItem.title}</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <button
                       onClick={toggleNativePip}
-                      className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                      className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                       title="Resim İçinde Resim (Native PiP)"
                     >
                       <PictureInPicture className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setVideoMode('mini')}
-                      className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                      className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                       title="Küçük Kayan Pencereye Küçült"
                     >
                       <Minimize2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={onClose}
-                      className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                      className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                       title="Kapat"
                     >
                       <X className="w-4 h-4" />
@@ -293,12 +293,11 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
 
           {/* FLOATING MINI-PLAYER (PiP DOCK ON BOTTOM-RIGHT) */}
           {videoMode === 'mini' && (
-            <div className="fixed bottom-20 right-6 z-40 w-80 sm:w-96 bg-[#0a0f1e]/95 border border-purple-500/30 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
-              {/* Mini Header */}
-              <div className="p-2.5 px-3 bg-purple-950/40 border-b border-white/10 flex items-center justify-between">
+            <div className="fixed bottom-20 right-6 z-40 w-80 sm:w-96 bg-[#212121] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-150">
+              <div className="p-2.5 px-3 bg-[#181818] border-b border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-2 truncate">
-                  <Film className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                  <span className="text-[11px] font-bold text-white truncate max-w-[180px]">
+                  <Film className="w-3.5 h-3.5 text-[#3ea6ff] shrink-0" />
+                  <span className="text-[11px] font-semibold text-white truncate max-w-[180px]">
                     {currentItem.title}
                   </span>
                 </div>
@@ -306,21 +305,21 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
                 <div className="flex items-center gap-1">
                   <button
                     onClick={toggleNativePip}
-                    className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                    className="p-1 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                     title="Masaüstü PiP Modu"
                   >
                     <PictureInPicture className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => setVideoMode('theater')}
-                    className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                    className="p-1 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                     title="Genişlet (Sinema Modu)"
                   >
                     <Maximize2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={onClose}
-                    className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                    className="p-1 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                     title="Kapat"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -328,7 +327,6 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
                 </div>
               </div>
 
-              {/* Video Player */}
               <div className="relative bg-black aspect-video max-h-56 flex items-center justify-center">
                 <video
                   ref={videoRef}
@@ -348,32 +346,30 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* RIGHT SIDE UP NEXT (SIRADAKİ) QUEUE DRAWER                                */}
+      {/* RIGHT SIDE UP NEXT QUEUE DRAWER                                          */}
       {/* ========================================================================= */}
       {showQueueDrawer && (
-        <div className="up-next-drawer-panel fixed bottom-20 right-6 z-50 w-96 max-h-[520px] bg-[#0c1222]/95 border border-purple-500/30 rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
-          {/* Drawer Header */}
-          <div className="drawer-header p-3.5 bg-purple-950/40 border-b border-white/10 flex items-center justify-between">
+        <div className="fixed bottom-20 right-6 z-50 w-96 max-h-[520px] bg-[#212121] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-150">
+          <div className="p-3 bg-[#181818] border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ListMusic className="w-4 h-4 text-purple-400" />
-              <h3 className="drawer-title text-xs font-bold text-white">
+              <ListMusic className="w-4 h-4 text-[#3ea6ff]" />
+              <h3 className="text-xs font-semibold text-white">
                 {language === 'tr' ? 'Sıradaki Parçalar' : 'Up Next Queue'}
               </h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-semibold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-white font-semibold">
                 {currentIndex + 1} / {playlist.length}
               </span>
             </div>
 
             <button
               onClick={() => setShowQueueDrawer(false)}
-              className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+              className="p-1 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {/* Drawer Track List */}
-          <div className="flex-1 overflow-y-auto p-2 space-y-1 divide-y divide-white/[0.03]">
+          <div className="flex-1 overflow-y-auto p-2 space-y-1 divide-y divide-white/5">
             {playlist.map((track, idx) => {
               const isCurrent = idx === currentIndex;
               const trackThumb = getTrackThumbnail(track, idx);
@@ -381,44 +377,44 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
                 <div
                   key={track.id || idx}
                   onClick={() => onIndexChange(idx)}
-                  className={`drawer-item flex items-center justify-between p-2 rounded-xl cursor-pointer transition-all text-xs group ${
+                  className={`flex items-center justify-between p-2 rounded-xl cursor-pointer transition-all text-xs group ${
                     isCurrent
-                      ? 'bg-purple-600/20 border border-purple-500/40 text-white shadow-sm'
-                      : 'hover:bg-white/5 text-slate-400'
+                      ? 'bg-white/10 text-white'
+                      : 'hover:bg-white/5 text-[#aaaaaa]'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-5 text-center shrink-0">
                       {isCurrent ? (
                         <div className="flex items-center justify-center gap-0.5">
-                          <div className="w-0.5 h-3 bg-purple-400 rounded-full animate-bounce"></div>
-                          <div className="w-0.5 h-4 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.15s]"></div>
-                          <div className="w-0.5 h-2 bg-pink-400 rounded-full animate-bounce [animation-delay:0.3s]"></div>
+                          <div className="w-0.5 h-3 bg-[#ff0000] rounded-full animate-bounce"></div>
+                          <div className="w-0.5 h-4 bg-[#3ea6ff] rounded-full animate-bounce [animation-delay:0.15s]"></div>
+                          <div className="w-0.5 h-2 bg-[#ff0000] rounded-full animate-bounce [animation-delay:0.3s]"></div>
                         </div>
                       ) : (
-                        <span className="font-mono text-[10px] text-slate-500 group-hover:text-slate-300">
+                        <span className="font-mono text-[10px] text-[#717171]">
                           {idx + 1}
                         </span>
                       )}
                     </div>
 
-                    <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-slate-800 shrink-0">
+                    <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-[#181818] shrink-0">
                       <img src={trackThumb} alt="" className="w-full h-full object-cover" />
                     </div>
 
                     <div className="min-w-0">
                       <h4
                         className={`truncate text-xs ${
-                          isCurrent ? 'font-bold text-purple-300' : 'font-medium text-slate-200 group-hover:text-white'
+                          isCurrent ? 'font-semibold text-white' : 'font-normal text-white/90'
                         }`}
                       >
                         {track.title}
                       </h4>
-                      <p className="text-[10px] text-slate-500 truncate mt-0.5">{track.uploader}</p>
+                      <p className="text-[10px] text-[#aaaaaa] truncate mt-0.5">{track.uploader}</p>
                     </div>
                   </div>
 
-                  <div className="text-[10px] font-mono text-slate-500 group-hover:text-slate-300 shrink-0 ml-2">
+                  <div className="text-[10px] font-mono text-[#aaaaaa] shrink-0 ml-2">
                     {isCurrent ? formatTime(currentTime) : '320k'}
                   </div>
                 </div>
@@ -429,9 +425,9 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* BOTTOM DOCKED GLASSMORHPIC AUDIO/VIDEO PLAYER BAR                         */}
+      {/* BOTTOM DOCKED YOUTUBE MUSIC PLAYER BAR                                   */}
       {/* ========================================================================= */}
-      <div className="media-player-dock fixed bottom-0 left-0 right-0 z-40 p-3 bg-[#0a0f1e]/95 backdrop-blur-2xl border-t border-purple-500/30 shadow-[0_-10px_35px_rgba(0,0,0,0.7)] animate-in slide-in-from-bottom duration-300 select-none">
+      <div className="fixed bottom-0 left-0 right-0 z-40 p-2.5 px-4 bg-[#212121] border-t border-white/10 shadow-2xl select-none font-['Roboto','YouTube_Sans']">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
           {/* Left: Thumbnail & Info */}
           <div
@@ -445,40 +441,40 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
             className="flex items-center gap-3 w-full md:w-1/4 min-w-0 cursor-pointer group"
             title={isVideo ? 'Video Boyutunu Değiştir' : 'Sıradaki Parçalar Listesini Aç/Kapat'}
           >
-            <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-800 border border-white/10 shrink-0 shadow-glow-purple/30 group-hover:border-purple-500/50 transition-colors">
+            <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-[#181818] border border-white/10 shrink-0">
               <img
                 src={currentThumbnail}
                 alt={currentItem.title}
-                className={`w-full h-full object-cover ${isPlaying ? 'scale-105' : ''} transition-transform duration-500`}
+                className="w-full h-full object-cover"
               />
               {isPlaying && !hasError && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-0.5">
-                  <div className="w-1 h-3 bg-purple-400 rounded-full animate-bounce"></div>
-                  <div className="w-1 h-5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.15s]"></div>
-                  <div className="w-1 h-2 bg-pink-400 rounded-full animate-bounce [animation-delay:0.3s]"></div>
+                  <div className="w-0.5 h-3 bg-purple-500 rounded-full animate-bounce"></div>
+                  <div className="w-0.5 h-4 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.15s]"></div>
+                  <div className="w-0.5 h-2 bg-pink-500 rounded-full animate-bounce [animation-delay:0.3s]"></div>
                 </div>
               )}
             </div>
 
             <div className="min-w-0 flex-1">
-              <h4 className="player-track-title text-xs font-bold text-white truncate group-hover:text-purple-400 transition-colors">
+              <h4 className="text-xs font-semibold text-white truncate">
                 {currentItem.title}
               </h4>
-              <div className="flex items-center gap-2 text-[10px] text-purple-300 mt-0.5 player-track-meta">
+              <div className="flex items-center gap-2 text-[11px] text-[#aaaaaa] mt-0.5">
                 <span className="truncate">{currentItem.uploader}</span>
                 {currentItem.subfolderName && (
                   <>
                     <span>•</span>
-                    <span className="truncate text-indigo-300 font-semibold">📁 {currentItem.subfolderName}</span>
+                    <span className="truncate text-purple-400 font-medium">{currentItem.subfolderName}</span>
                   </>
                 )}
                 <span>•</span>
-                <span className="font-mono uppercase font-semibold text-purple-400">
+                <span className="font-mono uppercase text-[#717171]">
                   {currentItem.formatType} ({currentItem.quality}{isVideo ? 'p' : 'k'})
                 </span>
               </div>
               {hasError && (
-                <div className="text-[10px] text-rose-400 flex items-center gap-1 mt-0.5">
+                <div className="text-[10px] text-[#ff4e45] flex items-center gap-1 mt-0.5">
                   <AlertCircle className="w-3 h-3" />
                   <span>Dosya yüklenemedi.</span>
                 </div>
@@ -487,13 +483,13 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
           </div>
 
           {/* Center: Controls & Scrubber */}
-          <div className="flex-1 w-full max-w-xl space-y-1.5 flex flex-col items-center">
+          <div className="flex-1 w-full max-w-xl space-y-1 flex flex-col items-center">
             <div className="flex items-center gap-3">
               {/* Shuffle Button */}
               <button
                 onClick={() => setIsShuffled(!isShuffled)}
-                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                  isShuffled ? 'text-purple-400 bg-purple-500/20' : 'text-slate-400 hover:text-white'
+                className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+                  isShuffled ? 'text-purple-400 bg-purple-500/20' : 'text-[#aaaaaa] hover:text-white'
                 }`}
                 title={isShuffled ? 'Karışık Çalma: Açık' : 'Karışık Çalma: Kapalı'}
               >
@@ -503,8 +499,8 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
               {/* Previous Track Button */}
               <button
                 onClick={handlePrev}
-                className="player-control-btn p-1.5 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                title="Önceki Parça (Previous Track)"
+                className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                title="Önceki Parça"
               >
                 <SkipBack className="w-4 h-4 fill-current" />
               </button>
@@ -512,7 +508,7 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
               {/* 10s Rewind */}
               <button
                 onClick={() => skipTime(-10)}
-                className="player-control-btn p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                 title="10s Geri"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -521,7 +517,7 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
               {/* Play / Pause Primary Button */}
               <button
                 onClick={togglePlay}
-                className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white flex items-center justify-center shadow-glow-purple transition-all duration-200 cursor-pointer"
+                className="w-9 h-9 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white flex items-center justify-center transition-all duration-150 cursor-pointer shadow-md"
                 title={isPlaying ? 'Durdur' : 'Oynat'}
               >
                 {isPlaying ? (
@@ -534,7 +530,7 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
               {/* 10s Forward */}
               <button
                 onClick={() => skipTime(10)}
-                className="player-control-btn p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                 title="10s İleri"
               >
                 <RotateCw className="w-3.5 h-3.5" />
@@ -543,8 +539,8 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
               {/* Next Track Button */}
               <button
                 onClick={handleNext}
-                className="player-control-btn p-1.5 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                title="Sonraki Parça (Next Track)"
+                className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                title="Sonraki Parça"
               >
                 <SkipForward className="w-4 h-4 fill-current" />
               </button>
@@ -552,8 +548,8 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
               {/* Loop Mode Toggle */}
               <button
                 onClick={cycleLoopMode}
-                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                  loopMode !== 'off' ? 'text-purple-400 bg-purple-500/20' : 'text-slate-400 hover:text-white'
+                className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+                  loopMode !== 'off' ? 'text-purple-400 bg-purple-500/20' : 'text-[#aaaaaa] hover:text-white'
                 }`}
                 title={
                   loopMode === 'one'
@@ -569,7 +565,7 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
               {/* Playback Speed Selector */}
               <button
                 onClick={cyclePlaybackRate}
-                className="player-speed-btn px-2 py-0.5 rounded text-[10px] font-mono text-purple-300 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                className="px-2 py-0.5 rounded-full text-[10px] font-mono text-purple-300 hover:text-white bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 transition-colors cursor-pointer"
                 title="Oynatma Hızı"
               >
                 {playbackRate}x
@@ -577,8 +573,8 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
             </div>
 
             {/* Progress Slider */}
-            <div className="w-full flex items-center gap-2.5 text-[10px] font-mono text-slate-400">
-              <span className="player-time">{formatTime(currentTime)}</span>
+            <div className="w-full flex items-center gap-2.5 text-[11px] font-mono text-[#aaaaaa]">
+              <span>{formatTime(currentTime)}</span>
               <div className="relative flex-1 group flex items-center">
                 <input
                   type="range"
@@ -586,10 +582,10 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
                   max={duration || currentItem.duration || 100}
                   value={currentTime}
                   onChange={handleSeek}
-                  className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                  className="w-full h-1 bg-[#303030] rounded-lg appearance-none cursor-pointer accent-purple-500"
                 />
               </div>
-              <span className="player-time">{formatTime(duration || currentItem.duration || 0)}</span>
+              <span>{formatTime(duration || currentItem.duration || 0)}</span>
             </div>
           </div>
 
@@ -599,29 +595,29 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
             {playlist.length > 1 && (
               <button
                 onClick={() => setShowQueueDrawer(!showQueueDrawer)}
-                className={`px-2.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
+                className={`px-3 py-1 rounded-full border transition-all flex items-center gap-1.5 text-xs font-medium cursor-pointer ${
                   showQueueDrawer
-                    ? 'bg-purple-600 border-purple-400 text-white shadow-glow-purple'
-                    : 'bg-white/5 hover:bg-white/10 border-white/10 text-purple-300 hover:text-white'
+                    ? 'bg-purple-600 text-white border-purple-500'
+                    : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
                 }`}
                 title="Sıradaki Parçalar Listesini Göster"
               >
-                <ListMusic className="w-3.5 h-3.5" />
+                <ListMusic className="w-3.5 h-3.5 text-purple-400" />
                 <span className="text-[11px] font-mono">{currentIndex + 1}/{playlist.length}</span>
                 {showQueueDrawer ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
               </button>
             )}
 
             {/* Volume */}
-            <div className="flex items-center gap-1.5 text-slate-400">
+            <div className="flex items-center gap-1.5 text-[#aaaaaa]">
               <button
                 onClick={toggleMute}
-                className="player-control-btn p-1.5 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
               >
                 {isMuted || volume === 0 ? (
-                  <VolumeX className="w-4 h-4 text-rose-400" />
+                  <VolumeX className="w-4 h-4 text-[#ff4e45]" />
                 ) : (
-                  <Volume2 className="w-4 h-4" />
+                  <Volume2 className="w-4 h-4 text-purple-400" />
                 )}
               </button>
               <input
@@ -631,14 +627,14 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
                 step="0.05"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-16 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                className="w-16 h-1 bg-[#303030] rounded-lg appearance-none cursor-pointer accent-purple-500"
               />
             </div>
 
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="player-control-btn p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
               title={t.closePlayer}
             >
               <X className="w-4 h-4" />

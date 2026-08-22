@@ -37,7 +37,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   autoClipboard: true,
   autoOpenFolder: false,
   themeAccent: 'purple',
-  themeMode: 'dark',
+  themeMode: 'system',
   language: 'tr',
 };
 
@@ -70,51 +70,39 @@ export const App: React.FC = () => {
   const [depsStatus, setDepsStatus] = useState<DependencyStatus | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
+  // System OS theme detection (Dark / Light) with real-time listener
+  const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => {
+      setSystemTheme(e.matches ? 'dark' : 'light');
+    };
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  const language = settings.language || 'tr';
+  const themeMode: ThemeMode = settings.themeMode || 'system';
+  const effectiveTheme: 'dark' | 'light' = themeMode === 'system' ? systemTheme : themeMode;
+  const t = translations[language];
+
+  useEffect(() => {
+    api.syncSettings({ language, themeMode });
+  }, [language, themeMode]);
+
   // Active playlist and current playing track index for YouTube Music style player
   const [activePlaylist, setActivePlaylist] = useState<DownloadItem[]>([]);
   const [activeTrackIndex, setActiveTrackIndex] = useState<number>(0);
 
-  const language = settings.language || 'tr';
-  const themeMode: ThemeMode = settings.themeMode || 'dark';
-  const t = translations[language];
   const isProcessingQueueRef = useRef(false);
   const notifiedIdsRef = useRef(new Set<string>());
-
-  useEffect(() => {
-    const init = async () => {
-      let currentDir = settings.downloadDir;
-      if (!currentDir) {
-        currentDir = await api.getDefaultDownloadDirectory();
-        setSettings((prev) => ({ ...prev, downloadDir: currentDir }));
-      }
-      const deps = await api.checkDependencies();
-      setDepsStatus(deps);
-
-      // Auto-restore downloads if history is empty
-      if (history.length === 0) {
-        try {
-          let scanned = await api.scanHistory(currentDir);
-          if (!scanned || scanned.length === 0) {
-            scanned = INITIAL_RESTORE_TRACKS;
-          }
-          if (scanned && scanned.length > 0) {
-            setHistory(scanned);
-          }
-        } catch (e) {
-          setHistory(INITIAL_RESTORE_TRACKS);
-        }
-      }
-    };
-    init();
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('streampulse_history', JSON.stringify(history));
-  }, [history]);
-
-  useEffect(() => {
-    localStorage.setItem('streampulse_settings', JSON.stringify(settings));
-  }, [settings]);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ message, type });
@@ -130,10 +118,31 @@ export const App: React.FC = () => {
   };
 
   const handleToggleTheme = () => {
-    const nextTheme: ThemeMode = themeMode === 'dark' ? 'light' : 'dark';
-    setSettings((prev) => ({ ...prev, themeMode: nextTheme }));
-    showToast(nextTheme === 'light' ? 'Aydınlık Tema Aktif' : 'Karanlık Tema Aktif', 'info');
+    setSettings((prev) => {
+      const currentMode = prev.themeMode || 'system';
+      let nextMode: ThemeMode;
+      if (currentMode === 'system') {
+        nextMode = 'dark';
+      } else if (currentMode === 'dark') {
+        nextMode = 'light';
+      } else {
+        nextMode = 'system';
+      }
+      const msg =
+        nextMode === 'system'
+          ? (language === 'tr' ? 'Sistem Teması Aktif (Windows Otomatik)' : 'System Theme Active (Windows Auto)')
+          : nextMode === 'dark'
+          ? (language === 'tr' ? 'Karanlık Tema Aktif' : 'Dark Theme Active')
+          : (language === 'tr' ? 'Aydınlık Tema Aktif' : 'Light Theme Active');
+      showToast(msg, 'info');
+      return { ...prev, themeMode: nextMode };
+    });
   };
+
+  const queueRef = useRef<DownloadItem[]>([]);
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
 
   useEffect(() => {
     const cleanup = api.subscribeToEvents({
@@ -154,6 +163,8 @@ export const App: React.FC = () => {
           formatType: data.formatType || 'mp3',
           quality: data.quality || '320',
           source: data.source || 'app',
+          playlistId: data.playlistId,
+          playlistTitle: data.playlistTitle,
           status: 'downloading',
           percent: 0,
           speed: '0 MB/s',
@@ -183,6 +194,8 @@ export const App: React.FC = () => {
               formatType: data.formatType || 'mp3',
               quality: data.quality || '320',
               source: data.source || 'app',
+              playlistId: data.playlistId,
+              playlistTitle: data.playlistTitle,
               status: data.percent >= 99 ? 'converting' : 'downloading',
               percent: data.percent || 0,
               speed: data.speed || '0 MB/s',
@@ -214,24 +227,31 @@ export const App: React.FC = () => {
           origin: { y: 0.8 },
         });
 
-        const rawTitle = data.title || (data.outputFile ? data.outputFile.split(/[/\\]/).pop().replace(/\.[^/.]+$/, '') : 'İndirilen Medya');
-        const isExt = data.source === 'extension';
+        const existingItem = queueRef.current.find((i) => i.id === data.id);
+        const rawTitle = data.title || existingItem?.title || (data.outputFile ? data.outputFile.split(/[/\\]/).pop().replace(/\.[^/.]+$/, '') : 'İndirilen Medya');
+        const isExt = data.source === 'extension' || existingItem?.source === 'extension';
+        const playlistId = data.playlistId || existingItem?.playlistId;
+        const playlistTitle = data.playlistTitle || existingItem?.playlistTitle;
 
         let completedItem: DownloadItem = {
           id: data.id || ('dl_' + Date.now()),
-          url: data.url || '',
+          url: data.url || existingItem?.url || '',
           title: rawTitle,
-          uploader: 'YouTube',
-          thumbnail: data.thumbnail || '',
-          duration: 0,
-          formatType: data.formatType || 'mp3',
-          quality: data.quality || '320',
+          uploader: existingItem?.uploader || 'YouTube',
+          thumbnail: data.thumbnail || existingItem?.thumbnail || '',
+          duration: existingItem?.duration || 0,
+          formatType: data.formatType || existingItem?.formatType || 'mp3',
+          quality: data.quality || existingItem?.quality || '320',
           status: 'completed',
           percent: 100,
           outputFile: data.outputFile,
-          createdAt: Date.now(),
+          playlistId,
+          playlistTitle,
+          playlistIndex: existingItem?.playlistIndex,
+          playlistTotal: existingItem?.playlistTotal,
+          createdAt: existingItem?.createdAt || Date.now(),
           completedAt: Date.now(),
-          source: isExt ? 'extension' : 'app',
+          source: isExt ? 'extension' : (existingItem?.source || 'app'),
         };
 
         setQueue((prev) => {
@@ -239,6 +259,7 @@ export const App: React.FC = () => {
           if (item) {
             completedItem = {
               ...item,
+              ...completedItem,
               status: 'completed',
               percent: 100,
               outputFile: data.outputFile,
@@ -267,19 +288,48 @@ export const App: React.FC = () => {
         if (!notifiedIdsRef.current.has(completedItem.id)) {
           notifiedIdsRef.current.add(completedItem.id);
 
-          const toastMsg = isExt
-            ? `⚡ Tarayıcı eklentisinden indirdiğiniz "${completedItem.title}" başarıyla kütüphaneye eklendi!`
-            : `✅ "${completedItem.title}" başarıyla kütüphaneye eklendi!`;
+          const isTr = language === 'tr';
+          const isPartOfPlaylist = Boolean(completedItem.playlistId);
 
-          showToast(toastMsg, 'success');
+          if (!isPartOfPlaylist) {
+            const toastMsg = isExt
+              ? (isTr ? `⚡ Tarayıcı eklentisinden "${completedItem.title}" kütüphaneye eklendi!` : `⚡ "${completedItem.title}" from browser extension was added to library!`)
+              : (isTr ? `✅ "${completedItem.title}" kütüphaneye eklendi!` : `✅ "${completedItem.title}" added to library!`);
 
-          api.showNotification({
-            title: isExt ? '⚡ Tarayıcı Eklentisinden İndirildi' : '✅ İndirme Tamamlandı',
-            body: isExt 
-              ? `Eklentiden indirdiğiniz "${completedItem.title}" başarıyla kütüphaneye eklendi!`
-              : `"${completedItem.title}" başarıyla indirildi.`,
-            source: isExt ? 'extension' : 'app',
-          });
+            showToast(toastMsg, 'success');
+
+            api.showNotification({
+              title: isExt 
+                ? (isTr ? '⚡ Tarayıcı Eklentisinden İndirildi' : '⚡ Downloaded from Extension')
+                : (isTr ? '✅ İndirme Tamamlandı' : '✅ Download Completed'),
+              body: isExt 
+                ? (isTr ? `Eklentiden indirdiğiniz "${completedItem.title}" kütüphaneye eklendi!` : `"${completedItem.title}" downloaded from extension!`)
+                : (isTr ? `"${completedItem.title}" başarıyla indirildi.` : `"${completedItem.title}" downloaded successfully.`),
+              source: isExt ? 'extension' : 'app',
+            });
+          } else if (completedItem.playlistId) {
+            // Aggregated single notification when entire playlist is finished
+            setTimeout(() => {
+              const currentQueue = queueRef.current;
+              const plId = completedItem.playlistId!;
+              const plItems = currentQueue.filter((q) => q.playlistId === plId);
+              const unfinished = plItems.filter((q) => q.status !== 'completed' && q.status !== 'error');
+
+              if (plItems.length > 0 && unfinished.length === 0 && !notifiedIdsRef.current.has(plId)) {
+                notifiedIdsRef.current.add(plId);
+                const plTitle = completedItem.playlistTitle || 'Çalma Listesi';
+                const count = plItems.length;
+
+                showToast(isTr ? `🎉 "${plTitle}" (${count} parça) tamamlandı!` : `🎉 "${plTitle}" (${count} tracks) completed!`, 'success');
+
+                api.showNotification({
+                  title: isTr ? '🎉 Çalma Listesi İndirildi' : '🎉 Playlist Download Completed',
+                  body: isTr ? `"${plTitle}" listesindeki ${count} parça kütüphanenize eklendi.` : `All ${count} tracks from "${plTitle}" added to library.`,
+                  source: 'app',
+                });
+              }
+            }, 600);
+          }
         }
       },
       onError: (data) => {
@@ -322,6 +372,10 @@ export const App: React.FC = () => {
         outputDir: settings.downloadDir,
         subfolderName: nextItem.subfolderName,
         filenameTemplate: nextItem.filenameTemplate,
+        playlistId: nextItem.playlistId,
+        playlistTitle: nextItem.playlistTitle,
+        title: nextItem.title,
+        thumbnail: nextItem.thumbnail,
       });
 
       isProcessingQueueRef.current = false;
@@ -385,11 +439,23 @@ export const App: React.FC = () => {
       quality: string;
       subfolderName?: string;
       filenameTemplate?: string;
+      playlistId?: string;
+      playlistTitle?: string;
+      playlistIndex?: number;
+      playlistTotal?: number;
     }[]
   ) => {
+    const plId = items[0]?.playlistId || ('pl_' + Date.now());
+    const plTitle = items[0]?.playlistTitle || currentMetadata?.title || 'Çalma Listesi';
+    const plTotal = items.length;
+
     const newItems: DownloadItem[] = items.map((item, idx) => ({
       id: 'dl_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substring(2, 7),
       ...item,
+      playlistId: item.playlistId || plId,
+      playlistTitle: item.playlistTitle || plTitle,
+      playlistIndex: item.playlistIndex || (idx + 1),
+      playlistTotal: item.playlistTotal || plTotal,
       status: 'queued',
       percent: 0,
       speed: '0 MB/s',
@@ -460,13 +526,9 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div
-      className={`h-screen w-screen flex flex-col font-sans select-none relative overflow-hidden transition-colors duration-300 ${
-        themeMode === 'light' ? 'light-theme bg-[#f8fafc] text-slate-800' : 'bg-[#090d16] text-slate-100'
-      }`}
-    >
+    <div className={`h-screen w-screen flex flex-col bg-[#030303] text-[#f1f1f1] select-none overflow-hidden font-['Roboto','YouTube_Sans'] ${effectiveTheme === 'light' ? 'light-theme' : ''}`}>
       <TitleBar
-        queueCount={queue.filter((i) => i.status === 'downloading').length}
+        queueCount={queue.filter((i) => i.status === 'downloading' || i.status === 'queued').length}
         language={language}
         themeMode={themeMode}
         onToggleLanguage={handleToggleLanguage}
@@ -482,21 +544,21 @@ export const App: React.FC = () => {
           language={language}
         />
 
-        <main className="flex-1 overflow-y-auto p-6 relative">
+        <main className="flex-1 overflow-y-auto p-6 relative bg-[#030303]">
           <div className="absolute top-0 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
           <div className="absolute bottom-10 left-10 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
 
           {activeTab === 'downloader' && (
-            <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
+            <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-150">
               <div className="text-center space-y-2 pt-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-xs text-purple-600 font-medium shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-xs text-purple-300 font-medium shadow-sm">
+                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
                   <span>{t.heroBadge}</span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-indigo-300 to-pink-400 bg-clip-text text-transparent">
                   {t.heroTitle}
                 </h1>
-                <p className="text-xs text-slate-400 max-w-lg mx-auto">
+                <p className="text-xs text-[#aaaaaa] max-w-lg mx-auto">
                   {t.heroSubtitle}
                 </p>
               </div>
@@ -518,9 +580,10 @@ export const App: React.FC = () => {
           )}
 
           {activeTab === 'queue' && (
-            <div className="max-w-4xl mx-auto animate-in fade-in duration-200">
+            <div className="max-w-4xl mx-auto animate-in fade-in duration-150">
               <QueueView
                 queue={queue}
+                themeMode={effectiveTheme}
                 onCancel={handleCancelDownload}
                 onRetry={handleRetryDownload}
                 onClearCompleted={handleClearCompleted}
@@ -531,7 +594,7 @@ export const App: React.FC = () => {
           )}
 
           {activeTab === 'history' && (
-            <div className="max-w-5xl mx-auto animate-in fade-in duration-200">
+            <div className="max-w-5xl mx-auto animate-in fade-in duration-150">
               <HistoryView
                 history={history}
                 downloadDir={settings.downloadDir}
@@ -540,13 +603,18 @@ export const App: React.FC = () => {
                 onPlayPlaylist={handlePlayPlaylist}
                 onClearHistory={() => {
                   setHistory([]);
-                  showToast('İndirme geçmişi temizlendi.', 'info');
+                  showToast(language === 'tr' ? 'İndirme geçmişi temizlendi.' : 'Download history cleared.', 'info');
                 }}
                 onDeleteItem={(id) => setHistory((prev) => prev.filter((i) => i.id !== id))}
                 onDeleteMultiple={handleDeleteMultiple}
                 onRestoreHistory={(items) => {
                   setHistory(items);
-                  showToast(`${items.length} parça başarıyla geri yüklendi!`, 'success');
+                  showToast(
+                    language === 'tr'
+                      ? `${items.length} parça başarıyla geri yüklendi!`
+                      : `${items.length} tracks restored successfully!`,
+                    'success'
+                  );
                 }}
                 language={language}
               />
@@ -554,7 +622,7 @@ export const App: React.FC = () => {
           )}
 
           {activeTab === 'settings' && (
-            <div className="max-w-4xl mx-auto animate-in fade-in duration-200">
+            <div className="max-w-4xl mx-auto animate-in fade-in duration-150">
               <SettingsView
                 settings={settings}
                 onUpdateSettings={(newVals) => setSettings((prev) => ({ ...prev, ...newVals }))}
@@ -576,13 +644,13 @@ export const App: React.FC = () => {
         language={language}
       />
 
-      {/* Modern Toast Notification Container */}
+      {/* YouTube Style Snackbar Notification Container */}
       {toast && (
-        <div className="app-toast-container fixed bottom-4 right-4 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-slate-950/95 border border-purple-500/40 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-3 duration-200">
-          {toast.type === 'success' && <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />}
-          {toast.type === 'error' && <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />}
-          {toast.type === 'info' && <Zap className="w-4 h-4 text-purple-400 shrink-0" />}
-          <span className="toast-text text-xs font-semibold !text-white">{toast.message}</span>
+        <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#212121] border border-white/10 shadow-2xl text-white animate-in slide-in-from-bottom-3 duration-150 font-['Roboto','YouTube_Sans']">
+          {toast.type === 'success' && <CheckCircle className="w-4 h-4 text-[#2ba640] shrink-0" />}
+          {toast.type === 'error' && <AlertCircle className="w-4 h-4 text-[#ff4e45] shrink-0" />}
+          {toast.type === 'info' && <span className="w-2 h-2 rounded-full bg-[#3ea6ff] shrink-0"></span>}
+          <span className="text-xs font-medium text-white">{toast.message}</span>
         </div>
       )}
     </div>

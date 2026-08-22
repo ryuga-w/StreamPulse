@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { VideoMetadata, FormatType, PlaylistEntry } from '../types';
+import { VideoMetadata, FormatType } from '../types';
 import {
   Music,
   Video,
@@ -10,8 +10,6 @@ import {
   ListMusic,
   CheckSquare,
   Square,
-  Sparkles,
-  Layers,
   FolderPlus,
   Search,
   Hash,
@@ -72,23 +70,21 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
 
   const formatViews = (views: number) => {
     if (!views) return '0';
-    if (views >= 1_000_000_000) return `${(views / 1_000_000_000).toFixed(1)}B`;
-    if (views >= 1_000_000) return `${(views / 1_000_000).toFixed(1)}M`;
-    if (views >= 1_000) return `${(views / 1_000).toFixed(1)}K`;
+    if (views >= 1_000_000_000) return `${(views / 1_000_000_000).toFixed(1)} Mrd`;
+    if (views >= 1_000_000) return `${(views / 1_000_000).toFixed(1)} Mn`;
+    if (views >= 1_000) return `${(views / 1_000).toFixed(1)} B`;
     return views.toLocaleString();
   };
 
   const audioQualities = [
-    { label: '320 kbps (Extreme / Studio)', value: '320', format: 'mp3', badge: 'Ultra' },
-    { label: '256 kbps (High Quality)', value: '256', format: 'mp3' },
-    { label: '192 kbps (Standard)', value: '192', format: 'mp3' },
-    { label: '128 kbps (Eco / Compact)', value: '128', format: 'mp3' },
-    { label: 'FLAC (Lossless Hi-Res)', value: '0', format: 'flac', badge: 'Lossless' },
-    { label: 'WAV (Uncompressed PCM)', value: '0', format: 'wav' },
-    { label: 'M4A / AAC (Apple Compatible)', value: '256', format: 'm4a' },
+    { label: '320 kbps (Stüdyo Kalite MP3)', value: '320', format: 'mp3', badge: 'Ultra' },
+    { label: '256 kbps (Yüksek Kalite)', value: '256', format: 'mp3' },
+    { label: '192 kbps (Standart)', value: '192', format: 'mp3' },
+    { label: 'FLAC (Kayıpsız Hi-Res)', value: '0', format: 'flac', badge: 'Lossless' },
+    { label: 'WAV (Sıkıştırmasız PCM)', value: '0', format: 'wav' },
+    { label: 'M4A / AAC (Apple Uyumlu)', value: '256', format: 'm4a' },
   ];
 
-  // Filtered playlist entries
   const filteredEntries = useMemo(() => {
     if (!metadata.entries) return [];
     if (!playlistSearch.trim()) return metadata.entries;
@@ -98,7 +94,6 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
     );
   }, [metadata.entries, playlistSearch]);
 
-  // Playlist stats
   const playlistStats = useMemo(() => {
     if (!metadata.entries) return { totalSeconds: 0, totalTracks: 0 };
     const selectedEntries = metadata.entries.filter((e) => selectedPlaylistIds.has(e.id));
@@ -112,6 +107,10 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   const handleStartDownload = () => {
     if (metadata.isPlaylist && metadata.entries && metadata.entries.length > 0) {
       const subfolderName = createSubfolder ? metadata.title : undefined;
+
+      const plId = 'pl_' + (metadata.id || Date.now());
+      const plTitle = metadata.title || 'Çalma Listesi';
+      const plTotal = metadata.entries.filter((entry) => selectedPlaylistIds.has(entry.id)).length;
 
       const itemsToDownload = metadata.entries
         .filter((entry) => selectedPlaylistIds.has(entry.id))
@@ -131,6 +130,10 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
             quality,
             subfolderName,
             filenameTemplate,
+            playlistId: plId,
+            playlistTitle: plTitle,
+            playlistIndex: idx + 1,
+            playlistTotal: plTotal,
           };
         });
 
@@ -169,98 +172,94 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   };
 
   return (
-    <div className="w-full glass-panel rounded-2xl p-6 border border-white/[0.08] shadow-2xl space-y-6">
+    <div className="w-full bg-[#212121] rounded-2xl p-5 border border-white/10 shadow-2xl space-y-5 font-['Roboto','YouTube_Sans']">
       {/* Top Banner / Video & Playlist Header */}
       <div className="flex flex-col md:flex-row gap-5 items-start">
-        <div className="relative w-full md:w-64 h-36 rounded-xl overflow-hidden bg-slate-900 border border-white/10 shrink-0 shadow-lg group">
+        <div className="relative w-full md:w-64 h-36 rounded-xl overflow-hidden bg-[#181818] border border-white/10 shrink-0 shadow-md">
           {metadata.thumbnail ? (
             <img
               src={metadata.thumbnail}
               alt={metadata.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-600">
+            <div className="w-full h-full flex items-center justify-center text-[#aaaaaa]">
               <Film className="w-10 h-10" />
             </div>
           )}
 
           {metadata.duration > 0 && !metadata.isPlaylist && (
-            <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[11px] font-mono text-white flex items-center gap-1 border border-white/10">
-              <Clock className="w-3 h-3 text-purple-400" />
+            <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/90 text-[11px] font-mono text-white flex items-center gap-1 border border-white/10">
+              <Clock className="w-3 h-3 text-[#aaaaaa]" />
               <span>{formatDuration(metadata.duration)}</span>
             </div>
           )}
 
           {metadata.isPlaylist && (
-            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 backdrop-blur-md text-xs font-bold text-white flex items-center gap-1.5 shadow-glow-purple">
-              <ListMusic className="w-4 h-4" />
+            <div className="absolute top-2 left-2 px-2.5 py-1 rounded bg-[#0f0f0f]/90 text-xs font-semibold text-white flex items-center gap-1.5 border border-white/10">
+              <ListMusic className="w-4 h-4 text-[#3ea6ff]" />
               <span>{metadata.videoCount || metadata.entries?.length} Parça</span>
             </div>
           )}
         </div>
 
-        <div className="flex-1 space-y-2.5 min-w-0">
+        <div className="flex-1 space-y-2 min-w-0">
           <div className="flex items-center gap-2">
             {metadata.isPlaylist && (
-              <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-bold uppercase tracking-wider">
-                Oynatma Listesi
+              <span className="px-2 py-0.5 rounded bg-white/10 text-white text-[10px] font-semibold uppercase tracking-wider">
+                Çalma Listesi
               </span>
             )}
-            <h2 className="text-base font-bold text-white leading-snug line-clamp-2">
+            <h2 className="text-base font-semibold text-white leading-snug line-clamp-2">
               {metadata.title}
             </h2>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">
-            <div className="flex items-center gap-1.5 text-purple-300 font-medium">
-              <User className="w-3.5 h-3.5 text-purple-400" />
-              <span className="truncate max-w-[180px]">{metadata.uploader}</span>
+          <div className="flex flex-wrap items-center gap-4 text-xs text-[#aaaaaa]">
+            <div className="flex items-center gap-1.5 text-[#f1f1f1] font-medium">
+              <User className="w-3.5 h-3.5 text-[#aaaaaa]" />
+              <span className="truncate max-w-[200px]">{metadata.uploader}</span>
             </div>
 
             {metadata.isPlaylist ? (
-              <div className="flex items-center gap-1.5 text-slate-300">
-                <Clock className="w-3.5 h-3.5 text-indigo-400" />
+              <div className="flex items-center gap-1.5 text-[#aaaaaa]">
+                <Clock className="w-3.5 h-3.5" />
                 <span>Toplam Süre: {formatDuration(playlistStats.totalSeconds)}</span>
               </div>
             ) : (
               metadata.viewCount > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <Eye className="w-3.5 h-3.5 text-slate-500" />
+                <div className="flex items-center gap-1.5 text-[#aaaaaa]">
+                  <Eye className="w-3.5 h-3.5" />
                   <span>{formatViews(metadata.viewCount)} görüntülenme</span>
                 </div>
               )
             )}
           </div>
 
-          <p className="text-xs text-slate-400/80 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-[#aaaaaa] line-clamp-2 leading-relaxed">
             {metadata.description || (metadata.isPlaylist ? 'Toplu indirilebilir YouTube oynatma listesi.' : 'Açıklama bulunmuyor.')}
           </p>
         </div>
       </div>
 
       {/* Format & Quality Selection */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/[0.06]">
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-purple-400" />
-            <span>Medya Türü</span>
-          </label>
-
-          <div className="grid grid-cols-2 gap-2 p-1 bg-slate-900/90 rounded-xl border border-white/5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/10">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-[#aaaaaa]">Medya Türü</label>
+          <div className="grid grid-cols-2 gap-2 p-1 bg-[#181818] rounded-xl border border-white/5">
             <button
               onClick={() => {
                 setFormatType('mp3');
                 setQuality('320');
               }}
-              className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-all ${
                 formatType !== 'video'
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-glow-purple/50'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-[#0f0f0f] shadow-sm'
+                  : 'text-[#aaaaaa] hover:text-white'
               }`}
             >
               <Music className="w-4 h-4" />
-              <span>Ses (MP3 / Lossless)</span>
+              <span>Ses (MP3 / FLAC)</span>
             </button>
 
             <button
@@ -268,10 +267,10 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
                 setFormatType('video');
                 setQuality(metadata.resolutions[0]?.toString() || '1080');
               }}
-              className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-all ${
                 formatType === 'video'
-                  ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-glow-cyan/50'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-[#0f0f0f] shadow-sm'
+                  : 'text-[#aaaaaa] hover:text-white'
               }`}
             >
               <Video className="w-4 h-4" />
@@ -280,12 +279,8 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Çıkış Kalitesi & Bitrate</span>
-          </label>
-
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-[#aaaaaa]">Çıkış Kalitesi & Bit Hızı</label>
           {formatType !== 'video' ? (
             <select
               value={`${formatType}:${quality}`}
@@ -294,7 +289,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
                 setFormatType(fmt as FormatType);
                 setQuality(q);
               }}
-              className="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500 transition-colors cursor-pointer"
+              className="w-full bg-[#181818] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30 transition-colors cursor-pointer"
             >
               {audioQualities.map((q) => (
                 <option key={`${q.format}:${q.value}`} value={`${q.format}:${q.value}`}>
@@ -306,9 +301,9 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
             <select
               value={quality}
               onChange={(e) => setQuality(e.target.value)}
-              className="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+              className="w-full bg-[#181818] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30 transition-colors cursor-pointer"
             >
-              <option value="best">En Yüksek Mevcut Kalite (Otomatik 4K/1080p)</option>
+              <option value="best">En Yüksek Kalite (Otomatik 4K / 1080p)</option>
               {metadata.resolutions.map((res) => (
                 <option key={res} value={res.toString()}>
                   {res}p {res >= 2160 ? '(4K Ultra HD)' : res >= 1080 ? '(Full HD 1080p 60fps)' : res >= 720 ? '(HD 720p)' : '(SD)'}
@@ -321,57 +316,55 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
 
       {/* Playlist Controls & Batch Options */}
       {metadata.isPlaylist && metadata.entries && metadata.entries.length > 0 && (
-        <div className="space-y-4 pt-4 border-t border-white/[0.06] bg-slate-950/30 p-4 rounded-2xl border border-purple-500/15">
-          {/* Subfolder & Track numbering checkboxes */}
+        <div className="space-y-3 pt-3 border-t border-white/10 bg-[#181818] p-4 rounded-xl border border-white/5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label className="flex items-center gap-2.5 text-xs text-slate-200 cursor-pointer p-2.5 bg-slate-900/80 rounded-xl border border-white/5 hover:border-purple-500/30 transition-colors">
+            <label className="flex items-center gap-2.5 text-xs text-white cursor-pointer p-2 bg-[#212121] rounded-lg border border-white/5">
               <input
                 type="checkbox"
                 checked={createSubfolder}
                 onChange={(e) => setCreateSubfolder(e.target.checked)}
-                className="w-4 h-4 accent-purple-600 rounded"
+                className="w-4 h-4 accent-[#ff0000] rounded"
               />
               <div className="flex items-center gap-1.5">
-                <FolderPlus className="w-4 h-4 text-purple-400" />
-                <span>Oynatma Listesi İçin Özel Klasör Oluştur</span>
+                <FolderPlus className="w-4 h-4 text-[#3ea6ff]" />
+                <span>Çalma Listesi İçin Özel Klasör Oluştur</span>
               </div>
             </label>
 
-            <label className="flex items-center gap-2.5 text-xs text-slate-200 cursor-pointer p-2.5 bg-slate-900/80 rounded-xl border border-white/5 hover:border-purple-500/30 transition-colors">
+            <label className="flex items-center gap-2.5 text-xs text-white cursor-pointer p-2 bg-[#212121] rounded-lg border border-white/5">
               <input
                 type="checkbox"
                 checked={prependTrackNumber}
                 onChange={(e) => setPrependTrackNumber(e.target.checked)}
-                className="w-4 h-4 accent-purple-600 rounded"
+                className="w-4 h-4 accent-[#ff0000] rounded"
               />
               <div className="flex items-center gap-1.5">
-                <Hash className="w-4 h-4 text-indigo-400" />
+                <Hash className="w-4 h-4 text-[#3ea6ff]" />
                 <span>Şarkı Numarası Ekle (01 - Şarkı Adı.mp3)</span>
               </div>
             </label>
           </div>
 
-          {/* Search inside playlist & Bulk toggle */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="relative w-full sm:w-72">
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-[#717171] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={playlistSearch}
                 onChange={(e) => setPlaylistSearch(e.target.value)}
-                placeholder="Liste içinde şarkı veya sanatçı ara..."
-                className="w-full bg-slate-900/90 border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+                placeholder="Liste içinde ara..."
+                className="w-full bg-[#212121] border border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-[#717171] focus:outline-none focus:border-white/30 transition-colors"
               />
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-              <span className="text-xs text-slate-400">
-                Seçili: <strong className="text-purple-300 font-mono">{selectedPlaylistIds.size}</strong> / {metadata.entries.length}
+              <span className="text-xs text-[#aaaaaa]">
+                Seçili: <strong className="text-white font-mono">{selectedPlaylistIds.size}</strong> / {metadata.entries.length}
               </span>
 
               <button
                 onClick={togglePlaylistSelectAll}
-                className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1.5 font-medium px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 transition-colors"
+                className="text-xs text-[#3ea6ff] hover:text-white flex items-center gap-1.5 font-medium px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
               >
                 {selectedPlaylistIds.size === metadata.entries.length ? (
                   <>
@@ -388,8 +381,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
             </div>
           </div>
 
-          {/* Scrollable Track list */}
-          <div className="max-h-64 overflow-y-auto space-y-1.5 pr-2 bg-slate-950/60 p-2 rounded-xl border border-white/5">
+          <div className="max-h-60 overflow-y-auto space-y-1 pr-1 bg-[#121212] p-2 rounded-lg border border-white/5">
             {filteredEntries.map((entry, index) => {
               const isSelected = selectedPlaylistIds.has(entry.id);
               const trackNum = (entry.index || index + 1).toString().padStart(2, '0');
@@ -397,18 +389,18 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
                 <div
                   key={entry.id}
                   onClick={() => togglePlaylistEntry(entry.id)}
-                  className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer text-xs transition-all ${
+                  className={`flex items-center justify-between p-2 rounded-lg cursor-pointer text-xs transition-all ${
                     isSelected
-                      ? 'bg-purple-950/50 border border-purple-500/30 text-white shadow-sm'
-                      : 'hover:bg-white/5 text-slate-400 opacity-60'
+                      ? 'bg-white/10 text-white'
+                      : 'hover:bg-white/5 text-[#aaaaaa] opacity-60'
                   }`}
                 >
                   <div className="flex items-center gap-3 truncate">
                     <div
-                      className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors ${
+                      className={`w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors ${
                         isSelected
-                          ? 'bg-purple-600 text-white shadow-glow-purple'
-                          : 'bg-slate-800 text-slate-500 border border-white/5'
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                          : 'bg-[#212121] text-[#717171]'
                       }`}
                     >
                       {isSelected ? <Check className="w-3 h-3" /> : trackNum}
@@ -418,19 +410,19 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
                       <img
                         src={entry.thumbnail}
                         alt={entry.title}
-                        className="w-10 h-7 rounded object-cover bg-slate-800 shrink-0"
+                        className="w-10 h-7 rounded object-cover bg-[#212121] shrink-0"
                       />
                     )}
 
                     <div className="truncate">
                       <div className="font-medium text-white truncate">{entry.title}</div>
                       {entry.uploader && (
-                        <div className="text-[10px] text-slate-400 truncate">{entry.uploader}</div>
+                        <div className="text-[10px] text-[#aaaaaa] truncate">{entry.uploader}</div>
                       )}
                     </div>
                   </div>
 
-                  <span className="text-[10px] font-mono text-purple-300 shrink-0 ml-3">
+                  <span className="text-[10px] font-mono text-[#aaaaaa] shrink-0 ml-3">
                     {formatDuration(entry.duration)}
                   </span>
                 </div>
@@ -445,12 +437,12 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
         <button
           onClick={handleStartDownload}
           disabled={metadata.isPlaylist && selectedPlaylistIds.size === 0}
-          className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 disabled:opacity-50 text-white font-bold text-sm shadow-glow-purple flex items-center justify-center gap-2.5 transition-all duration-200"
+          className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-40 text-white font-bold text-sm shadow-glow-purple flex items-center justify-center gap-2.5 transition-all duration-150 cursor-pointer"
         >
           <Download className="w-4 h-4" />
           <span>
             {metadata.isPlaylist
-              ? `📁 Klasör Halinde İndir (${selectedPlaylistIds.size} Parça • ${formatType.toUpperCase()})`
+              ? `Klasör Halinde İndir (${selectedPlaylistIds.size} Parça • ${formatType.toUpperCase()})`
               : `Hemen İndir (${formatType.toUpperCase()} - ${formatType === 'video' ? (quality === 'best' ? 'Best' : `${quality}p`) : `${quality === '0' ? 'Lossless' : `${quality}kbps`}`})`}
           </span>
         </button>

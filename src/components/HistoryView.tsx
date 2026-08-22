@@ -302,13 +302,13 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
   // Empty State with automatic Restore button
   if (history.length === 0) {
     return (
-      <div className="w-full h-96 flex flex-col items-center justify-center text-center p-8 glass-panel rounded-2xl border border-white/[0.06] space-y-4">
-        <div className="empty-state-icon-box w-16 h-16 rounded-2xl bg-indigo-950/40 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shadow-glow-cyan/20">
-          <History className="w-8 h-8" />
+      <div className="w-full h-96 flex flex-col items-center justify-center text-center p-8 bg-[#212121] rounded-2xl border border-white/5 space-y-4 font-['Roboto','YouTube_Sans']">
+        <div className="w-14 h-14 rounded-full bg-[#181818] border border-white/10 flex items-center justify-center text-[#aaaaaa]">
+          <History className="w-6 h-6" />
         </div>
         <div className="space-y-1">
-          <h3 className="text-base font-bold text-white">{t.historyEmptyTitle}</h3>
-          <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
+          <h3 className="text-sm font-semibold text-white">{t.historyEmptyTitle}</h3>
+          <p className="text-xs text-[#aaaaaa] max-w-sm leading-relaxed">
             {language === 'tr'
               ? 'İndirdiğiniz parçalar veya oynatma listeleri burada listelenir. Bilgisayarınızdaki mevcut indirmeleri hemen içe aktarabilirsiniz.'
               : 'Your downloaded tracks and playlists are listed here. You can scan and restore previously downloaded files.'}
@@ -318,9 +318,9 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
         <button
           onClick={handleRestoreFromDisk}
           disabled={isScanning}
-          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs shadow-glow-purple flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+          className="px-5 py-2.5 rounded-full bg-white text-[#0f0f0f] hover:bg-[#e5e5e5] font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
         >
-          <RotateCw className={`w-4 h-4 ${isScanning ? 'animate-spin' : ''}`} />
+          <RotateCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
           <span>{isScanning ? 'Taranıyor...' : 'İndirilenleri Tara & Geçmişi Geri Yükle'}</span>
         </button>
       </div>
@@ -330,49 +330,49 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
   const folderKeys = Object.keys(folderGroups.groups);
 
   return (
-    <div className="w-full space-y-4 pb-28 relative">
-      {/* Top Search & Filter Bar - Strict Single Row Alignment */}
+    <div className="w-full space-y-4 pb-28 relative font-['Roboto','YouTube_Sans']">
+      {/* Top Search & Filter Bar */}
       <div className="flex items-center justify-between gap-2.5 w-full flex-nowrap">
         {/* Left: Search Bar */}
         <div className="relative flex-1 min-w-[180px] max-w-xs">
-          <Search className="w-4 h-4 text-purple-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#aaaaaa] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={t.searchHistoryPlaceholder}
-            className="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 transition-colors h-10"
+            className="w-full bg-[#212121] border border-white/10 rounded-full pl-9 pr-3 py-2 text-xs text-white placeholder-[#717171] focus:outline-none focus:border-white/30 transition-colors h-9"
           />
         </div>
 
-        {/* Right: All Action Controls locked to single horizontal row */}
+        {/* Right: Action Controls */}
         <div className="flex items-center gap-2 shrink-0 flex-nowrap">
           {/* Select All Toggle Button */}
           <button
             onClick={toggleSelectAll}
-            className="h-10 flex items-center gap-1.5 px-3 rounded-xl bg-purple-600/15 hover:bg-purple-600/25 border border-purple-500/30 text-purple-300 text-xs font-semibold transition-colors cursor-pointer shrink-0"
+            className="h-9 flex items-center gap-1.5 px-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[#aaaaaa] hover:text-white text-xs font-medium transition-colors cursor-pointer shrink-0"
           >
             {selectedIds.size === filteredHistory.length && filteredHistory.length > 0 ? (
               <>
-                <CheckSquare className="w-3.5 h-3.5 text-purple-400" />
+                <CheckSquare className="w-3.5 h-3.5 text-[#3ea6ff]" />
                 <span className="hidden sm:inline">{language === 'tr' ? 'Seçimi Kaldır' : 'Deselect All'}</span>
               </>
             ) : (
               <>
-                <Square className="w-3.5 h-3.5 text-purple-400" />
+                <Square className="w-3.5 h-3.5 text-[#aaaaaa]" />
                 <span>{language === 'tr' ? 'Tümünü Seç' : 'Select All'} ({filteredHistory.length})</span>
               </>
             )}
           </button>
 
           {/* View Mode Toggle: Folders vs List */}
-          <div className="h-10 flex items-center p-1 bg-slate-900/90 rounded-xl border border-white/10 text-xs shrink-0">
+          <div className="h-9 flex items-center p-0.5 bg-[#212121] rounded-full border border-white/10 text-xs shrink-0">
             <button
               onClick={() => setViewMode('folders')}
-              className={`h-full px-2.5 rounded-lg transition-all flex items-center gap-1.5 font-medium cursor-pointer ${
+              className={`h-full px-3 rounded-full transition-all flex items-center gap-1.5 font-medium cursor-pointer ${
                 viewMode === 'folders'
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-glow-purple/40 font-semibold'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-[#0f0f0f] font-semibold'
+                  : 'text-[#aaaaaa] hover:text-white'
               }`}
             >
               <FolderTree className="w-3.5 h-3.5" />
@@ -380,10 +380,10 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`h-full px-2.5 rounded-lg transition-all flex items-center gap-1.5 font-medium cursor-pointer ${
+              className={`h-full px-3 rounded-full transition-all flex items-center gap-1.5 font-medium cursor-pointer ${
                 viewMode === 'list'
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-glow-purple/40 font-semibold'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-[#0f0f0f] font-semibold'
+                  : 'text-[#aaaaaa] hover:text-white'
               }`}
             >
               <List className="w-3.5 h-3.5" />
@@ -392,31 +392,31 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
           </div>
 
           {/* Type Filter */}
-          <div className="h-10 flex items-center p-1 bg-slate-900/80 rounded-xl border border-white/10 text-xs shrink-0">
+          <div className="h-9 flex items-center p-0.5 bg-[#212121] rounded-full border border-white/10 text-xs shrink-0">
             <button
               onClick={() => setFilterType('all')}
-              className={`h-full px-2.5 rounded-lg transition-colors font-medium cursor-pointer ${
-                filterType === 'all' ? 'bg-white/15 text-white font-semibold' : 'text-slate-400 hover:text-white'
+              className={`h-full px-3 rounded-full transition-colors font-medium cursor-pointer ${
+                filterType === 'all' ? 'bg-white text-[#0f0f0f] font-semibold' : 'text-[#aaaaaa] hover:text-white'
               }`}
             >
               {t.filterAll}
             </button>
             <button
               onClick={() => setFilterType('audio')}
-              className={`h-full px-2.5 rounded-lg transition-colors flex items-center gap-1 font-medium cursor-pointer ${
-                filterType === 'audio' ? 'bg-white/15 text-white font-semibold' : 'text-slate-400 hover:text-white'
+              className={`h-full px-2.5 rounded-full transition-colors flex items-center gap-1 font-medium cursor-pointer ${
+                filterType === 'audio' ? 'bg-white text-[#0f0f0f] font-semibold' : 'text-[#aaaaaa] hover:text-white'
               }`}
             >
-              <Music className="w-3 h-3 text-purple-400" />
+              <Music className="w-3 h-3" />
               <span>{t.filterAudio}</span>
             </button>
             <button
               onClick={() => setFilterType('video')}
-              className={`h-full px-2.5 rounded-lg transition-colors flex items-center gap-1 font-medium cursor-pointer ${
-                filterType === 'video' ? 'bg-white/15 text-white font-semibold' : 'text-slate-400 hover:text-white'
+              className={`h-full px-2.5 rounded-full transition-colors flex items-center gap-1 font-medium cursor-pointer ${
+                filterType === 'video' ? 'bg-white text-[#0f0f0f] font-semibold' : 'text-[#aaaaaa] hover:text-white'
               }`}
             >
-              <Video className="w-3 h-3 text-indigo-400" />
+              <Video className="w-3 h-3" />
               <span>{t.filterVideo}</span>
             </button>
           </div>
@@ -425,19 +425,19 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
           <button
             onClick={handleRestoreFromDisk}
             disabled={isScanning}
-            className="h-10 w-10 flex items-center justify-center text-purple-400 hover:text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 rounded-xl border border-purple-500/20 transition-colors cursor-pointer shrink-0"
+            className="h-9 w-9 flex items-center justify-center text-[#aaaaaa] hover:text-white bg-[#212121] hover:bg-white/10 rounded-full border border-white/10 transition-colors cursor-pointer shrink-0"
             title="İndirilenler Klasörünü Tara & Eşitle"
           >
-            <RotateCw className={`w-4 h-4 ${isScanning ? 'animate-spin' : ''}`} />
+            <RotateCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
           </button>
 
-          {/* Clear History Button with Confirmation Prompt */}
+          {/* Clear History Button */}
           <button
             onClick={promptClearHistory}
-            className="h-10 w-10 flex items-center justify-center text-slate-400 hover:text-rose-400 bg-slate-900/80 hover:bg-rose-500/10 rounded-xl border border-white/10 transition-colors cursor-pointer shrink-0"
+            className="h-9 w-9 flex items-center justify-center text-[#aaaaaa] hover:text-[#ff4e45] bg-[#212121] hover:bg-white/10 rounded-full border border-white/10 transition-colors cursor-pointer shrink-0"
             title={t.clearHistory}
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
@@ -446,7 +446,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
       {/* 1. FOLDER / PLAYLIST VIEW */}
       {/* ========================================================================= */}
       {viewMode === 'folders' && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {folderKeys.map((folderName) => {
             const tracks = folderGroups.groups[folderName];
             const isExpanded = expandedFolders.has(folderName);
@@ -456,21 +456,21 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
             return (
               <div
                 key={folderName}
-                className="glass-card rounded-2xl border border-white/[0.08] overflow-hidden transition-all duration-200 shadow-lg"
+                className="bg-[#212121] rounded-xl border border-white/5 overflow-hidden transition-all duration-150"
               >
                 {/* Playlist Folder Header */}
-                <div className="p-4 bg-gradient-to-r from-purple-950/40 via-slate-900/60 to-slate-900/90 flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/[0.06]">
-                  <div className="flex items-center gap-3.5 min-w-0">
+                <div className="p-3.5 bg-[#181818] flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/5">
+                  <div className="flex items-center gap-3 min-w-0">
                     {/* Folder Checkbox */}
                     <button
                       onClick={(e) => toggleSelectFolder(folderName, tracks, e)}
-                      className="p-1 text-slate-400 hover:text-white cursor-pointer shrink-0"
+                      className="p-1 text-[#aaaaaa] hover:text-white cursor-pointer shrink-0"
                     >
                       {allFolderSelected ? (
-                        <CheckSquare className="w-4 h-4 text-purple-400" />
+                        <CheckSquare className="w-4 h-4 text-[#3ea6ff]" />
                       ) : someFolderSelected ? (
-                        <div className="w-4 h-4 rounded border border-purple-400 bg-purple-500/20 flex items-center justify-center">
-                          <div className="w-2 h-0.5 bg-purple-400"></div>
+                        <div className="w-4 h-4 rounded border border-[#3ea6ff] bg-[#3ea6ff]/20 flex items-center justify-center">
+                          <div className="w-2 h-0.5 bg-[#3ea6ff]"></div>
                         </div>
                       ) : (
                         <Square className="w-4 h-4" />
@@ -480,11 +480,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                     {/* Collage / Thumbnail */}
                     <div
                       onClick={() => toggleFolderExpand(folderName)}
-                      className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-900 border border-purple-500/20 shrink-0 shadow-glow-purple/20 cursor-pointer group"
+                      className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#212121] border border-white/10 shrink-0 cursor-pointer group"
                     >
                       <div className="grid grid-cols-2 w-full h-full">
                         {tracks.slice(0, 4).map((t, idx) => (
-                          <div key={idx} className="relative overflow-hidden bg-slate-800">
+                          <div key={idx} className="relative overflow-hidden bg-[#181818]">
                             <img src={getTrackThumbnail(t, idx)} alt="" className="w-full h-full object-cover" />
                           </div>
                         ))}
@@ -493,27 +493,27 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
                     <div className="min-w-0 cursor-pointer" onClick={() => toggleFolderExpand(folderName)}>
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] font-bold uppercase tracking-wider">
+                        <span className="px-1.5 py-0.2 rounded bg-white/10 text-white text-[9px] font-semibold uppercase tracking-wider">
                           {t.playlistFolderBadge}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-mono font-medium">
+                        <span className="text-[11px] text-[#aaaaaa] font-mono">
                           {tracks.length} {t.tracks}
                         </span>
                       </div>
-                      <h3 className="text-sm font-bold text-white truncate group-hover:text-purple-300 transition-colors mt-0.5">
+                      <h3 className="text-sm font-semibold text-white truncate mt-0.5">
                         {folderName}
                       </h3>
-                      <p className="text-[10px] text-slate-400 font-mono mt-0.5 truncate">
+                      <p className="text-[11px] text-[#aaaaaa] mt-0.5 truncate">
                         MP3 • 320kbps • {formatDate(tracks[0]?.completedAt)}
                       </p>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+                  <div className="flex items-center gap-1.5 shrink-0 self-end md:self-center">
                     <button
                       onClick={() => handlePlayAlbum(tracks, 0)}
-                      className="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-glow-purple transition-all cursor-pointer"
+                      className="px-3.5 py-1.5 bg-white text-[#0f0f0f] hover:bg-[#e5e5e5] rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
                       <span>{t.playPlaylist} ({tracks.length})</span>
@@ -521,25 +521,23 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
                     <button
                       onClick={() => handleExportPlaylistToUsb(folderName, tracks)}
-                      className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                      className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-[#aaaaaa] hover:text-white rounded-full transition-colors cursor-pointer"
                       title={t.exportToUsb}
                     >
-                      <Usb className="w-3.5 h-3.5 text-purple-400" />
-                      <span className="hidden sm:inline">{t.exportToUsb}</span>
+                      <Usb className="w-3.5 h-3.5" />
                     </button>
 
                     <button
                       onClick={() => onOpenFolder(tracks[0]?.outputFile)}
-                      className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                      className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-[#aaaaaa] hover:text-white rounded-full transition-colors cursor-pointer"
                       title={t.openFolder}
                     >
-                      <FolderOpen className="w-3.5 h-3.5 text-indigo-400" />
-                      <span className="hidden sm:inline">{t.openFolder}</span>
+                      <FolderOpen className="w-3.5 h-3.5" />
                     </button>
 
                     <button
                       onClick={() => toggleFolderExpand(folderName)}
-                      className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors cursor-pointer"
+                      className="p-2 text-[#aaaaaa] hover:text-white hover:bg-white/5 rounded-full transition-colors cursor-pointer"
                     >
                       {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </button>
@@ -548,73 +546,73 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
                 {/* Expanded Tracks Accordion */}
                 {isExpanded && (
-                  <div className="p-3 bg-slate-950/60 divide-y divide-white/[0.04] space-y-1">
+                  <div className="p-2 bg-[#181818] divide-y divide-white/5 space-y-0.5">
                     {tracks.map((track, trackIdx) => {
                       const isSelected = selectedIds.has(track.id);
                       return (
                         <div
                           key={track.id}
-                          className={`flex items-center justify-between p-2 rounded-xl transition-colors text-xs group ${
-                            isSelected ? 'bg-purple-600/15' : 'hover:bg-white/5'
+                          className={`flex items-center justify-between p-2 rounded-lg transition-colors text-xs group ${
+                            isSelected ? 'bg-white/10' : 'hover:bg-white/5'
                           }`}
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             <button
                               onClick={(e) => toggleSelectItem(track.id, e)}
-                              className="p-1 text-slate-500 hover:text-white cursor-pointer"
+                              className="p-1 text-[#717171] hover:text-white cursor-pointer"
                             >
                               {isSelected ? (
-                                <CheckSquare className="w-3.5 h-3.5 text-purple-400" />
+                                <CheckSquare className="w-3.5 h-3.5 text-[#3ea6ff]" />
                               ) : (
                                 <Square className="w-3.5 h-3.5" />
                               )}
                             </button>
 
-                            <span className="w-6 text-center text-[10px] font-mono text-purple-400 font-bold">
+                            <span className="w-5 text-center text-[11px] font-mono text-[#aaaaaa]">
                               #{(trackIdx + 1).toString().padStart(2, '0')}
                             </span>
 
                             <img
                               src={getTrackThumbnail(track, trackIdx)}
                               alt=""
-                              className="w-8 h-8 rounded-lg object-cover bg-slate-900 shrink-0"
+                              className="w-8 h-8 rounded object-cover bg-[#212121] shrink-0"
                             />
 
                             <div className="truncate">
-                              <div className="truncate font-medium text-white group-hover:text-purple-300">
+                              <div className="truncate font-medium text-white">
                                 {track.title}
                               </div>
-                              <div className="text-[10px] text-slate-400 truncate">
+                              <div className="text-[10px] text-[#aaaaaa] truncate">
                                 {track.uploader}
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1.5 shrink-0">
+                          <div className="flex items-center gap-1 shrink-0">
                             <button
                               onClick={() => handlePlayAlbum(tracks, trackIdx)}
-                              className="p-1.5 text-slate-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                               title="Bu parçadan itibaren çal"
                             >
                               <Play className="w-3.5 h-3.5 fill-current" />
                             </button>
                             <button
                               onClick={() => handleExportSingleToUsb(track)}
-                              className="p-1.5 text-slate-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                               title={t.exportToUsb}
                             >
                               <Usb className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => onOpenFolder(track.outputFile)}
-                              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                               title={t.openFolder}
                             >
                               <Folder className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => onDeleteItem(track.id)}
-                              className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-[#717171] hover:text-[#ff4e45] hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                               title="Sil"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -631,41 +629,41 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
           {/* Single items section in folder mode */}
           {folderGroups.singles.length > 0 && (
-            <div className="space-y-2 pt-4">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1 flex items-center gap-1.5">
-                <Music className="w-3.5 h-3.5 text-purple-400" />
+            <div className="space-y-2 pt-3">
+              <h4 className="text-xs font-semibold text-[#aaaaaa] uppercase tracking-wider px-1 flex items-center gap-1.5">
+                <Music className="w-3.5 h-3.5" />
                 <span>{t.singleDownloads} ({folderGroups.singles.length})</span>
               </h4>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {folderGroups.singles.map((item) => {
                   const isSelected = selectedIds.has(item.id);
                   return (
                     <div
                       key={item.id}
-                      className={`glass-card rounded-xl p-3 border border-white/[0.06] flex items-center justify-between gap-3 transition-colors ${
-                        isSelected ? 'bg-purple-600/15 border-purple-500/30' : ''
+                      className={`bg-[#212121] rounded-xl p-3 border border-white/5 flex items-center justify-between gap-3 transition-colors ${
+                        isSelected ? 'bg-white/10' : ''
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <button
                           onClick={(e) => toggleSelectItem(item.id, e)}
-                          className="p-1 text-slate-400 hover:text-white cursor-pointer"
+                          className="p-1 text-[#aaaaaa] hover:text-white cursor-pointer"
                         >
                           {isSelected ? (
-                            <CheckSquare className="w-4 h-4 text-purple-400" />
+                            <CheckSquare className="w-4 h-4 text-[#3ea6ff]" />
                           ) : (
                             <Square className="w-4 h-4" />
                           )}
                         </button>
 
-                        <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-slate-900 border border-white/10 shrink-0">
+                        <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-[#181818] border border-white/10 shrink-0">
                           <img src={getTrackThumbnail(item, 0)} alt="" className="w-full h-full object-cover" />
                         </div>
 
                         <div className="min-w-0">
                           <h4 className="text-xs font-semibold text-white truncate">{item.title}</h4>
-                          <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                          <p className="text-[11px] text-[#aaaaaa] truncate mt-0.5">
                             {item.uploader} • {item.formatType.toUpperCase()} ({item.quality}k) • {formatDate(item.completedAt)}
                           </p>
                         </div>
@@ -674,7 +672,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                       <div className="flex items-center gap-1.5 shrink-0">
                         <button
                           onClick={() => handlePlaySingle(item)}
-                          className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-glow-purple transition-all cursor-pointer"
+                          className="px-3 py-1.5 bg-white text-[#0f0f0f] hover:bg-[#e5e5e5] rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
                         >
                           <Play className="w-3.5 h-3.5 fill-current" />
                           <span>{t.playInApp}</span>
@@ -682,7 +680,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
                         <button
                           onClick={() => handleExportSingleToUsb(item)}
-                          className="p-1.5 text-slate-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-xl transition-colors cursor-pointer"
+                          className="p-2 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                           title={t.exportToUsb}
                         >
                           <Usb className="w-3.5 h-3.5" />
@@ -690,7 +688,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
                         <button
                           onClick={() => onOpenFolder(item.outputFile)}
-                          className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
+                          className="p-2 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                           title={t.openFolder}
                         >
                           <Folder className="w-3.5 h-3.5" />
@@ -698,7 +696,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
                         <button
                           onClick={() => onDeleteItem(item.id)}
-                          className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer"
+                          className="p-2 text-[#717171] hover:text-[#ff4e45] hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                           title="Sil"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -717,44 +715,44 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
       {/* 2. FLAT LIST VIEW */}
       {/* ========================================================================= */}
       {viewMode === 'list' && (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {filteredHistory.map((item, idx) => {
             const isSelected = selectedIds.has(item.id);
             return (
               <div
                 key={item.id}
-                className={`glass-card rounded-2xl p-3.5 border border-white/[0.06] flex items-center justify-between gap-3 transition-colors ${
-                  isSelected ? 'bg-purple-600/15 border-purple-500/30' : ''
+                className={`bg-[#212121] rounded-xl p-3 border border-white/5 flex items-center justify-between gap-3 transition-colors ${
+                  isSelected ? 'bg-white/10' : ''
                 }`}
               >
-                <div className="flex items-center gap-3.5 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
                   <button
                     onClick={(e) => toggleSelectItem(item.id, e)}
-                    className="p-1 text-slate-400 hover:text-white cursor-pointer shrink-0"
+                    className="p-1 text-[#aaaaaa] hover:text-white cursor-pointer shrink-0"
                   >
                     {isSelected ? (
-                      <CheckSquare className="w-4 h-4 text-purple-400" />
+                      <CheckSquare className="w-4 h-4 text-[#3ea6ff]" />
                     ) : (
                       <Square className="w-4 h-4" />
                     )}
                   </button>
 
-                  <span className="w-5 text-center text-[11px] font-mono text-slate-500 shrink-0">
+                  <span className="w-5 text-center text-[11px] font-mono text-[#717171] shrink-0">
                     {idx + 1}.
                   </span>
 
-                  <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-900 border border-white/10 shrink-0">
+                  <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-[#181818] border border-white/10 shrink-0">
                     <img src={getTrackThumbnail(item, idx)} alt="" className="w-full h-full object-cover" />
                   </div>
 
                   <div className="min-w-0">
                     <h4 className="text-xs font-semibold text-white truncate max-w-md">{item.title}</h4>
-                    <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5 font-mono">
+                    <div className="flex items-center gap-2 text-[11px] text-[#aaaaaa] mt-0.5">
                       <span className="truncate">{item.uploader}</span>
                       {item.subfolderName && (
                         <>
                           <span>•</span>
-                          <span className="text-purple-400 font-semibold truncate">📁 {item.subfolderName}</span>
+                          <span className="text-[#3ea6ff] font-medium truncate">{item.subfolderName}</span>
                         </>
                       )}
                       <span>•</span>
@@ -765,10 +763,10 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     onClick={() => handlePlaySingle(item)}
-                    className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-glow-purple transition-all cursor-pointer"
+                    className="px-3.5 py-1.5 bg-white text-[#0f0f0f] hover:bg-[#e5e5e5] rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
                     <span>{t.playInApp}</span>
@@ -776,7 +774,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
                   <button
                     onClick={() => handleExportSingleToUsb(item)}
-                    className="p-2 text-slate-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-xl transition-colors cursor-pointer"
+                    className="p-2 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                     title={t.exportToUsb}
                   >
                     <Usb className="w-3.5 h-3.5" />
@@ -784,7 +782,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
                   <button
                     onClick={() => onOpenFolder(item.outputFile)}
-                    className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
+                    className="p-2 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                     title={t.openFolder}
                   >
                     <Folder className="w-3.5 h-3.5" />
@@ -792,7 +790,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
                   <button
                     onClick={() => onDeleteItem(item.id)}
-                    className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer"
+                    className="p-2 text-[#717171] hover:text-[#ff4e45] hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                     title="Sil"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -805,13 +803,13 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* FLOATING GLASSMORHPIC BULK ACTION BAR */}
+      {/* FLOATING BULK ACTION BAR */}
       {/* ========================================================================= */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-[#0d1322]/95 backdrop-blur-2xl border border-purple-500/40 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] px-4 py-2.5 flex items-center gap-4 animate-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-[#212121] border border-purple-500/40 rounded-full shadow-2xl px-4 py-2 flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-150">
           <div className="flex items-center gap-2 border-r border-white/10 pr-3">
             <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
-            <span className="text-xs font-bold text-white font-mono">
+            <span className="text-xs font-semibold text-white font-mono">
               {selectedIds.size} {language === 'tr' ? 'Seçildi' : 'Selected'}
             </span>
           </div>
@@ -820,7 +818,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
             {/* Bulk Play */}
             <button
               onClick={handleBulkPlay}
-              className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-glow-purple transition-all cursor-pointer"
+              className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>{language === 'tr' ? 'Seçilenleri Çal' : 'Play Selected'}</span>
@@ -829,16 +827,16 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
             {/* Bulk USB Export */}
             <button
               onClick={handleBulkUsbExport}
-              className="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-200 hover:text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 rounded-full text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <Usb className="w-3.5 h-3.5 text-purple-400" />
+              <Usb className="w-3.5 h-3.5" />
               <span>{language === 'tr' ? 'USB\'ye Aktar' : 'Export to USB'}</span>
             </button>
 
             {/* Bulk Delete */}
             <button
               onClick={promptBulkDelete}
-              className="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-400 rounded-full text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>{language === 'tr' ? 'Sil' : 'Delete'}</span>
@@ -847,7 +845,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
             {/* Clear Selection */}
             <button
               onClick={() => setSelectedIds(new Set())}
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer ml-1"
+              className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
               title="Seçimi Temizle"
             >
               <X className="w-4 h-4" />
@@ -856,34 +854,32 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODERN GLASSMORHPIC CONFIRMATION DIALOG MODAL */}
-      {/* ========================================================================= */}
+      {/* CONFIRMATION DIALOG MODAL */}
       {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="usb-modal-card relative w-full max-w-md bg-[#0c1222] border border-rose-500/30 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.85)] p-6 space-y-4 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="relative w-full max-w-md bg-[#212121] border border-white/10 rounded-2xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-150">
             <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+              <div className="w-10 h-10 rounded-full bg-[#ff4e45]/20 border border-[#ff4e45]/30 flex items-center justify-center text-[#ff4e45] shrink-0">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div className="space-y-1">
-                <h3 className="modal-title text-sm font-bold text-white">{confirmModal.title}</h3>
-                <p className="modal-desc text-xs text-slate-400 leading-relaxed">
+                <h3 className="text-sm font-semibold text-white">{confirmModal.title}</h3>
+                <p className="text-xs text-[#aaaaaa] leading-relaxed">
                   {confirmModal.description}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/5">
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/10">
               <button
                 onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-[#aaaaaa] hover:text-white rounded-full text-xs font-semibold transition-colors cursor-pointer"
               >
                 {language === 'tr' ? 'Vazgeç' : 'Cancel'}
               </button>
               <button
                 onClick={confirmModal.onConfirm}
-                className="px-4 py-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-600/30 transition-all cursor-pointer"
+                className="px-4 py-2 bg-[#cc0000] hover:bg-[#ff0000] text-white rounded-full text-xs font-semibold transition-all cursor-pointer"
               >
                 {confirmModal.confirmText}
               </button>

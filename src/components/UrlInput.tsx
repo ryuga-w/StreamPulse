@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Clipboard, ArrowRight, Loader2, X, Music, Video, Sparkles } from 'lucide-react';
+import { Search, Clipboard, ArrowRight, Loader2, X, Music, Video } from 'lucide-react';
 
 interface UrlInputProps {
   onFetch: (url: string) => Promise<void>;
@@ -15,7 +15,6 @@ export const UrlInput: React.FC<UrlInputProps> = ({
   const [url, setUrl] = useState('');
   const [copiedUrlDetected, setCopiedUrlDetected] = useState<string | null>(null);
 
-  // Check clipboard periodically if autoClipboard is true
   useEffect(() => {
     if (!autoClipboard) return;
 
@@ -66,26 +65,26 @@ export const UrlInput: React.FC<UrlInputProps> = ({
   };
 
   return (
-    <div className="w-full space-y-3">
+    <div className="w-full space-y-3 font-['Roboto','YouTube_Sans']">
       {/* Clipboard detected banner */}
       {copiedUrlDetected && (
-        <div className="flex items-center justify-between p-3 rounded-xl bg-purple-950/50 border border-purple-500/40 text-xs text-purple-200 animate-in fade-in slide-in-from-top-2">
+        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-[#212121] border border-white/10 text-xs text-[#f1f1f1] animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center gap-2 truncate">
-            <Sparkles className="w-4 h-4 text-purple-400 shrink-0" />
+            <Clipboard className="w-4 h-4 text-[#3ea6ff] shrink-0" />
             <span className="truncate">
-              Panoda link algılandı: <span className="font-mono text-purple-300">{copiedUrlDetected}</span>
+              Panoda link algılandı: <span className="font-mono text-[#aaaaaa]">{copiedUrlDetected}</span>
             </span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleApplyClipboard}
-              className="px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg text-xs transition-colors shadow-sm cursor-pointer"
+              className="px-3 py-1 bg-white text-[#0f0f0f] hover:bg-[#e5e5e5] font-semibold rounded-full text-xs transition-colors cursor-pointer"
             >
-              Analiz Et
+              İncele
             </button>
             <button
               onClick={() => setCopiedUrlDetected(null)}
-              className="p-1 hover:bg-white/10 rounded-md text-slate-400 hover:text-white cursor-pointer"
+              className="p-1 hover:bg-white/10 rounded-full text-[#aaaaaa] hover:text-white cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -93,24 +92,24 @@ export const UrlInput: React.FC<UrlInputProps> = ({
         </div>
       )}
 
-      {/* Google Gemini Style Input Bar with Continuous Liquid Glow */}
-      <form onSubmit={handleSubmit} className="relative group">
-        {/* Soft Ambient Outer Aurora Glow */}
-        <div className="absolute -inset-1 rounded-2xl gemini-border-glow blur-xl opacity-35 group-hover:opacity-65 group-focus-within:opacity-90 transition-opacity duration-500 pointer-events-none"></div>
+      {/* YouTube & Ambient Glow Liquid Aurora Search Bar */}
+      <form onSubmit={handleSubmit} className="relative w-full group">
+        {/* Soft Ambient Outer Aurora Glow Bloom */}
+        <div className="absolute -inset-1 rounded-full gemini-border-glow ambient-outer-glow pointer-events-none"></div>
 
-        {/* Seamless Flowing Gemini Border Wrapper */}
-        <div className="relative p-[1.5px] rounded-2xl gemini-border-glow shadow-2xl transition-all duration-300">
-          <div className="url-input-container flex items-center bg-[#0d1322] rounded-[15px] p-1.5 backdrop-blur-2xl">
-            <div className="pl-3.5 pr-2 text-slate-400">
-              <Search className="w-5 h-5 group-focus-within:text-purple-500 transition-colors" />
+        {/* Seamless Flowing Gradient Border Wrapper */}
+        <div className="relative p-[1.5px] rounded-full gemini-border-glow shadow-2xl transition-all duration-300">
+          <div className="flex items-center bg-[#121212] rounded-full p-1 pl-4 backdrop-blur-2xl">
+            <div className="text-[#aaaaaa] pr-2 group-focus-within:text-white transition-colors">
+              <Search className="w-4 h-4" />
             </div>
 
             <input
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="Paste YouTube Video or Playlist link here... (e.g. https://www.youtube.com/watch?v=...)"
-              className="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-2 font-normal"
+              placeholder="YouTube video, şarkı veya oynatma listesi linki yapıştırın..."
+              className="w-full bg-transparent text-sm text-[#f1f1f1] placeholder-[#717171] focus:outline-none py-1.5 font-normal"
               disabled={isLoading}
             />
 
@@ -119,7 +118,7 @@ export const UrlInput: React.FC<UrlInputProps> = ({
                 <button
                   type="button"
                   onClick={() => setUrl('')}
-                  className="p-2 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-xl transition-colors cursor-pointer"
+                  className="p-1.5 text-[#aaaaaa] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                   title="Temizle"
                 >
                   <X className="w-4 h-4" />
@@ -128,7 +127,7 @@ export const UrlInput: React.FC<UrlInputProps> = ({
                 <button
                   type="button"
                   onClick={handlePaste}
-                  className="paste-btn flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#aaaaaa] hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-all cursor-pointer"
                   title="Panodan Yapıştır"
                 >
                   <Clipboard className="w-3.5 h-3.5" />
@@ -139,17 +138,17 @@ export const UrlInput: React.FC<UrlInputProps> = ({
               <button
                 type="submit"
                 disabled={isLoading || !url.trim()}
-                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-40 disabled:hover:from-purple-600 disabled:hover:to-pink-600 !text-white text-xs font-bold shadow-glow-purple transition-all duration-300 cursor-pointer shrink-0"
+                className="flex items-center gap-2 px-5 py-2 rounded-full bg-[#f1f1f1] hover:bg-white disabled:opacity-30 disabled:hover:bg-[#f1f1f1] text-[#0f0f0f] text-xs font-semibold transition-all duration-150 cursor-pointer shrink-0"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span className="text-white font-bold">Analiz Ediliyor...</span>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Analiz Ediliyor...</span>
                   </>
                 ) : (
                   <>
-                    <span className="text-white font-bold">Analiz Et</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-white" />
+                    <span>İncele</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
               </button>
@@ -159,21 +158,21 @@ export const UrlInput: React.FC<UrlInputProps> = ({
       </form>
 
       {/* Feature tags under input */}
-      <div className="feature-tags-bar flex items-center justify-between text-[11px] text-slate-400 px-2 pt-0.5">
+      <div className="flex items-center justify-between text-[11px] text-[#717171] px-3 pt-0.5">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
-            <Music className="w-3.5 h-3.5 text-purple-400" />
-            <span className="tag-text">MP3 (320kbps Studio / FLAC / WAV / M4A)</span>
+            <Music className="w-3.5 h-3.5 text-[#aaaaaa]" />
+            <span>MP3 (320kbps Stüdyo), FLAC, M4A</span>
           </div>
-          <span className="text-slate-600 dot-sep">•</span>
+          <span>•</span>
           <div className="flex items-center gap-1.5">
-            <Video className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="tag-text">Video (4K, 1440p, 1080p 60fps, 720p)</span>
+            <Video className="w-3.5 h-3.5 text-[#aaaaaa]" />
+            <span>Video (4K, 1080p 60fps, 720p)</span>
           </div>
         </div>
 
-        <div className="hidden sm:block text-slate-500 tag-secondary">
-          YouTube / Music / Shorts / Playlists
+        <div className="hidden sm:block text-[#717171]">
+          YouTube, YouTube Music & Çalma Listeleri
         </div>
       </div>
     </div>

@@ -281,6 +281,16 @@ export const api = {
     }
   },
 
+  syncSettings: async (settings: { language?: string; themeMode?: string }): Promise<void> => {
+    try {
+      await fetch(`${API_BASE}/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
+    } catch (e) {}
+  },
+
   showNotification: (options: { title: string; body: string; source?: 'app' | 'extension' }) => {
     if (window.electronAPI && window.electronAPI.showNotification) {
       window.electronAPI.showNotification(options);
@@ -314,23 +324,24 @@ export const api = {
       if (callbacks.onUsbComplete && window.electronAPI.onUsbComplete) {
         cleanups.push(window.electronAPI.onUsbComplete(callbacks.onUsbComplete));
       }
-    } else {
-      try {
-        const eventSource = new EventSource(`${API_BASE}/events`);
-        eventSource.onmessage = (event) => {
-          try {
-            const parsed = JSON.parse(event.data);
-            if (parsed.type === 'download-started' && callbacks.onStarted) callbacks.onStarted(parsed.data);
-            if (parsed.type === 'download-progress') callbacks.onProgress(parsed.data);
-            if (parsed.type === 'download-complete') callbacks.onComplete(parsed.data);
-            if (parsed.type === 'download-error') callbacks.onError(parsed.data);
-            if (parsed.type === 'usb-progress' && callbacks.onUsbProgress) callbacks.onUsbProgress(parsed.data);
-            if (parsed.type === 'usb-complete' && callbacks.onUsbComplete) callbacks.onUsbComplete(parsed.data);
-          } catch (e) {}
-        };
-        cleanups.push(() => eventSource.close());
-      } catch (e) {}
     }
+
+    // Always connect SSE stream to receive extension HTTP downloads
+    try {
+      const eventSource = new EventSource(`${API_BASE}/events`);
+      eventSource.onmessage = (event) => {
+        try {
+          const parsed = JSON.parse(event.data);
+          if (parsed.type === 'download-started' && callbacks.onStarted) callbacks.onStarted(parsed.data);
+          if (parsed.type === 'download-progress') callbacks.onProgress(parsed.data);
+          if (parsed.type === 'download-complete') callbacks.onComplete(parsed.data);
+          if (parsed.type === 'download-error') callbacks.onError(parsed.data);
+          if (parsed.type === 'usb-progress' && callbacks.onUsbProgress) callbacks.onUsbProgress(parsed.data);
+          if (parsed.type === 'usb-complete' && callbacks.onUsbComplete) callbacks.onUsbComplete(parsed.data);
+        } catch (e) {}
+      };
+      cleanups.push(() => eventSource.close());
+    } catch (e) {}
 
     return () => {
       cleanups.forEach((c) => {

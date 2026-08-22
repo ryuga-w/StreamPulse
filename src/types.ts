@@ -43,9 +43,17 @@ export interface DownloadItem {
   outputFile?: string;
   error?: string;
   source?: 'app' | 'extension';
+  playlistId?: string;
+  playlistTitle?: string;
+  playlistIndex?: number;
+  playlistTotal?: number;
+  subfolderName?: string;
   createdAt: number;
   completedAt?: number;
 }
+
+export type ThemeMode = 'dark' | 'light' | 'system';
+export type Language = 'tr' | 'en';
 
 export interface AppSettings {
   downloadDir: string;
@@ -56,6 +64,8 @@ export interface AppSettings {
   autoClipboard: boolean;
   autoOpenFolder: boolean;
   themeAccent: 'purple' | 'cyan' | 'rose' | 'emerald';
+  themeMode?: ThemeMode;
+  language?: Language;
 }
 
 export interface DependencyStatus {

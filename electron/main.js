@@ -9,6 +9,13 @@ const { exec } = require('child_process');
 
 let mainWindow = null;
 
+// Set Application Name & User Model ID for Windows Notifications
+app.setName('StreamPulse Downloader');
+app.name = 'StreamPulse Downloader';
+if (process.platform === 'win32') {
+  app.setAppUserModelId(app.isPackaged ? 'com.streampulse.downloader' : process.execPath);
+}
+
 // Suppress security warnings
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
@@ -173,6 +180,8 @@ function createWindow() {
     },
     show: false,
   });
+
+  global.electronMainWindow = mainWindow;
 
   const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
@@ -498,6 +507,8 @@ ipcMain.handle('start-download', async (_event, options) => {
           thumbnail: options.thumbnail,
           formatType: options.formatType,
           quality: options.quality,
+          playlistId: options.playlistId,
+          playlistTitle: options.playlistTitle,
           source,
           completedAt: Date.now(),
         };

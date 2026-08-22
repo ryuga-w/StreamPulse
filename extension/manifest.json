@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "StreamPulse Downloader - YouTube & Media Grabber",
-  "version": "1.0.0",
-  "description": "YouTube, YouTube Music ve videolardan 320kbps MP3 ve 4K Video indirmelerini tek tıkla StreamPulse Downloader Pro'ya gönderin.",
+  "name": "StreamPulse - Media Grabber & Shazam Music AI",
+  "version": "1.1.0",
+  "description": "YouTube, TikTok, Instagram, Twitter/X ve webdeki tüm müzikleri Shazam tarzı ses tanıma ve tek tıkla StreamPulse Downloader Pro'ya 320kbps MP3 / 4K Video indirme.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
@@ -17,7 +17,7 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "StreamPulse Downloader"
+    "default_title": "StreamPulse Downloader & Music Identifier"
   },
   "background": {
     "service_worker": "scripts/background.js"
@@ -25,8 +25,7 @@
   "content_scripts": [
     {
       "matches": [
-        "*://*.youtube.com/*",
-        "*://music.youtube.com/*"
+        "<all_urls>"
       ],
       "js": ["scripts/content.js"],
       "css": ["scripts/content.css"],
@@ -34,16 +33,16 @@
     }
   ],
   "permissions": [
+    "tabCapture",
+    "offscreen",
     "activeTab",
+    "scripting",
     "contextMenus",
     "storage",
     "tabs",
     "notifications"
   ],
   "host_permissions": [
-    "*://*.youtube.com/*",
-    "*://music.youtube.com/*",
-    "http://127.0.0.1:3001/*",
-    "http://localhost:3001/*"
+    "<all_urls>"
   ]
 }

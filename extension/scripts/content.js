@@ -5,6 +5,18 @@
   const INJECT_BUTTON_ID = 'streampulse-injected-btn';
   const TOAST_ID = 'streampulse-injected-toast';
 
+  // Listen for open app / download requests from popup to execute centered on page
+  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+    chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+      if (request.action === 'OPEN_APP' || request.action === 'OPEN_PROTOCOL') {
+        const targetUrl = request.url || 'streampulse://open';
+        window.location.href = targetUrl;
+        sendResponse({ success: true });
+        return true;
+      }
+    });
+  }
+
   function showInPageToast(title, message, isError = false) {
     let toast = document.getElementById(TOAST_ID);
     if (!toast) {
@@ -105,7 +117,6 @@
 
     menu.innerHTML = `
       <div class="streampulse-dropdown-header">
-        <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
         <span>StreamPulse Downloader</span>
       </div>
       <button class="streampulse-dropdown-item" id="sp-dl-mp3">
