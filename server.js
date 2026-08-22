@@ -209,6 +209,55 @@ app.post('/api/download', async (req, res) => {
   }
 });
 
+app.get('/api/ping', (_req, res) => {
+  res.json({ success: true, app: 'StreamPulse Downloader', version: '1.0.0', status: 'online' });
+});
+
+app.post('/api/extension/download', async (req, res) => {
+  const { url, formatType = 'mp3', quality = '320', title, thumbnail, subfolderName } = req.body || {};
+  if (!url) {
+    return res.status(400).json({ success: false, error: 'URL is required' });
+  }
+
+  const downloadId = 'ext_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+  const isAudio = formatType !== 'video' && formatType !== 'mp4';
+  const effectiveQuality = isAudio ? (quality || '320') : (quality || '1080');
+
+  try {
+    broadcastEvent('download-started', {
+      id: downloadId,
+      url,
+      title: title || 'İndiriliyor...',
+      thumbnail: thumbnail || '',
+      formatType: isAudio ? 'mp3' : 'video',
+      quality: effectiveQuality,
+      status: 'downloading',
+      percent: 0,
+      createdAt: Date.now(),
+    });
+
+    engine.startDownload({
+      url,
+      formatType: isAudio ? 'mp3' : 'video',
+      quality: effectiveQuality,
+      subfolderName: subfolderName || '',
+      onProgress: (progress) => {
+        broadcastEvent('download-progress', progress);
+      },
+      onComplete: (data) => {
+        broadcastEvent('download-complete', data);
+      },
+      onError: (err) => {
+        broadcastEvent('download-error', err);
+      },
+    });
+
+    res.json({ success: true, id: downloadId, message: 'Download initiated in StreamPulse' });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
 app.post('/api/cancel', (req, res) => {
   const { id } = req.body;
   const result = engine.cancelDownload(id);

@@ -282,6 +282,7 @@ export const api = {
   },
 
   subscribeToEvents: (callbacks: {
+    onStarted?: (data: any) => void;
     onProgress: (data: any) => void;
     onComplete: (data: any) => void;
     onError: (data: any) => void;
@@ -308,6 +309,7 @@ export const api = {
       eventSource.onmessage = (event) => {
         try {
           const parsed = JSON.parse(event.data);
+          if (parsed.type === 'download-started' && callbacks.onStarted) callbacks.onStarted(parsed.data);
           if (parsed.type === 'download-progress') callbacks.onProgress(parsed.data);
           if (parsed.type === 'download-complete') callbacks.onComplete(parsed.data);
           if (parsed.type === 'download-error') callbacks.onError(parsed.data);

@@ -136,6 +136,13 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     const cleanup = api.subscribeToEvents({
+      onStarted: (data) => {
+        showToast(`⚡ Chrome Eklentisi: Medya indirilmeye başlandı (${data.formatType?.toUpperCase()})`, 'info');
+        setQueue((prev) => {
+          if (prev.some((i) => i.id === data.id || (i.url && i.url === data.url))) return prev;
+          return [data, ...prev];
+        });
+      },
       onProgress: (data) => {
         setQueue((prev) =>
           prev.map((item) => {

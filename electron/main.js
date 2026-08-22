@@ -12,6 +12,54 @@ let mainWindow = null;
 // Suppress security warnings
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
+// Register streampulse:// custom protocol client
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('streampulse', process.execPath, [path.resolve(process.argv[1])]);
+  }
+} else {
+  app.setAsDefaultProtocolClient('streampulse');
+}
+
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (_event, commandLine) => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+      
+      const deepLink = commandLine.find(arg => arg.startsWith('streampulse://'));
+      if (deepLink) {
+        handleDeepLinkUrl(deepLink);
+      }
+    }
+  });
+}
+
+function handleDeepLinkUrl(rawDeepUrl) {
+  try {
+    const urlObj = new URL(rawDeepUrl);
+    const targetUrl = urlObj.searchParams.get('url');
+    const formatType = urlObj.searchParams.get('format') || 'mp3';
+    const quality = urlObj.searchParams.get('quality') || '320';
+
+    if (targetUrl) {
+      engine.startDownload({
+        url: targetUrl,
+        formatType,
+        quality,
+        onProgress: (p) => mainWindow?.webContents.send('download-progress', p),
+        onComplete: (d) => mainWindow?.webContents.send('download-complete', d),
+        onError: (e) => mainWindow?.webContents.send('download-error', e),
+      });
+    }
+  } catch (e) {
+    console.log('Deep link error:', e.message);
+  }
+}
+
 // Register media:// custom protocol
 protocol.registerSchemesAsPrivileged([
   {

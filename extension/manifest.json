@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "StreamPulse Downloader - YouTube & Media Grabber",
+  "version": "1.0.0",
+  "description": "YouTube, YouTube Music ve videolardan 320kbps MP3 ve 4K Video indirmelerini tek tıkla StreamPulse Downloader Pro'ya gönderin.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "StreamPulse Downloader"
+  },
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.youtube.com/*",
+        "*://music.youtube.com/*"
+      ],
+      "js": ["scripts/content.js"],
+      "css": ["scripts/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage",
+    "tabs",
+    "notifications"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*",
+    "*://music.youtube.com/*",
+    "http://127.0.0.1:3001/*",
+    "http://localhost:3001/*"
+  ]
+}

@@ -1,0 +1,183 @@
+/* StreamPulse Injected Button & Toast Styles */
+
+.streampulse-inject-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 0 16px !important;
+  height: 36px !important;
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.9), rgba(79, 70, 229, 0.9)) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 18px !important;
+  font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 15px rgba(147, 51, 234, 0.4) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  z-index: 9999 !important;
+  margin-right: 8px !important;
+  margin-left: 4px !important;
+  user-select: none !important;
+  outline: none !important;
+}
+
+.streampulse-inject-btn:hover {
+  background: linear-gradient(135deg, #a855f7, #6366f1) !important;
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6) !important;
+  transform: translateY(-1px) scale(1.02) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.streampulse-btn-icon {
+  font-size: 14px !important;
+  animation: sp-pulse 2s infinite ease-in-out !important;
+}
+
+.streampulse-btn-arrow {
+  font-size: 10px !important;
+  opacity: 0.8 !important;
+  margin-left: 2px !important;
+}
+
+@keyframes sp-pulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px #fff); }
+  50% { transform: scale(1.2); filter: drop-shadow(0 0 6px #00f2fe); }
+}
+
+/* Injected Dropdown Menu */
+.streampulse-dropdown {
+  position: absolute !important;
+  z-index: 999999 !important;
+  width: 270px !important;
+  background: rgba(13, 18, 36, 0.96) !important;
+  border: 1px solid rgba(168, 85, 247, 0.35) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(147, 51, 234, 0.25) !important;
+  padding: 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  animation: sp-dropdown-anim 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes sp-dropdown-anim {
+  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.streampulse-dropdown-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 8px 10px 6px 10px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #c084fc !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin-bottom: 4px !important;
+}
+
+.sp-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: #22c55e !important;
+  box-shadow: 0 0 8px #22c55e !important;
+}
+
+.streampulse-dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 12px !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  color: #f1f5f9 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  transition: all 0.15s ease !important;
+  width: 100% !important;
+}
+
+.streampulse-dropdown-item:hover {
+  background: rgba(147, 51, 234, 0.2) !important;
+  border-color: rgba(168, 85, 247, 0.4) !important;
+  transform: translateX(2px) !important;
+}
+
+.sp-item-icon {
+  font-size: 18px !important;
+  flex-shrink: 0 !important;
+}
+
+.sp-item-text {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.sp-title {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+.sp-sub {
+  font-size: 10px !important;
+  color: #94a3b8 !important;
+}
+
+.sp-playlist-btn {
+  background: rgba(59, 130, 246, 0.15) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+/* In-Page Neon Toast */
+.streampulse-toast {
+  position: fixed !important;
+  top: 24px !important;
+  right: 24px !important;
+  z-index: 9999999 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 14px 18px !important;
+  border-radius: 14px !important;
+  background: rgba(10, 15, 30, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(147, 51, 234, 0.3) !important;
+  border: 1px solid rgba(168, 85, 247, 0.4) !important;
+  color: #ffffff !important;
+  font-family: 'Roboto', 'Segoe UI', sans-serif !important;
+  transform: translateX(120%) !important;
+  opacity: 0 !important;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  pointer-events: none !important;
+}
+
+.streampulse-toast.show {
+  transform: translateX(0) !important;
+  opacity: 1 !important;
+}
+
+.streampulse-toast-icon {
+  font-size: 24px !important;
+}
+
+.streampulse-toast-title {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+}
+
+.streampulse-toast-desc {
+  font-size: 11px !important;
+  color: #cbd5e1 !important;
+  margin-top: 2px !important;
+}

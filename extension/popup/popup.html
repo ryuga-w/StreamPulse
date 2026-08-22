@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StreamPulse Downloader</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Top Header -->
+    <header class="popup-header">
+      <div class="header-brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>StreamPulse</h1>
+          <span class="badge-pro">PRO GRABBER</span>
+        </div>
+      </div>
+      <div class="status-indicator" id="app-status">
+        <span class="status-dot"></span>
+        <span class="status-label" id="status-text">Kontrol ediliyor...</span>
+      </div>
+    </header>
+
+    <!-- Active Media Card -->
+    <section class="media-card" id="media-card">
+      <div class="media-preview" id="media-preview">
+        <img id="media-thumb" src="" alt="Thumbnail" style="display: none;">
+        <div class="media-placeholder" id="media-placeholder">
+          <span>🎬 YouTube Medyası Aranıyor...</span>
+        </div>
+      </div>
+      <div class="media-info">
+        <h2 id="media-title" class="truncate">Sekme inceleniyor...</h2>
+        <p id="media-channel" class="truncate">YouTube & YouTube Music</p>
+      </div>
+    </section>
+
+    <!-- Format & Quality Selector -->
+    <section class="format-section">
+      <div class="section-title">İndirme Formatı & Kalite</div>
+      <div class="format-grid">
+        <button class="format-btn active" data-type="mp3" data-quality="320">
+          <span class="format-icon">🎵</span>
+          <span class="format-name">MP3</span>
+          <span class="format-sub">320kbps</span>
+        </button>
+        <button class="format-btn" data-type="flac" data-quality="320">
+          <span class="format-icon">🎧</span>
+          <span class="format-name">FLAC</span>
+          <span class="format-sub">Kayıpsız</span>
+        </button>
+        <button class="format-btn" data-type="video" data-quality="1080">
+          <span class="format-icon">🎬</span>
+          <span class="format-name">1080p</span>
+          <span class="format-sub">Full HD</span>
+        </button>
+        <button class="format-btn" data-type="video" data-quality="2160">
+          <span class="format-icon">💎</span>
+          <span class="format-name">4K UHD</span>
+          <span class="format-sub">En Yüksek</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Action Buttons -->
+    <div class="action-section">
+      <button class="btn-primary" id="btn-download">
+        <span class="btn-icon">⚡</span>
+        <span class="btn-label">StreamPulse ile İndir</span>
+      </button>
+
+      <button class="btn-secondary" id="btn-open-app">
+        <span>🚀 Masaüstü Uygulamasını Aç</span>
+      </button>
+    </div>
+
+    <!-- Status Feedback Message -->
+    <div class="feedback-msg" id="feedback-msg"></div>
+
+    <!-- Footer -->
+    <footer class="popup-footer">
+      <span>AI-Driven Desktop Integration</span>
+      <span>v1.0.0</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
