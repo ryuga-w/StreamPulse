@@ -122,10 +122,13 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   let activeLang = 'tr';
+  let currentLanguage = 'tr';
   let t = i18n.tr;
+  const formatSectionTitle = document.getElementById('format-section-title') || document.querySelector('.formats-title');
 
   function applyLanguage(newLang) {
     activeLang = (newLang === 'en' || newLang === 'tr') ? newLang : 'tr';
+    currentLanguage = activeLang;
     t = i18n[activeLang];
 
     if (tabLabelGrabber) tabLabelGrabber.textContent = t.tabGrabber;
