@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       isYouTubeTab = true;
       const cleanTitle = tab.title ? tab.title.replace(/ - YouTube Music$/i, '').replace(/ - YouTube$/i, '') : 'YouTube Medyası';
       mediaTitle.textContent = cleanTitle;
-      mediaChannel.textContent = isYtMusic ? '🎵 YouTube Music' : '🎬 YouTube Video';
+      mediaChannel.textContent = isYtMusic ? 'YouTube Music' : 'YouTube Video';
 
       // Extract YouTube Video ID for instant thumbnail preview
       const match = currentTabUrl.match(/(?:v=|\/embed\/|\/shorts\/|youtu\.be\/|\/v\/)([^&?#/]+)/);
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       mediaChannel.textContent = 'YouTube, YouTube Music veya Şarkı Adı';
       mediaThumb.style.display = 'none';
       mediaPlaceholder.style.display = 'flex';
-      mediaPlaceholder.textContent = '🔗 İstediğiniz linki girin';
+      mediaPlaceholder.textContent = 'İstediğiniz YouTube linkini girin';
       customUrlBox.style.display = 'block';
       setTimeout(() => customUrlInput.focus(), 100);
     }

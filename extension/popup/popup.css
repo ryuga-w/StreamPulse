@@ -1,4 +1,4 @@
-/* YouTube & YouTube Music Native Style Popup */
+/* YouTube & YouTube Music Native Style Extension Popup */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -11,6 +11,7 @@ body {
   background: #0f0f0f;
   color: #f1f1f1;
   overflow: hidden;
+  user-select: none;
 }
 
 .popup-container {
@@ -33,20 +34,14 @@ body {
 .header-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.brand-icon {
+.brand-logo {
   width: 28px;
   height: 28px;
-  background: #ff0000;
   border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  color: #ffffff;
-  font-weight: 900;
+  object-fit: contain;
 }
 
 .brand-text h1 {
@@ -54,6 +49,7 @@ body {
   font-weight: 600;
   letter-spacing: -0.2px;
   color: #ffffff;
+  line-height: 1.2;
 }
 
 .badge-pro {
@@ -67,11 +63,11 @@ body {
 .status-indicator {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 8px;
+  gap: 6px;
+  padding: 4px 10px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
 .status-dot {
@@ -109,7 +105,7 @@ body {
 
 .media-preview {
   width: 100%;
-  height: 110px;
+  height: 115px;
   border-radius: 8px;
   overflow: hidden;
   background: #181818;
@@ -136,7 +132,7 @@ body {
 .media-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .media-info h2 {
@@ -205,7 +201,7 @@ body {
 
 .format-btn {
   background: #212121;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   padding: 8px 4px;
   display: flex;
@@ -215,10 +211,12 @@ body {
   cursor: pointer;
   color: #f1f1f1;
   transition: all 0.15s ease;
+  outline: none;
 }
 
 .format-btn:hover {
   background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .format-btn.active {
@@ -227,12 +225,19 @@ body {
   border-color: #ffffff;
 }
 
-.format-btn.active .format-sub {
-  color: #333333;
+.format-icon-svg {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  fill: currentColor;
 }
 
-.format-icon {
-  font-size: 15px;
+.format-icon-svg svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 .format-name {
@@ -245,20 +250,25 @@ body {
   color: #aaaaaa;
 }
 
-/* Actions */
+.format-btn.active .format-sub {
+  color: #444444;
+}
+
+/* Action Buttons */
 .action-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-top: 2px;
 }
 
-.btn-download {
+.btn-primary {
   width: 100%;
-  height: 40px;
+  height: 38px;
   background: #f1f1f1;
   color: #0f0f0f;
   border: none;
-  border-radius: 20px;
+  border-radius: 19px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -267,39 +277,76 @@ body {
   justify-content: center;
   gap: 8px;
   transition: background-color 0.15s ease, transform 0.1s ease;
+  outline: none;
 }
 
-.btn-download:hover {
+.btn-primary:hover {
   background: #ffffff;
   transform: translateY(-1px);
 }
 
-.btn-download:active {
+.btn-primary:active {
   transform: scale(0.98);
+  background: #e5e5e5;
 }
 
-.btn-download:disabled {
+.btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
 
-.feedback-message {
+.btn-secondary {
+  width: 100%;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f1f1f1;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  outline: none;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.btn-svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+/* Feedback Message */
+.feedback-msg {
   font-size: 11px;
   text-align: center;
   min-height: 16px;
   font-weight: 500;
 }
 
-.feedback-message.success {
+.feedback-msg.success {
   color: #2ba640;
 }
 
-.feedback-message.error {
+.feedback-msg.error {
   color: #ff4e45;
 }
 
-.feedback-message.info {
+.feedback-msg.info {
   color: #3ea6ff;
 }
 
@@ -308,23 +355,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 8px;
+  padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.footer-btn {
-  background: transparent;
-  border: none;
-  color: #aaaaaa;
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: color 0.15s ease;
-}
-
-.footer-btn:hover {
-  color: #ffffff;
+  font-size: 10px;
+  color: #717171;
+  letter-spacing: 0.3px;
 }
