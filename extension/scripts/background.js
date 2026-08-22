@@ -82,18 +82,22 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 // Periodic & Event-based Sync from Desktop App
 async function syncLanguageFromDesktop() {
-  try {
-    const res = await fetch(`${API_URL}/health`);
-    if (res.ok) {
-      const data = await res.json();
-      const newLang = data.language || (data.settings && data.settings.language);
-      if (newLang && newLang !== currentLanguage) {
-        currentLanguage = newLang;
-        chrome.storage.local.set({ streampulse_language: newLang });
-        updateContextMenus(newLang);
+  const syncUrls = ['http://127.0.0.1:3001/api/health', 'http://localhost:3001/api/health'];
+  for (const u of syncUrls) {
+    try {
+      const res = await fetch(u);
+      if (res.ok) {
+        const data = await res.json();
+        const newLang = data.language || (data.settings && data.settings.language);
+        if (newLang && newLang !== currentLanguage) {
+          currentLanguage = newLang;
+          chrome.storage.local.set({ streampulse_language: newLang });
+          updateContextMenus(newLang);
+        }
+        return;
       }
-    }
-  } catch (e) {}
+    } catch (e) {}
+  }
 }
 
 syncLanguageFromDesktop();

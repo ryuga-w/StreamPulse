@@ -227,39 +227,24 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function checkAppStatusAsync() {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const checkUrls = [
+      'http://127.0.0.1:3001/api/health',
+      'http://localhost:3001/api/health',
+      'http://127.0.0.1:3001/api/settings'
+    ];
 
-      const res = await fetch('http://127.0.0.1:3001/api/health', {
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      if (res.ok) {
-        const data = await res.json().catch(() => null);
-        if (data) {
-          const appLang = data.language || (data.settings && data.settings.language);
-          if (appLang && appLang !== currentLanguage) {
-            applyLanguage(appLang);
-            chrome.storage.local.set({ streampulse_language: appLang });
-          }
-        }
-        updateAppConnectionState(true);
-        return;
-      }
-    } catch (e) {
-      // Secondary check via /api/settings
+    for (const u of checkUrls) {
       try {
-        const controller2 = new AbortController();
-        const timeoutId2 = setTimeout(() => controller2.abort(), 1500);
-        const res2 = await fetch('http://127.0.0.1:3001/api/settings', { signal: controller2.signal });
-        clearTimeout(timeoutId2);
-        if (res2.ok) {
-          const data = await res2.json().catch(() => null);
-          if (data && data.settings && data.settings.language) {
-            const appLang = data.settings.language;
-            if (appLang !== currentLanguage) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1200);
+        const res = await fetch(u, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json().catch(() => null);
+          if (data) {
+            const appLang = data.language || (data.settings && data.settings.language);
+            if (appLang && appLang !== currentLanguage) {
               applyLanguage(appLang);
               chrome.storage.local.set({ streampulse_language: appLang });
             }
@@ -267,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
           updateAppConnectionState(true);
           return;
         }
-      } catch (err2) {}
+      } catch (e) {}
     }
 
     updateAppConnectionState(false);
