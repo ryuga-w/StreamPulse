@@ -261,14 +261,6 @@ app.post('/api/download', async (req, res) => {
         };
 
         broadcastEvent('download-complete', completePayload);
-
-        if (global.showNotification) {
-          global.showNotification({
-            title: source === 'extension' ? '⚡ Tarayıcı Eklentisinden İndirildi' : '✅ İndirme Tamamlandı',
-            body: `"${completeTitle}" başarıyla indirildi (${itemPayload.formatType.toUpperCase()})`,
-            source,
-          });
-        }
       },
       onError: (err) => {
         broadcastEvent('download-error', {
@@ -350,14 +342,6 @@ app.post('/api/extension/download', async (req, res) => {
         };
 
         broadcastEvent('download-complete', completePayload);
-
-        if (global.showNotification) {
-          global.showNotification({
-            title: '⚡ Tarayıcı Eklentisinden İndirildi',
-            body: `"${completeTitle}" başarıyla indirildi (${isAudio ? 'MP3' : 'VIDEO'})`,
-            source: 'extension',
-          });
-        }
       },
       onError: (err) => {
         broadcastEvent('download-error', {

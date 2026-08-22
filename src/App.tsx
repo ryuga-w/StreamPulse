@@ -78,6 +78,7 @@ export const App: React.FC = () => {
   const themeMode: ThemeMode = settings.themeMode || 'dark';
   const t = translations[language];
   const isProcessingQueueRef = useRef(false);
+  const notifiedIdsRef = useRef(new Set<string>());
 
   useEffect(() => {
     const init = async () => {
@@ -263,19 +264,23 @@ export const App: React.FC = () => {
           api.openFolder(completedItem.outputFile);
         }
 
-        const toastMsg = isExt
-          ? `⚡ Tarayıcı eklentisinden indirdiğiniz "${completedItem.title}" başarıyla kütüphaneye eklendi!`
-          : `✅ "${completedItem.title}" başarıyla kütüphaneye eklendi!`;
+        if (!notifiedIdsRef.current.has(completedItem.id)) {
+          notifiedIdsRef.current.add(completedItem.id);
 
-        showToast(toastMsg, 'success');
+          const toastMsg = isExt
+            ? `⚡ Tarayıcı eklentisinden indirdiğiniz "${completedItem.title}" başarıyla kütüphaneye eklendi!`
+            : `✅ "${completedItem.title}" başarıyla kütüphaneye eklendi!`;
 
-        api.showNotification({
-          title: isExt ? '⚡ Tarayıcı Eklentisinden İndirildi' : '✅ İndirme Tamamlandı',
-          body: isExt 
-            ? `Eklentiden indirdiğiniz "${completedItem.title}" başarıyla kütüphaneye eklendi!`
-            : `"${completedItem.title}" başarıyla indirildi.`,
-          source: isExt ? 'extension' : 'app',
-        });
+          showToast(toastMsg, 'success');
+
+          api.showNotification({
+            title: isExt ? '⚡ Tarayıcı Eklentisinden İndirildi' : '✅ İndirme Tamamlandı',
+            body: isExt 
+              ? `Eklentiden indirdiğiniz "${completedItem.title}" başarıyla kütüphaneye eklendi!`
+              : `"${completedItem.title}" başarıyla indirildi.`,
+            source: isExt ? 'extension' : 'app',
+          });
+        }
       },
       onError: (data) => {
         setQueue((prev) =>

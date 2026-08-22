@@ -61,7 +61,6 @@ async function sendToStreamPulse(url, formatType = 'mp3', quality = '320') {
     }
 
     if (res.ok) {
-      notifyUser('İndirme Başlatıldı 🚀', `StreamPulse medyayı indirmeye başladı (${formatType.toUpperCase()})`);
       return { success: true };
     }
   } catch (err) {}

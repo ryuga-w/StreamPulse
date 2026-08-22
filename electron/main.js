@@ -491,12 +491,6 @@ ipcMain.handle('start-download', async (_event, options) => {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('download-complete', completePayload);
         }
-
-        showWindowsNotification({
-          title: source === 'extension' ? '⚡ Tarayıcı Eklentisinden İndirildi' : '✅ İndirme Tamamlandı',
-          body: `"${completeTitle}" başarıyla indirildi (${options.formatType?.toUpperCase()})`,
-          source,
-        });
       },
       onError: (err) => {
         if (mainWindow && !mainWindow.isDestroyed()) {
