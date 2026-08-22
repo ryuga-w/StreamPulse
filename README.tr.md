@@ -29,6 +29,36 @@ Gelişmiş **Google Gemini akışkan parıltı (Aurora Flowing Glow) arayüzü**
 
 ---
 
+## 📸 Ekran Görüntüleri (Screenshots)
+
+<div align="center">
+  <img src="screenshots/downloader_main.png" width="100%" alt="StreamPulse Ana İndirici" />
+  <p><i>Google Gemini Aurora Akışkan Işıltılı Arama Kutusu, 320kbps MP3 / 4K Video İndirici ve Dahili Medya Oynatıcısı</i></p>
+
+  <br/>
+
+  <table width="100%">
+    <tr>
+      <td width="50%" align="center">
+        <b>📦 Gruplandırılmış İndirme Kuyruğu</b><br/>
+        <img src="screenshots/active_queue.png" width="100%" alt="Aktif Kuyruk" />
+      </td>
+      <td width="50%" align="center">
+        <b>📚 Kütüphane & Geçmiş Oynatıcı</b><br/>
+        <img src="screenshots/library_history.png" width="100%" alt="Kütüphane Geçmişi" />
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" align="center">
+        <b>⚙️ Ayarlar & Motor Durumu Tanılaması</b><br/>
+        <img src="screenshots/settings_engine.png" width="95%" alt="Ayarlar ve Motor" />
+      </td>
+    </tr>
+  </table>
+</div>
+
+---
+
 ## 🚀 Öne Çıkan Özellikler (Key Features)
 
 ### 🎵 1. Ultra Yüksek Kalite Ses & Video İndirme

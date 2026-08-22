@@ -33,6 +33,36 @@ Engineered with a **Google Material 3 Expressive UI**, **Real-Time Equalizer-Rea
 
 ---
 
+## 📸 Screenshots
+
+<div align="center">
+  <img src="screenshots/downloader_main.png" width="100%" alt="StreamPulse Main Downloader" />
+  <p><i>Google Gemini Aurora Glow Search, 320kbps MP3 / 4K Video Downloader & Built-in Media Player</i></p>
+
+  <br/>
+
+  <table width="100%">
+    <tr>
+      <td width="50%" align="center">
+        <b>📦 Grouped Active Queue</b><br/>
+        <img src="screenshots/active_queue.png" width="100%" alt="Active Queue" />
+      </td>
+      <td width="50%" align="center">
+        <b>📚 Library & History Player</b><br/>
+        <img src="screenshots/library_history.png" width="100%" alt="Library History" />
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" align="center">
+        <b>⚙️ Settings & Core Engine Diagnostics</b><br/>
+        <img src="screenshots/settings_engine.png" width="95%" alt="Settings and Engine" />
+      </td>
+    </tr>
+  </table>
+</div>
+
+---
+
 ## 🚀 Key Features
 
 ### 🎵 1. Ultra High-Fidelity Audio & Video Engine
