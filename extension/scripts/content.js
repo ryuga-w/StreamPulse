@@ -15,7 +15,9 @@
 
     toast.className = `streampulse-toast ${isError ? 'streampulse-toast-error' : 'streampulse-toast-success'}`;
     toast.innerHTML = `
-      <div class="streampulse-toast-icon">${isError ? '⚠️' : '⚡'}</div>
+      <div class="streampulse-toast-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      </div>
       <div class="streampulse-toast-content">
         <div class="streampulse-toast-title">${title}</div>
         <div class="streampulse-toast-desc">${message}</div>
@@ -40,7 +42,7 @@
     const videoIdMatch = targetUrl.match(/(?:v=|\/embed\/|\/shorts\/|youtu\.be\/|\/v\/)([^&?#/]+)/);
     const thumbnail = videoIdMatch && videoIdMatch[1] ? `https://i.ytimg.com/vi/${videoIdMatch[1]}/hqdefault.jpg` : '';
 
-    showInPageToast('StreamPulse Pro 🚀', `"${pageTitle.slice(0, 25)}..." (${formatType.toUpperCase()}) masaüstüne gönderiliyor...`);
+    showInPageToast('StreamPulse', `"${pageTitle.slice(0, 30)}" (${formatType.toUpperCase()}) masaüstüne gönderiliyor...`);
 
     const payload = {
       id: 'ext_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
@@ -63,26 +65,21 @@
       });
       if (res.ok) {
         sent = true;
-        showInPageToast('İndirme Başlatıldı! ⚡', `StreamPulse Pro indirmeye başladı (${formatType.toUpperCase()})`);
+        showInPageToast('İndirme Başlatıldı', `Masaüstü StreamPulse kütüphanenize indiriyor (${formatType.toUpperCase()})`);
       }
     } catch (e) {}
 
-    // 2. Service Worker fallback
-    if (!sent) {
+    // 2. Extension background fallback
+    if (!sent && typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
       try {
         chrome.runtime.sendMessage(
-          {
-            type: 'START_DOWNLOAD',
-            url: targetUrl,
-            formatType,
-            quality
-          },
+          { action: 'download_media', url: targetUrl, formatType, quality, title: pageTitle, thumbnail },
           (response) => {
             if (response && response.success) {
-              showInPageToast('İndirme Başlatıldı! ⚡', `StreamPulse Pro kuyruğa aldı (${formatType.toUpperCase()})`);
+              showInPageToast('İndirme Başlatıldı', `Masaüstü uygulamasına aktarıldı (${formatType.toUpperCase()})`);
             } else {
               window.location.href = `streampulse://download?url=${encodeURIComponent(targetUrl)}&format=${formatType}&quality=${quality}`;
-              showInPageToast('Aktarım Başarılı 🚀', 'StreamPulse uygulaması başlatılıyor.');
+              showInPageToast('Aktarım Başarılı', 'StreamPulse uygulaması başlatılıyor.');
             }
           }
         );
@@ -108,39 +105,55 @@
 
     menu.innerHTML = `
       <div class="streampulse-dropdown-header">
-        <span class="sp-dot"></span>
+        <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
         <span>StreamPulse Downloader</span>
       </div>
       <button class="streampulse-dropdown-item" id="sp-dl-mp3">
-        <span class="sp-item-icon">🎵</span>
-        <div class="sp-item-text">
-          <span class="sp-title">320kbps MP3 (Stüdyo Kalite)</span>
-          <span class="sp-sub">ID3 etiketli yüksek kaliteli ses</span>
+        <div class="sp-item-left">
+          <div class="sp-item-icon-svg">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="sp-item-text">
+            <span class="sp-title">MP3 İndir</span>
+          </div>
         </div>
+        <span class="sp-badge">320 kbps</span>
       </button>
       <button class="streampulse-dropdown-item" id="sp-dl-flac">
-        <span class="sp-item-icon">🎧</span>
-        <div class="sp-item-text">
-          <span class="sp-title">Kayıpsız FLAC / M4A</span>
-          <span class="sp-sub">Orijinal bit rate kayıpsız ses</span>
+        <div class="sp-item-left">
+          <div class="sp-item-icon-svg">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/></svg>
+          </div>
+          <div class="sp-item-text">
+            <span class="sp-title">Kayıpsız Ses</span>
+          </div>
         </div>
+        <span class="sp-badge">FLAC</span>
       </button>
       <button class="streampulse-dropdown-item" id="sp-dl-video">
-        <span class="sp-item-icon">🎬</span>
-        <div class="sp-item-text">
-          <span class="sp-title">4K / 1080p Ultra HD Video</span>
-          <span class="sp-sub">En yüksek çözünürlükte video</span>
+        <div class="sp-item-left">
+          <div class="sp-item-icon-svg">
+            <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zm-11-2l6-4-6-4v8z"/></svg>
+          </div>
+          <div class="sp-item-text">
+            <span class="sp-title">Video İndir</span>
+          </div>
         </div>
+        <span class="sp-badge">4K / HD</span>
       </button>
       ${
         isPlaylist
           ? `
-      <button class="streampulse-dropdown-item sp-playlist-btn" id="sp-dl-playlist">
-        <span class="sp-item-icon">💽</span>
-        <div class="sp-item-text">
-          <span class="sp-title">Tüm Çalma Listesini İndir</span>
-          <span class="sp-sub">Klasör halinde otomatik albüm</span>
+      <button class="streampulse-dropdown-item" id="sp-dl-playlist">
+        <div class="sp-item-left">
+          <div class="sp-item-icon-svg">
+            <svg viewBox="0 0 24 24"><path d="M19 9H2v2h17V9zm0-4H2v2h17V5zM2 15h11v-2H2v2zm13 4v-8l6 4-6 4z"/></svg>
+          </div>
+          <div class="sp-item-text">
+            <span class="sp-title">Tüm Çalma Listesini İndir</span>
+          </div>
         </div>
+        <span class="sp-badge" style="color: #3ea6ff;">ALBÜM</span>
       </button>
       `
           : ''
@@ -151,14 +164,14 @@
 
     // Position dropdown relative to button (Smart Dropup if near bottom or on YouTube Music)
     const rect = parentBtn.getBoundingClientRect();
-    const menuHeight = menu.offsetHeight || 280;
+    const menuHeight = menu.offsetHeight || 240;
     const isNearBottom = (window.innerHeight - rect.bottom) < (menuHeight + 30) || window.location.hostname.includes('music.youtube.com');
 
     if (isNearBottom) {
       menu.classList.add('dropup');
       menu.style.position = 'fixed';
       menu.style.top = 'auto';
-      menu.style.bottom = `${Math.max(10, window.innerHeight - rect.top + 10)}px`;
+      menu.style.bottom = `${Math.max(10, window.innerHeight - rect.top + 8)}px`;
     } else {
       menu.style.position = 'absolute';
       menu.style.top = `${rect.bottom + window.scrollY + 8}px`;
@@ -228,9 +241,13 @@
     btn.id = INJECT_BUTTON_ID;
     btn.className = 'streampulse-inject-btn';
     btn.innerHTML = `
-      <span class="streampulse-btn-icon">⚡</span>
-      <span class="streampulse-btn-text">StreamPulse İndir</span>
-      <span class="streampulse-btn-arrow">▾</span>
+      <span class="streampulse-btn-icon">
+        <svg viewBox="0 0 24 24"><path d="M17 18v1H6v-1h11zm-.5-6.6l-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-5z"/></svg>
+      </span>
+      <span class="streampulse-btn-text">İndir</span>
+      <span class="streampulse-btn-arrow">
+        <svg viewBox="0 0 24 24"><path d="M12 15.5l-6-6h12l-6 6z"/></svg>
+      </span>
     `;
 
     btn.addEventListener('click', (e) => {
