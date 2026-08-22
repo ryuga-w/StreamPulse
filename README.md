@@ -14,7 +14,7 @@
 [![AI Engine](https://img.shields.io/badge/AI%20Core-Shazam%20Audio%20Fingerprint-8b5cf6?logo=shazam&logoColor=white)](https://github.com)
 
 <p align="center">
-  <b>Geliştirici:</b> <a href="https://github.com">Yüksel Bilgin</a> (AI-Driven Full Stack Developer)
+  <b>Geliştirici:</b> <a href="https://github.com/ryuga-w">Yüksel Bilgin</a> (AI-Driven Full Stack Developer)
 </p>
 
 </div>
@@ -73,7 +73,7 @@ Gelişmiş **Google Gemini akışkan parıltı (Aurora Flowing Glow) arayüzü**
 | **Stil & Animasyon** | [Tailwind CSS 4](https://tailwindcss.com/) + [Lucide Icons](https://lucide.dev/) | Glassmorphism, CSS neon parıltıları ve mikro etkileşimler |
 | **İndirme Motoru** | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | YouTube / YouTube Music medya ayrıştırma motoru |
 | **Medya Çevirici** | [FFmpeg 7.0](https://ffmpeg.org/) | 320kbps MP3 dönüşümü, muxing ve ID3 kapak resmi gömücü |
-| **AI Müzik Tanıma** | [StreamPulse AI Core](https://github.com) | Raw PCM FFT frekans tepe noktaları & akustik parmak izi eşleme |
+| **AI Müzik Tanıma** | [StreamPulse AI Core](https://github.com/ryuga-w/StreamPulse) | Raw PCM FFT frekans tepe noktaları & akustik parmak izi eşleme |
 | **Yerel Sunucu** | [Node.js Express](https://expressjs.com/) | Eklenti - Masaüstü IPC köprüsü, ses akışı ve SSE ilerleme bildirimleri |
 | **Derleyici (Bundler)** | [Vite 8](https://vitejs.dev/) | Anlık HMR (Hot Module Replacement) geliştirme ortamı |
 
@@ -88,8 +88,8 @@ Gelişmiş **Google Gemini akışkan parıltı (Aurora Flowing Glow) arayüzü**
 
 ### 1. Depoyu Klonlayın
 ```bash
-git clone https://github.com/kullaniciadi/streampulse-downloader.git
-cd streampulse-downloader
+git clone https://github.com/ryuga-w/StreamPulse.git
+cd StreamPulse
 ```
 
 ### 2. Bağımlılıkları Yükleyin
