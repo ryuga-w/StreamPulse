@@ -12,8 +12,22 @@ let mainWindow = null;
 // Suppress security warnings
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
+const recentNotificationCache = new Map();
+
 function showWindowsNotification({ title, body, source = 'app' }) {
   try {
+    const cacheKey = `${title}_${body}`;
+    const now = Date.now();
+    if (recentNotificationCache.has(cacheKey) && (now - recentNotificationCache.get(cacheKey) < 5000)) {
+      return; // Deduplicate notification within 5 seconds window
+    }
+    recentNotificationCache.set(cacheKey, now);
+
+    // Clean old entries
+    for (const [k, time] of recentNotificationCache.entries()) {
+      if (now - time > 10000) recentNotificationCache.delete(k);
+    }
+
     if (Notification.isSupported()) {
       const defaultTitle = source === 'extension' 
         ? '⚡ Tarayıcı Eklentisinden İndirildi' 

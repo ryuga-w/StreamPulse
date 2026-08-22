@@ -314,23 +314,23 @@ export const api = {
       if (callbacks.onUsbComplete && window.electronAPI.onUsbComplete) {
         cleanups.push(window.electronAPI.onUsbComplete(callbacks.onUsbComplete));
       }
+    } else {
+      try {
+        const eventSource = new EventSource(`${API_BASE}/events`);
+        eventSource.onmessage = (event) => {
+          try {
+            const parsed = JSON.parse(event.data);
+            if (parsed.type === 'download-started' && callbacks.onStarted) callbacks.onStarted(parsed.data);
+            if (parsed.type === 'download-progress') callbacks.onProgress(parsed.data);
+            if (parsed.type === 'download-complete') callbacks.onComplete(parsed.data);
+            if (parsed.type === 'download-error') callbacks.onError(parsed.data);
+            if (parsed.type === 'usb-progress' && callbacks.onUsbProgress) callbacks.onUsbProgress(parsed.data);
+            if (parsed.type === 'usb-complete' && callbacks.onUsbComplete) callbacks.onUsbComplete(parsed.data);
+          } catch (e) {}
+        };
+        cleanups.push(() => eventSource.close());
+      } catch (e) {}
     }
-
-    try {
-      const eventSource = new EventSource(`${API_BASE}/events`);
-      eventSource.onmessage = (event) => {
-        try {
-          const parsed = JSON.parse(event.data);
-          if (parsed.type === 'download-started' && callbacks.onStarted) callbacks.onStarted(parsed.data);
-          if (parsed.type === 'download-progress') callbacks.onProgress(parsed.data);
-          if (parsed.type === 'download-complete') callbacks.onComplete(parsed.data);
-          if (parsed.type === 'download-error') callbacks.onError(parsed.data);
-          if (parsed.type === 'usb-progress' && callbacks.onUsbProgress) callbacks.onUsbProgress(parsed.data);
-          if (parsed.type === 'usb-complete' && callbacks.onUsbComplete) callbacks.onUsbComplete(parsed.data);
-        } catch (e) {}
-      };
-      cleanups.push(() => eventSource.close());
-    } catch (e) {}
 
     return () => {
       cleanups.forEach((c) => {
