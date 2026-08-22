@@ -1,6 +1,6 @@
 import { VideoMetadata, DownloadItem, DependencyStatus, FormatType, UsbDriveInfo, UsbCopyProgress } from './types';
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = 'http://127.0.0.1:3001/api';
 
 function clientSanitizeUrl(rawUrl: string): string {
   let cleanUrl = rawUrl.trim();

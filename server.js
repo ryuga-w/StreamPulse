@@ -365,8 +365,8 @@ app.post('/api/scan-history', (req, res) => {
   }
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`[StreamPulse API Engine] Running on http://localhost:${PORT}`);
+const server = app.listen(PORT, '127.0.0.1', () => {
+  console.log(`[StreamPulse API Engine] Running on http://127.0.0.1:${PORT}`);
 });
 
 server.on('error', (err) => {

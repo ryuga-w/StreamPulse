@@ -85,7 +85,7 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
   }
 
   const effectivePath = resolvedPath || currentItem.outputFile;
-  const streamUrl = `http://localhost:3001/api/stream?file=${encodeURIComponent(effectivePath)}`;
+  const streamUrl = `http://127.0.0.1:3001/api/stream?file=${encodeURIComponent(effectivePath)}`;
 
   const hasNext = currentIndex < playlist.length - 1;
   const hasPrev = currentIndex > 0;
