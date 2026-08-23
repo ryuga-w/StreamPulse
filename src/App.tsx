@@ -542,6 +542,7 @@ export const App: React.FC = () => {
           queueCount={queue.filter((i) => i.status === 'downloading' || i.status === 'queued').length}
           historyCount={history.length}
           language={language}
+          themeMode={effectiveTheme}
         />
 
         <main className="flex-1 overflow-y-auto p-6 relative bg-[#030303]">

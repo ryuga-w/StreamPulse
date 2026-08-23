@@ -320,10 +320,30 @@
   border-color: #e2e8f0 !important;
 }
 
-/* 9. Modal Backdrop & Drawer in Light Mode */
+/* 9. Modal Backdrop & Surfaces in Light Mode */
 .light-theme .fixed.inset-0 {
-  background-color: rgba(0, 0, 0, 0.6) !important;
-  backdrop-filter: blur(4px) !important;
+  background-color: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.light-theme .bg-\[\#121214\],
+.light-theme .bg-\[\#121212\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.light-theme .bg-\[\#18181c\],
+.light-theme .bg-\[\#181818\] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.light-theme .bg-\[\#141418\] {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
 }
 
 .light-theme .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {

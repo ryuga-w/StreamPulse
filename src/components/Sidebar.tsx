@@ -20,6 +20,7 @@ interface SidebarProps {
   queueCount: number;
   historyCount: number;
   language?: Language;
+  themeMode?: 'dark' | 'light';
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -28,8 +29,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   queueCount,
   historyCount,
   language = 'tr',
+  themeMode = 'dark',
 }) => {
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const isLight = themeMode === 'light';
   const t = translations[language];
 
   const menuItems = [
@@ -124,17 +127,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Bottom Section */}
       <div className="pt-2 space-y-2">
         {/* Extension Tutorial Card */}
-        <div className="p-3 rounded-xl bg-gradient-to-br from-purple-950/30 via-[#18181f] to-pink-950/20 border border-purple-500/20 space-y-2 group hover:border-purple-500/40 transition-all">
+        <div className={`p-3 rounded-xl ${
+          isLight
+            ? 'bg-gradient-to-br from-purple-50 via-indigo-50/50 to-pink-50 border-purple-200 shadow-sm'
+            : 'bg-gradient-to-br from-purple-950/30 via-[#18181f] to-pink-950/20 border-purple-500/20'
+        } border space-y-2 group hover:border-purple-400 transition-all`}>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+            <div className={`w-6 h-6 rounded-lg ${
+              isLight
+                ? 'bg-purple-100 border-purple-200 text-purple-700'
+                : 'bg-purple-500/20 border-purple-500/30 text-purple-400'
+            } border flex items-center justify-center shrink-0`}>
               <Puzzle className="w-3.5 h-3.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[12px] font-semibold text-white truncate flex items-center gap-1">
+              <div className={`text-[12px] font-semibold ${isLight ? 'text-slate-900' : 'text-white'} truncate flex items-center gap-1`}>
                 {t.extensionCardTitle}
-                <Sparkles className="w-3 h-3 text-pink-400" />
+                <Sparkles className="w-3 h-3 text-pink-500" />
               </div>
-              <div className="text-[10px] text-[#8e8e9e] truncate">
+              <div className={`text-[10px] ${isLight ? 'text-slate-500 font-medium' : 'text-[#8e8e9e]'} truncate`}>
                 {t.extensionCardSub}
               </div>
             </div>
@@ -142,23 +153,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button
             onClick={() => setIsTutorialOpen(true)}
-            className="w-full py-1.5 px-2.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/35 border border-purple-500/30 text-purple-200 hover:text-white font-medium text-[11px] flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            className={`w-full py-1.5 px-2.5 rounded-lg ${
+              isLight
+                ? 'bg-purple-100/90 hover:bg-purple-200/90 border-purple-300 text-purple-900 font-semibold'
+                : 'bg-purple-600/20 hover:bg-purple-600/35 border-purple-500/30 text-purple-200 hover:text-white font-medium'
+            } border text-[11px] flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer`}
           >
-            <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
+            <HelpCircle className={`w-3.5 h-3.5 ${isLight ? 'text-purple-700' : 'text-purple-400'}`} />
             <span>{t.extensionGuideBtn}</span>
           </button>
         </div>
 
         {/* Engine Status Card */}
-        <div className="p-3 rounded-xl bg-[#181818] border border-[#282828] space-y-1.5">
+        <div className={`p-3 rounded-xl ${isLight ? 'bg-slate-50 border-slate-200 shadow-sm' : 'bg-[#181818] border-[#282828]'} border space-y-1.5`}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-white">
+            <div className={`flex items-center gap-1.5 text-xs font-semibold ${isLight ? 'text-slate-900' : 'text-white'}`}>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>{t.engineBadge}</span>
             </div>
-            <span className="text-[10px] text-[#717171] font-mono">v1.2.0</span>
+            <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-[#717171]'} font-mono`}>v1.2.0</span>
           </div>
-          <p className="text-[11px] text-[#aaaaaa] leading-relaxed">
+          <p className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-[#aaaaaa]'} leading-relaxed`}>
             {t.engineBadgeDesc}
           </p>
         </div>
@@ -168,6 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isOpen={isTutorialOpen}
         onClose={() => setIsTutorialOpen(false)}
         language={language}
+        themeMode={themeMode}
       />
     </aside>
   );
