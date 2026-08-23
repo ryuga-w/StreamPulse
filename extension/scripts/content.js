@@ -5,6 +5,88 @@
   const INJECT_BUTTON_ID = 'streampulse-injected-btn';
   const TOAST_ID = 'streampulse-injected-toast';
 
+  let currentLanguage = 'tr';
+
+  const translations = {
+    tr: {
+      btnText: 'İndir',
+      menuHeader: 'StreamPulse İndirici',
+      mp3Title: 'MP3 İndir',
+      flacTitle: 'Kayıpsız Ses',
+      videoTitle: 'Video İndir',
+      playlistTitle: 'Tüm Çalma Listesini İndir',
+      badgeLossless: 'FLAC',
+      badgeAlbum: 'ALBÜM',
+      sendingToast: (title, fmt) => `"${title.slice(0, 30)}" (${fmt}) masaüstüne gönderiliyor...`,
+      downloadStartedToast: 'İndirme Başlatıldı',
+      startedToast: (fmt) => `Masaüstü StreamPulse kütüphanenize indiriyor (${fmt})`,
+      transferSuccessToast: 'Aktarım Başarılı',
+      appLaunchingToast: 'StreamPulse uygulaması başlatılıyor.',
+    },
+    en: {
+      btnText: 'Download',
+      menuHeader: 'StreamPulse Downloader',
+      mp3Title: 'Download MP3',
+      flacTitle: 'Lossless Audio',
+      videoTitle: 'Download Video',
+      playlistTitle: 'Download Full Playlist',
+      badgeLossless: 'FLAC',
+      badgeAlbum: 'ALBUM',
+      sendingToast: (title, fmt) => `Sending "${title.slice(0, 30)}" (${fmt}) to desktop...`,
+      downloadStartedToast: 'Download Started',
+      startedToast: (fmt) => `Downloading to StreamPulse desktop library (${fmt})`,
+      transferSuccessToast: 'Transfer Successful',
+      appLaunchingToast: 'Launching StreamPulse desktop app.',
+    }
+  };
+
+  function getT() {
+    return translations[currentLanguage] || translations.tr;
+  }
+
+  function updateInjectedBtnText() {
+    const btnTextEl = document.querySelector(`#${INJECT_BUTTON_ID} .streampulse-btn-text`);
+    if (btnTextEl) {
+      btnTextEl.textContent = getT().btnText;
+    }
+  }
+
+  function syncLanguage() {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get('streampulse_language', (res) => {
+        if (res && res.streampulse_language && res.streampulse_language !== currentLanguage) {
+          currentLanguage = res.streampulse_language;
+          updateInjectedBtnText();
+        }
+      });
+    }
+
+    fetch('http://127.0.0.1:3001/api/health')
+      .then(res => res.json())
+      .then(data => {
+        const lang = data.language || (data.settings && data.settings.language);
+        if (lang && lang !== currentLanguage) {
+          currentLanguage = lang;
+          if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.set({ streampulse_language: lang });
+          }
+          updateInjectedBtnText();
+        }
+      })
+      .catch(() => {});
+  }
+
+  syncLanguage();
+
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+    chrome.storage.onChanged.addListener((changes) => {
+      if (changes.streampulse_language) {
+        currentLanguage = changes.streampulse_language.newValue || 'tr';
+        updateInjectedBtnText();
+      }
+    });
+  }
+
   // Listen for open app / download requests from popup to execute centered on page
   if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
     chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
@@ -102,6 +184,7 @@
   }
 
   function createStreamPulseDropdown(parentBtn) {
+    const t = getT();
     const existing = document.getElementById('streampulse-dropdown-menu');
     if (existing) {
       existing.remove();
@@ -117,7 +200,7 @@
 
     menu.innerHTML = `
       <div class="streampulse-dropdown-header">
-        <span>StreamPulse Downloader</span>
+        <span>${t.menuHeader}</span>
       </div>
       <button class="streampulse-dropdown-item" id="sp-dl-mp3">
         <div class="sp-item-left">
@@ -125,7 +208,7 @@
             <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
           </div>
           <div class="sp-item-text">
-            <span class="sp-title">MP3 İndir</span>
+            <span class="sp-title">${t.mp3Title}</span>
           </div>
         </div>
         <span class="sp-badge">320 kbps</span>
@@ -136,10 +219,10 @@
             <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/></svg>
           </div>
           <div class="sp-item-text">
-            <span class="sp-title">Kayıpsız Ses</span>
+            <span class="sp-title">${t.flacTitle}</span>
           </div>
         </div>
-        <span class="sp-badge">FLAC</span>
+        <span class="sp-badge">${t.badgeLossless}</span>
       </button>
       <button class="streampulse-dropdown-item" id="sp-dl-video">
         <div class="sp-item-left">
@@ -147,7 +230,7 @@
             <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zm-11-2l6-4-6-4v8z"/></svg>
           </div>
           <div class="sp-item-text">
-            <span class="sp-title">Video İndir</span>
+            <span class="sp-title">${t.videoTitle}</span>
           </div>
         </div>
         <span class="sp-badge">4K / HD</span>
@@ -161,10 +244,10 @@
             <svg viewBox="0 0 24 24"><path d="M19 9H2v2h17V9zm0-4H2v2h17V5zM2 15h11v-2H2v2zm13 4v-8l6 4-6 4z"/></svg>
           </div>
           <div class="sp-item-text">
-            <span class="sp-title">Tüm Çalma Listesini İndir</span>
+            <span class="sp-title">${t.playlistTitle}</span>
           </div>
         </div>
-        <span class="sp-badge" style="color: #3ea6ff;">ALBÜM</span>
+        <span class="sp-badge" style="color: #3ea6ff;">${t.badgeAlbum}</span>
       </button>
       `
           : ''
@@ -256,6 +339,7 @@
     const targetContainer = ytTarget || ytmTarget || shortsTarget;
     if (!targetContainer) return;
 
+    const t = getT();
     const btn = document.createElement('button');
     btn.id = INJECT_BUTTON_ID;
     btn.className = 'streampulse-inject-btn';
@@ -263,7 +347,7 @@
       <span class="streampulse-btn-icon">
         <svg viewBox="0 0 24 24"><path d="M17 18v1H6v-1h11zm-.5-6.6l-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-5z"/></svg>
       </span>
-      <span class="streampulse-btn-text">İndir</span>
+      <span class="streampulse-btn-text">${t.btnText}</span>
       <span class="streampulse-btn-arrow">
         <svg viewBox="0 0 24 24"><path d="M12 15.5l-6-6h12l-6 6z"/></svg>
       </span>

@@ -93,6 +93,17 @@ async function syncLanguageFromDesktop() {
           currentLanguage = newLang;
           chrome.storage.local.set({ streampulse_language: newLang });
           updateContextMenus(newLang);
+          try {
+            chrome.tabs.query({}, (tabs) => {
+              if (tabs) {
+                tabs.forEach(tab => {
+                  if (tab && tab.id) {
+                    chrome.tabs.sendMessage(tab.id, { action: 'LANGUAGE_CHANGED', language: newLang }).catch(() => {});
+                  }
+                });
+              }
+            });
+          } catch (e) {}
         }
         return;
       }
