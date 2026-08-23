@@ -232,18 +232,26 @@
   function injectMainButton() {
     if (document.getElementById(INJECT_BUTTON_ID)) return;
 
-    // 1. YouTube Standard Watch Page Target Container
+    // 1. YouTube Standard Watch Page Target Container (Buttons row or Owner section)
     const ytTarget =
       document.querySelector('#top-level-buttons-computed') ||
       document.querySelector('#actions-inner #top-level-buttons-computed') ||
       document.querySelector('ytd-watch-metadata #actions #top-level-buttons-computed') ||
-      document.querySelector('#actions ytd-menu-renderer');
+      document.querySelector('#actions ytd-menu-renderer') ||
+      document.querySelector('ytd-menu-renderer.ytd-watch-metadata') ||
+      document.querySelector('#owner #subscribe-button') ||
+      document.querySelector('#owner');
 
     // 2. YouTube Music Target Container
-    const ytmTarget = document.querySelector('ytmusic-player-bar .middle-controls') || document.querySelector('ytmusic-player-bar .right-controls');
+    const ytmTarget =
+      document.querySelector('ytmusic-player-bar .middle-controls') ||
+      document.querySelector('ytmusic-player-bar .right-controls') ||
+      document.querySelector('ytmusic-player-bar');
 
     // 3. YouTube Shorts Target Container
-    const shortsTarget = document.querySelector('ytd-reel-video-renderer[is-active] #actions') || document.querySelector('#actions.ytd-reel-video-renderer');
+    const shortsTarget =
+      document.querySelector('ytd-reel-video-renderer[is-active] #actions') ||
+      document.querySelector('#actions.ytd-reel-video-renderer');
 
     const targetContainer = ytTarget || ytmTarget || shortsTarget;
     if (!targetContainer) return;
@@ -272,7 +280,11 @@
     } else if (shortsTarget) {
       shortsTarget.prepend(btn);
     } else if (ytTarget) {
-      ytTarget.prepend(btn);
+      if (ytTarget.id === 'subscribe-button' || ytTarget.id === 'owner') {
+        ytTarget.appendChild(btn);
+      } else {
+        ytTarget.prepend(btn);
+      }
     }
   }
 
@@ -280,9 +292,12 @@
   function initObserver() {
     injectMainButton();
 
-    window.addEventListener('yt-navigate-finish', () => {
-      setTimeout(injectMainButton, 600);
-      setTimeout(injectMainButton, 1500);
+    ['yt-navigate-finish', 'yt-page-data-updated', 'sp-navigate-finish'].forEach(evt => {
+      window.addEventListener(evt, () => {
+        setTimeout(injectMainButton, 300);
+        setTimeout(injectMainButton, 800);
+        setTimeout(injectMainButton, 1800);
+      });
     });
 
     const observer = new MutationObserver(() => {
