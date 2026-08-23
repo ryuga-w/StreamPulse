@@ -1,6 +1,6 @@
 {
   "name": "streampulse-downloader",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Ultra Fast, High-Performance YouTube MP3 & 4K Video Downloader Desktop App",
   "main": "electron/main.js",
   "author": "Yüksel Bilgin",
