@@ -325,232 +325,56 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // SIRI-STYLE GLSL WEBGL CHROMATIC WAVEFORM & FLUID AI ENGINE
+  // GOOGLE MATERIAL 3 EXPRESSIVE - QUANTUM CHROMATIC FLUID AI ENGINE
   // =========================================================================
-  const VERTEX_SHADER_SRC = `
-    attribute vec2 aPos;
-    void main() {
-      gl_Position = vec4(aPos, 0.0, 1.0);
-    }
-  `;
-
-  const WAVE_SHADER_SRC = `
-    #ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-    #else
-    precision mediump float;
-    #endif
-
-    uniform vec2 iResolution;
-    uniform float iTime;
-    uniform float iEnergy;
-
-    const float PI = 3.14159265359;
-    const float SPEED = 2.4;
-    const float WAVE_SCALE = 0.55;
-
-    vec3 spectral4(int s) {
-      float x = float(s);
-      return clamp(vec3(abs(x - 3.0) - 1.0, 2.0 - abs(x - 2.0), 2.0 - abs(x - 4.0)), 0.0, 1.0);
-    }
-
-    void main() {
-      vec2 R = iResolution.xy;
-      float aspect = R.x / R.y;
-      vec2 p = (gl_FragCoord.xy * 2.0 - R) / min(R.x, R.y);
-      p /= max(WAVE_SCALE, 0.1);
-
-      float t = iTime;
-      float low  = clamp(0.45 + 0.45 * sin(t * 0.8) * sin(t * 0.37 + 1.0) + iEnergy * 0.6, 0.0, 1.0);
-      float mid  = clamp(0.40 + 0.40 * sin(t * 1.7 + 2.0) * sin(t * 0.53) + iEnergy * 0.5, 0.0, 1.0);
-      float high = clamp(0.30 + 0.30 * sin(t * 2.9 + 4.0) * sin(t * 0.71 + 2.0) + iEnergy * 0.4, 0.0, 1.0);
-
-      float drift = mod(t, 20.0 * PI) * SPEED;
-      float xN = p.x / max(aspect, 1.0);
-      float env = cos(PI * 0.5 * min(abs(0.9 * xN), 1.0));
-      env *= env;
-
-      float A1 = 0.32 + 0.06 * low + iEnergy * 0.22;
-      float A2 = A1 + mid * 0.05 + high * 0.06;
-      float AB = 2.6 + mid * 0.8 + high * 0.5;
-      float th = 0.035;
-      float inten = 0.025 + low * 0.02 + iEnergy * 0.03;
-      float soft = 0.035;
-
-      float yMain = A1 * env * sin(p.x * 1.1 + drift);
-
-      vec3 num = vec3(0.0);
-      vec3 den = vec3(0.0);
-
-      for (int s = 0; s < 4; s++) {
-        vec3 hue = spectral4(s);
-        den += hue;
-        float ab = mix(-AB, AB, float(s) / 3.0);
-        float yL = A2 * env * sin(p.x * 1.0 + drift + ab);
-        float d = abs(p.y - yL);
-        float lor = 1.0 / (1.0 + (0.02 * d) * (0.02 * d));
-        float line = inten / (sqrt(d * d + soft * soft) + th);
-        float lo = min(yMain, yL);
-        float hi = max(yMain, yL);
-        float dBand = max(0.0, max(p.y - hi, lo - p.y));
-        float band = (0.024 * inten) / (dBand + 0.08);
-        num += hue * lor * (line + band);
-      }
-
-      vec3 col = num / max(den, vec3(0.001));
-      float dM = abs(p.y - yMain);
-      float lorM = 1.0 / (1.0 + (0.02 * dM) * (0.02 * dM));
-      col += 0.5 * inten * lorM / (sqrt(dM * dM + soft * soft) + th);
-      col = pow(max(col, vec3(0.0)), vec3(1.4));
-
-      float gauss = exp(-pow(xN * 1.7, 2.0));
-      col *= gauss;
-
-      float alpha = clamp(max(col.r, max(col.g, col.b)) * 3.5, 0.0, 1.0);
-      gl_FragColor = vec4(col, alpha);
-    }
-  `;
-
-  const FLUID_DOTS_SHADER_SRC = `
-    #ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-    #else
-    precision mediump float;
-    #endif
-
-    uniform vec2 iResolution;
-    uniform float iTime;
-    uniform float iEnergy;
-
-    const float TAU = 6.28318530718;
-    const int N = 6;
-
-    float hash11(float n) {
-      return fract(sin(n * 127.1 + 311.7) * 43758.5453);
-    }
-
-    float smin(float a, float b, float k) {
-      float h = max(k - abs(a - b), 0.0) / k;
-      return min(a, b) - h * h * k * 0.25;
-    }
-
-    vec3 hue2rgb(float h) {
-      h = fract(h);
-      float r = clamp(abs(h * 6.0 - 3.0) - 1.0, 0.0, 1.0);
-      float g = clamp(2.0 - abs(h * 6.0 - 2.0), 0.0, 1.0);
-      float b = clamp(2.0 - abs(h * 6.0 - 4.0), 0.0, 1.0);
-      return vec3(r, g, b);
-    }
-
-    void main() {
-      vec2 res = iResolution.xy;
-      vec2 p = (2.0 * gl_FragCoord.xy - res) / min(res.x, res.y);
-      float t = iTime;
-
-      float total = 1e5;
-      vec3 cAcc = vec3(0.0);
-      float wAcc = 1e-6;
-
-      float baseRadius = 0.52 + iEnergy * 0.12;
-
-      for (int i = 0; i < N; i++) {
-        float fi = float(i);
-        float seed = hash11(fi);
-        float ang = fi / float(N) * TAU + t * 0.45;
-        vec2 dir = vec2(cos(ang), sin(ang));
-        float r = baseRadius + 0.06 * sin(t * 1.8 + seed * TAU) + 0.04 * sin(t * 3.0 + fi);
-        vec2 pos = r * dir;
-
-        float d = length(p - pos) - (0.075 + 0.02 * sin(t * 2.0 + fi));
-        total = smin(total, d, 0.12);
-
-        float hue = fract(fi / float(N) + t * 0.08);
-        vec3 dotCol = hue2rgb(hue);
-        float w = exp(-d * 4.0);
-        cAcc += w * dotCol;
-        wAcc += w;
-      }
-
-      float sd = max(total, 0.0) + 1e-4;
-      float core = clamp(0.0035 / pow(sd, 1.35), 0.0, 1.0);
-      float edge = 1.0 - smoothstep(0.02, 0.55, sd);
-      vec3 col = (core * edge * 1.6) * (cAcc / wAcc);
-
-      col = pow(max(col, vec3(0.0)), vec3(0.85));
-      float alpha = clamp(max(col.r, max(col.g, col.b)) * 3.2, 0.0, 1.0);
-      gl_FragColor = vec4(col, alpha);
-    }
-  `;
-
-  class WebGLSiriWaveVisualizer {
+  class AIAuroraFluidRibbons {
     constructor(canvasId) {
       this.canvas = document.getElementById(canvasId);
       if (!this.canvas) return;
-      this.gl = this.canvas.getContext('webgl', { antialias: true, alpha: true });
-      this.mode = 'ambient';
+      this.ctx = this.canvas.getContext('2d');
+      this.dpr = window.devicePixelRatio || 1;
+      this.width = 240;
+      this.height = 240;
+      this.canvas.width = this.width * this.dpr;
+      this.canvas.height = this.height * this.dpr;
+      this.ctx.scale(this.dpr, this.dpr);
+
+      this.mode = 'ambient'; // 'ambient' | 'listening'
       this.running = false;
-      this.raf = null;
+      this.animId = null;
+      this.time = 0;
+      this.cx = this.width / 2;
+      this.cy = this.height / 2;
+
+      // Real-Time Audio Equalizer State
       this.energy = 0;
       this.targetEnergy = 0;
       this.bands = [0, 0, 0, 0, 0, 0];
       this.targetBands = [0, 0, 0, 0, 0, 0];
-      this.start = Date.now();
-      this.waveProgram = null;
-      this.fluidProgram = null;
-      this.activeProgram = null;
-      this.initGL();
-    }
 
-    createProgram(vsSrc, fsSrc) {
-      const gl = this.gl;
-      const compile = (type, src) => {
-        const s = gl.createShader(type);
-        gl.shaderSource(s, src);
-        gl.compileShader(s);
-        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-          console.error("GLSL compile error:", gl.getShaderInfoLog(s));
-        }
-        return s;
-      };
-      const prog = gl.createProgram();
-      const vs = compile(gl.VERTEX_SHADER, vsSrc);
-      const fs = compile(gl.FRAGMENT_SHADER, fsSrc);
-      gl.attachShader(prog, vs);
-      gl.attachShader(prog, fs);
-      gl.linkProgram(prog);
-      return prog;
-    }
+      // 5 Harmonic Silky Fourier Fluid Ribbons
+      this.ribbons = [
+        { baseR: 48, amp: 4.8, freq: 3, speed: 0.65, colors: ['#c084fc', '#ec4899', '#8b5cf6'], bandIdx: 0, width: 2.2 },
+        { baseR: 57, amp: 5.5, freq: 4, speed: -0.55, colors: ['#f43f5e', '#8b5cf6', '#06b6d4'], bandIdx: 1, width: 2.0 },
+        { baseR: 67, amp: 6.2, freq: 3, speed: 0.45, colors: ['#06b6d4', '#3b82f6', '#a855f7'], bandIdx: 2, width: 1.8 },
+        { baseR: 77, amp: 6.8, freq: 5, speed: -0.40, colors: ['#8b5cf6', '#ec4899', '#06b6d4'], bandIdx: 3, width: 1.6 },
+        { baseR: 88, amp: 7.2, freq: 3, speed: 0.30, colors: ['#6366f1', '#a855f7', '#f43f5e'], bandIdx: 4, width: 1.4 },
+      ];
 
-    initGL() {
-      if (!this.gl) return;
-      const gl = this.gl;
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-      this.waveProgram = this.createProgram(VERTEX_SHADER_SRC, WAVE_SHADER_SRC);
-      this.fluidProgram = this.createProgram(VERTEX_SHADER_SRC, FLUID_DOTS_SHADER_SRC);
-      this.activeProgram = this.fluidProgram;
-
-      const buf = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-
-      const aPos = gl.getAttribLocation(this.fluidProgram, 'aPos');
-      gl.enableVertexAttribArray(aPos);
-      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      this.canvas.width = 240 * dpr;
-      this.canvas.height = 240 * dpr;
-      gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+      // Microscopic Celestial Quantum Sparkles (Google Gemini Star Dust)
+      this.sparks = Array.from({ length: 12 }, (_, i) => ({
+        angle: (i / 12) * Math.PI * 2,
+        speed: (0.0012 + (i % 5) * 0.0006) * (i % 2 === 0 ? 1 : -1),
+        ribbonIdx: i % 4,
+        size: 0.7 + (i % 3) * 0.35,
+        alpha: 0.25 + (i % 4) * 0.15,
+        pulseSpeed: 0.6 + (i % 3) * 0.3,
+      }));
     }
 
     setMode(mode) {
       this.mode = mode;
-      if (mode === 'listening') {
-        this.activeProgram = this.waveProgram;
-      } else {
-        this.activeProgram = this.fluidProgram;
+      if (mode === 'ambient') {
         this.targetEnergy = 0;
         this.targetBands = [0, 0, 0, 0, 0, 0];
       }
@@ -569,47 +393,153 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     start() {
-      if (this.running || !this.gl) return;
+      if (this.running || !this.ctx) return;
       this.running = true;
       const loop = () => {
         if (!this.running) return;
         this.draw();
-        this.raf = requestAnimationFrame(loop);
+        this.animId = requestAnimationFrame(loop);
       };
-      this.raf = requestAnimationFrame(loop);
+      this.animId = requestAnimationFrame(loop);
     }
 
     stop() {
       this.running = false;
-      if (this.raf) {
-        cancelAnimationFrame(this.raf);
-        this.raf = null;
+      if (this.animId) {
+        cancelAnimationFrame(this.animId);
+        this.animId = null;
+      }
+      if (this.ctx) {
+        this.ctx.clearRect(0, 0, this.width, this.height);
       }
     }
 
     draw() {
-      if (!this.gl || !this.activeProgram) return;
-      const gl = this.gl;
-      this.energy += (this.targetEnergy - this.energy) * 0.2;
-      const speedMult = this.mode === 'listening' ? 1.5 + this.energy * 2.0 : 1.0;
-      const elapsed = ((Date.now() - this.start) / 1000) * speedMult;
+      const ctx = this.ctx;
+      const t = this.time;
+      ctx.clearRect(0, 0, this.width, this.height);
 
-      gl.useProgram(this.activeProgram);
-      const uRes = gl.getUniformLocation(this.activeProgram, 'iResolution');
-      const uTime = gl.getUniformLocation(this.activeProgram, 'iTime');
-      const uEnergy = gl.getUniformLocation(this.activeProgram, 'iEnergy');
+      const isListening = this.mode === 'listening';
 
-      gl.uniform2f(uRes, this.canvas.width, this.canvas.height);
-      gl.uniform1f(uTime, elapsed);
-      if (uEnergy) gl.uniform1f(uEnergy, this.energy);
+      // Organic lerp interpolation
+      this.energy += (this.targetEnergy - this.energy) * 0.22;
+      for (let b = 0; b < 6; b++) {
+        this.bands[b] += (this.targetBands[b] - this.bands[b]) * 0.22;
+      }
 
-      gl.clearColor(0.0, 0.0, 0.0, 0.0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      const tempo = (isListening ? 0.015 : 0.009) + this.energy * 0.016;
+      this.time += tempo;
+
+      // 1. Volumetric Chromatic Core Aura
+      const bassHit = (this.bands[0] * 1.8 + this.bands[1] * 1.3) * 20;
+      const breath = Math.sin(t * 0.85) * (isListening ? 14 : 7) + bassHit;
+
+      const bgGrad = ctx.createRadialGradient(this.cx, this.cy, 18, this.cx, this.cy, 95 + breath);
+      const alphaBoost = Math.min(0.65, 0.28 + this.energy * 0.42);
+      bgGrad.addColorStop(0, `rgba(139, 92, 246, ${isListening ? alphaBoost : 0.20})`);
+      bgGrad.addColorStop(0.45, `rgba(236, 72, 153, ${isListening ? alphaBoost * 0.7 : 0.12})`);
+      bgGrad.addColorStop(0.8, `rgba(6, 182, 212, ${isListening ? alphaBoost * 0.4 : 0.05})`);
+      bgGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = bgGrad;
+      ctx.beginPath();
+      ctx.arc(this.cx, this.cy, 105 + breath, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Translucent Living Fluid Diaphragm (Inner Silk Membrane)
+      ctx.save();
+      ctx.beginPath();
+      const r0 = this.ribbons[0];
+      const p0 = t * r0.speed;
+      for (let a = 0; a <= 360; a += 4) {
+        const rad = (a * Math.PI) / 180;
+        const w = (Math.sin(rad * 3 + p0) + Math.cos(rad * 4.5 - p0 * 0.7) * 0.4) * (r0.amp + this.bands[0] * 12);
+        const currR = r0.baseR + w;
+        const x = this.cx + Math.cos(rad) * currR;
+        const y = this.cy + Math.sin(rad) * currR;
+        if (a === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      const membraneAlpha = isListening ? 0.12 + this.energy * 0.14 : 0.06;
+      ctx.fillStyle = `rgba(168, 85, 247, ${membraneAlpha})`;
+      ctx.fill();
+      ctx.restore();
+
+      // 3. Multi-Pass Volumetric Silk Aurora Ribbons
+      for (let i = 0; i < this.ribbons.length; i++) {
+        const r = this.ribbons[i];
+        const bandVal = this.bands[r.bandIdx] || 0;
+        const audioAmp = (isListening ? r.amp * 1.35 : r.amp) + bandVal * 17;
+        const audioR = r.baseR + (isListening ? bandVal * 11 : 0);
+        const phase = t * r.speed + i * 1.4;
+
+        ctx.save();
+        ctx.beginPath();
+        for (let a = 0; a <= 360; a += 3) {
+          const rad = (a * Math.PI) / 180;
+          // Organic 3-Harmonic Fourier Wave Equation
+          const w1 = Math.sin(rad * r.freq + phase);
+          const w2 = Math.cos(rad * (r.freq * 1.5) - phase * 0.75) * 0.45;
+          const w3 = Math.sin(rad * 2.2 + phase * 1.25) * 0.30;
+          const wave = (w1 + w2 + w3) * audioAmp;
+
+          const currR = audioR + wave;
+          const x = this.cx + Math.cos(rad) * currR;
+          const y = this.cy + Math.sin(rad) * currR;
+          if (a === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+
+        // Gradient Color Palette
+        const grad = ctx.createLinearGradient(0, 0, this.width, this.height);
+        const [c1, c2, c3] = r.colors;
+        const alpha = Math.min(0.96, (isListening ? 0.80 - i * 0.08 : 0.65 - i * 0.08) + bandVal * 0.35);
+
+        grad.addColorStop(0, c1);
+        grad.addColorStop(0.5, c2);
+        grad.addColorStop(1, c3);
+
+        // Volumetric Glow Pass
+        ctx.shadowBlur = isListening ? 14 + bandVal * 8 : 8;
+        ctx.shadowColor = c1;
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = isListening ? (r.width + bandVal * 1.4) : r.width;
+        ctx.globalAlpha = Math.max(0.25, alpha);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // 4. Microscopic Quantum Star Dust (Celestial Intelligence Sparks)
+      for (const sp of this.sparks) {
+        sp.angle += sp.speed * (isListening ? 1.2 : 1.0);
+        const r = this.ribbons[sp.ribbonIdx];
+        const phase = t * r.speed + sp.ribbonIdx * 1.4;
+        const w1 = Math.sin(sp.angle * r.freq + phase);
+        const w2 = Math.cos(sp.angle * (r.freq * 1.5) - phase * 0.75) * 0.45;
+        const wave = (w1 + w2) * (r.amp + (this.bands[sp.ribbonIdx] || 0) * 15);
+        const radius = r.baseR + wave;
+
+        const sx = this.cx + Math.cos(sp.angle) * radius;
+        const sy = this.cy + Math.sin(sp.angle) * radius;
+        const pulse = (Math.sin(t * sp.pulseSpeed) + 1) * 0.5;
+        const sparkAlpha = Math.min(1, sp.alpha * (0.5 + pulse * 0.5) + this.energy * 0.4);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(sx, sy, sp.size * (isListening ? 1.3 : 1.0), 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = '#ec4899';
+        ctx.globalAlpha = sparkAlpha;
+        ctx.fill();
+        ctx.restore();
+      }
     }
   }
 
-  const aiNeuralCanvas = new WebGLSiriWaveVisualizer('shazam-ai-canvas');
+  const aiNeuralCanvas = new AIAuroraFluidRibbons('shazam-ai-canvas');
   aiNeuralCanvas.start();
 
   // Listen for Live Audio Equalizer Levels from Offscreen Document
@@ -661,13 +591,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function triggerRecognitionStart() {
     if (isRecognizing) return;
-
-    const isInternalPage = currentTabUrl.startsWith('chrome://') || currentTabUrl.startsWith('edge://') || currentTabUrl.startsWith('about:') || currentTabUrl.startsWith('chrome-extension://');
-    if (isInternalPage) {
-      showFeedback(currentLanguage === 'en' ? 'Cannot capture audio on internal browser tabs (chrome://). Please open a YouTube or web page.' : 'Tarayıcı iç sayfalarında (chrome://) ses yakalanamaz. Lütfen bir YouTube veya web sekmesi açıp deneyin.', 'error');
-      return;
-    }
-
     isRecognizing = true;
 
     if (btnStartRecognition) btnStartRecognition.classList.add('listening');
