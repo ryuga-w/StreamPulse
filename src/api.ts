@@ -269,6 +269,18 @@ export const api = {
     }
   },
 
+  openExtensionFolder: async (): Promise<{ success: boolean; path?: string }> => {
+    if (window.electronAPI && (window.electronAPI as any).openExtensionFolder) {
+      return await (window.electronAPI as any).openExtensionFolder();
+    }
+    try {
+      const res = await fetch(`${API_BASE}/open-extension-folder`, { method: 'POST' });
+      return await res.json();
+    } catch (e: any) {
+      return { success: false };
+    }
+  },
+
   updateYtDlp: async (): Promise<{ success: boolean; message?: string; error?: string }> => {
     if (window.electronAPI && window.electronAPI.updateYtDlp) {
       return await window.electronAPI.updateYtDlp();

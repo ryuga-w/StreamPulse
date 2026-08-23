@@ -16,6 +16,25 @@ export const translations = {
     engineBadge: 'High Fidelity Motoru',
     engineBadgeDesc: '320kbps MP3 & 4K 60FPS İndirme',
 
+    // Extension Tutorial
+    extensionCardTitle: 'Chrome Eklentisi',
+    extensionCardSub: 'Web & TikTok İndirici + AI Müzik Tanıma',
+    extensionGuideBtn: 'Kurulum Rehberi 💡',
+    extensionModalTitle: 'StreamPulse Chrome Eklentisi Kurulumu',
+    extensionModalSubtitle: 'Tarayıcınızdan Tek Tıkla İndirin ve Şarkıları Anında Tanıyın',
+    step1Title: '1. Geliştirici Modunu Açın',
+    step1Desc: 'Chrome tarayıcısında chrome://extensions adresine gidin ve sağ üst köşedeki "Geliştirici modu" anahtarını açın.',
+    step2Title: '2. "Paketlenmemiş öge yükle" Butonuna Tıklayın',
+    step2Desc: 'Sayfanın sol üst köşesinde beliren "Paketlenmemiş öge yükle" (Load unpacked) butonuna basın.',
+    step3Title: '3. Eklenti Klasörünü Seçin',
+    step3Desc: 'Açılan dosya seçiciden StreamPulse projesinin içindeki "extension" klasörünü seçin.',
+    step4Title: '4. Araç Çubuğuna Sabitleyin 📌',
+    step4Desc: 'Chrome uzantılar menüsünden StreamPulse simgesini sabitleyin. Artık sekmelerde gezinirken tek tıkla 320kbps MP3 veya 4K video indirebilir, arka planda çalan şarkıları anında tanıyabilirsiniz!',
+    openExtFolderBtn: 'Eklenti Klasörünü Aç 📁',
+    copyChromeUrlBtn: 'chrome://extensions Kopyala 📋',
+    copiedText: 'Kopyalandı!',
+    closeGuideBtn: 'Anladım, Harika!',
+
     // Downloader
     heroBadge: 'Ultra Hızlı YouTube MP3 & 4K Video İndirici',
     heroTitle: 'Video, Müzik ve Tüm Oynatma Listelerini İndirin',
@@ -133,6 +152,25 @@ export const translations = {
     settingsSub: 'Preferences & Engine',
     engineBadge: 'High Fidelity Engine',
     engineBadgeDesc: '320kbps MP3 & 4K 60FPS Extraction',
+
+    // Extension Tutorial
+    extensionCardTitle: 'Chrome Extension',
+    extensionCardSub: 'Web & TikTok Grabber + AI Music ID',
+    extensionGuideBtn: 'Setup Guide 💡',
+    extensionModalTitle: 'StreamPulse Chrome Extension Setup',
+    extensionModalSubtitle: '1-Click Grab Media & Recognize Background Music from Any Tab',
+    step1Title: '1. Enable Developer Mode',
+    step1Desc: 'Open chrome://extensions in Chrome and toggle on "Developer mode" in the top-right corner.',
+    step2Title: '2. Click "Load unpacked"',
+    step2Desc: 'Click the "Load unpacked" button in the top-left toolbar.',
+    step3Title: '3. Select Extension Folder',
+    step3Desc: 'In the folder picker, select the "extension" folder inside your StreamPulse directory.',
+    step4Title: '4. Pin to Chrome Toolbar 📌',
+    step4Desc: 'Pin the StreamPulse icon from Chrome\'s extensions puzzle menu. You can now download 320kbps MP3/4K video or identify songs playing in any browser tab with one click!',
+    openExtFolderBtn: 'Open Extension Folder 📁',
+    copyChromeUrlBtn: 'Copy chrome://extensions 📋',
+    copiedText: 'Copied!',
+    closeGuideBtn: 'Got It, Awesome!',
 
     // Downloader
     heroBadge: 'Ultra Fast YouTube MP3 & 4K Video Downloader',

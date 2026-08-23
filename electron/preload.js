@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getDefaultDownloadDirectory: () => ipcRenderer.invoke('get-default-download-dir'),
   selectDownloadDirectory: () => ipcRenderer.invoke('select-download-dir'),
   openFolder: (filePath) => ipcRenderer.invoke('open-folder', filePath),
+  openExtensionFolder: () => ipcRenderer.invoke('open-extension-folder'),
   openFile: (filePath) => ipcRenderer.invoke('open-file', filePath),
   resolveMediaFile: (filePath, title) => ipcRenderer.invoke('resolve-media-file', filePath, title),
   scanHistory: (dir) => ipcRenderer.invoke('scan-history', dir),

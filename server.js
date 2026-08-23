@@ -39,6 +39,18 @@ app.get(['/api/health', '/api/ping', '/api/status'], (_req, res) => {
   });
 });
 
+app.post('/api/open-extension-folder', (_req, res) => {
+  try {
+    const { exec } = require('child_process');
+    let extPath = path.resolve(__dirname, 'extension');
+    if (fs.existsSync(extPath)) {
+      exec(`explorer.exe "${extPath}"`);
+      return res.json({ success: true, path: extPath });
+    }
+  } catch (e) {}
+  res.json({ success: false });
+});
+
 const sseClients = new Set();
 
 function broadcastEvent(type, data) {

@@ -322,6 +322,23 @@ ipcMain.handle('cancel-usb-copy', () => {
   return true;
 });
 
+ipcMain.handle('open-extension-folder', async () => {
+  try {
+    let extPath = path.resolve(__dirname, '../extension');
+    if (!fs.existsSync(extPath)) {
+      extPath = path.join(process.resourcesPath, 'extension');
+    }
+    if (!fs.existsSync(extPath)) {
+      extPath = path.join(app.getAppPath(), 'extension');
+    }
+    if (fs.existsSync(extPath)) {
+      await shell.openPath(extPath);
+      return { success: true, path: extPath };
+    }
+  } catch (e) {}
+  return { success: false };
+});
+
 ipcMain.handle('open-folder', async (_event, rawPath) => {
   if (!rawPath) return false;
   try {
