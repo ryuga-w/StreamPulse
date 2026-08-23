@@ -69,21 +69,10 @@ float hash21(vec2 p) {
   return fract(p.x * p.y);
 }
 
-// Even, un-structured white noise for film grain (Dave Hoskins hash12). The
-// multiply hash above is fine for value noise but shows a faint axis-aligned
-// mesh at integer fragment coords, which reads as a net over flat areas.
 float grainHash(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
   p3 += dot(p3, p3.yzx + 33.33);
   return fract((p3.x + p3.y) * p3.z);
-}
-
-vec2 hash22(vec2 p) {
-#ifndef GL_FRAGMENT_PRECISION_HIGH
-  p = mod(p, 31.0);
-#endif
-  float n = sin(dot(p, vec2(41.0, 289.0)));
-  return fract(vec2(15731.743, 7892.321) * n);
 }
 
 float noise(vec2 p) {
@@ -107,15 +96,11 @@ float fbm(vec2 p) {
   return v;
 }
 
-// --- OKLab colour mixing (perceptual), gated by u_oklab -----------------------
 vec3 srgbToLinear(vec3 c) {
   return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)),
     step(0.04045, c));
 }
 vec3 linearToSrgb(vec3 c) {
-  // max() guards the sRGB branch: out-of-gamut OKLab interpolations can send a
-  // channel negative, and pow(negative, …) is NaN which mix()/step() would
-  // then propagate. The linear branch clips such channels to 0 downstream.
   return mix(c * 12.92, 1.055 * pow(max(c, vec3(0.0)), vec3(1.0 / 2.4)) - 0.055,
     step(0.0031308, c));
 }
@@ -124,8 +109,8 @@ vec3 linToOklab(vec3 c) {
   float m = 0.2119034982 * c.r + 0.6806995451 * c.g + 0.1073969566 * c.b;
   float s = 0.0883024619 * c.r + 0.2817188376 * c.g + 0.6299787005 * c.b;
   l = pow(max(l, 0.0), 1.0 / 3.0);
-  m = pow(max(m, 0.0), 1.0 / 3.0);
-  s = pow(max(s, 0.0), 1.0 / 3.0);
+  m = pow(max(l, 0.0), 1.0 / 3.0);
+  s = pow(max(l, 0.0), 1.0 / 3.0);
   return vec3(
     0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
     1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
@@ -148,20 +133,6 @@ vec3 mixColour(vec3 a, vec3 b, float t) {
     return clamp(linearToSrgb(oklabToLin(mix(la, lb, t))), 0.0, 1.0);
   }
   return mix(a, b, t);
-}
-
-// Mix through the recipe colours; x is clamped to 0..1. WebGL1 forbids
-// dynamic uniform indexing in fragment shaders, hence the constant loop.
-vec3 palette(float x) {
-  float n = max(u_colorCount - 1.0, 1.0);
-  float f = clamp(x, 0.0, 1.0) * n;
-  vec3 col = u_colors[0];
-  for (int i = 0; i < 7; i++) {
-    if (float(i) < n)
-      col = mixColour(col, u_colors[i + 1],
-        smoothstep(0.0, 1.0, clamp(f - float(i), 0.0, 1.0)));
-  }
-  return col;
 }
 
 vec3 hueRotate(vec3 col, float a) {
@@ -198,41 +169,9 @@ void main() {
   vec2 screenUv = uv;
   vec2 p = (gl_FragCoord.xy - 0.5 * u_resolution.xy)
     / min(u_resolution.x, u_resolution.y);
-  float cursorMask = 0.0;
 
-  // Cursor modes 1–3 are local distortions. Push shifts the same screen-space
-  // coordinates before field transforms, so Zoom/Rotate don't change its feel.
-  if (u_cursorPresence > 0.001) {
-    // u_mouse is normalized to -1..1 in canvas space. Convert it to the same
-    // aspect-corrected screen space as p so effects stay under the cursor.
-    vec2 cursor = (0.5 * u_mouse * u_resolution.xy)
-      / min(u_resolution.x, u_resolution.y);
-    vec2 cursorDelta = p - cursor;
-    if (u_cursorEffect < 0.5) {
-      p += cursor * u_cursorPresence * u_cursorStrength * 0.55;
-    } else {
-      float cursorDistance = length(cursorDelta);
-      vec2 cursorDirection = cursorDelta / max(cursorDistance, 0.0001);
-      cursorMask = u_cursorPresence
-        * (1.0 - smoothstep(0.0, u_cursorRadius, cursorDistance));
-      if (u_cursorEffect < 1.5) {
-        p -= cursorDirection * cursorMask * u_cursorStrength * 0.24;
-      } else if (u_cursorEffect < 2.5) {
-        float cursorAngle = cursorMask * u_cursorStrength * 2.2;
-        float cc = cos(cursorAngle), cs = sin(cursorAngle);
-        p = cursor + mat2(cc, -cs, cs, cc) * cursorDelta;
-      } else if (u_cursorEffect < 3.5) {
-        float ripple = sin(
-          cursorDistance / max(u_cursorRadius, 0.001) * 18.0 - u_time * 5.0);
-        p -= cursorDirection * ripple * cursorMask * u_cursorStrength * 0.07;
-      }
-    }
-  }
-
-  // Keep presets that read uv (rather than p) in the same warped space.
   uv = p * min(u_resolution.x, u_resolution.y) / u_resolution.xy + 0.5;
   p *= u_scale;
-  // Field transform: rotate, pan, pointer push, slow drift.
   if (abs(u_rotate) > 0.0001) {
     float cr = cos(u_rotate), sr = sin(u_rotate);
     p = mat2(cr, -sr, sr, cr) * p;
@@ -240,13 +179,12 @@ void main() {
   p += u_offset;
   if (u_drift > 0.0001)
     p += u_drift * vec2(sin(u_time * 0.31), cos(u_time * 0.23));
-  // Organic domain warp.
   if (u_warp > 0.0) {
     p += u_warp * (vec2(
       fbm(p * u_detail + u_seed),
       fbm(p * u_detail + vec2(5.2, 1.3))) - 0.5);
   }
-  // Shade, with an optional soft 5-tap blur.
+
   vec3 col;
   if (u_blur > 0.0) {
     float e = u_blur;
@@ -260,7 +198,7 @@ void main() {
   } else {
     col = shade(uv, p, u_time);
   }
-  // Post: contrast, saturation, hue, brightness, vignette, grain.
+
   if (abs(u_contrast - 1.0) > 0.0001)
     col = (col - 0.5) * u_contrast + 0.5;
   if (abs(u_saturation - 1.0) > 0.0001) {
@@ -275,8 +213,6 @@ void main() {
     float vd = length(screenUv - 0.5) * 1.41421356;
     col *= 1.0 - u_vignette * smoothstep(0.35, 1.0, vd);
   }
-  if (u_cursorPresence > 0.001 && u_cursorEffect > 3.5)
-    col += (vec3(0.18) + col * 0.12) * cursorMask * u_cursorStrength;
   if (u_grain > 0.0001)
     col += (grainHash(
       gl_FragCoord.xy + vec2(u_seed * 17.0, u_seed * 31.0)) - 0.5) * u_grain;
@@ -284,8 +220,17 @@ void main() {
 }
 `
 
-const UNIFORMS = {
-  colors: [[0.06274509803921569,0,0.16862745098039217],[0.4980392156862745,0,1],[0.2,0.6823529411764706,0.7254901960784313],[0.03529411764705882,0.12549019607843137,0.9568627450980393],[0.03529411764705882,0.12549019607843137,0.9568627450980393],[0.03529411764705882,0.12549019607843137,0.9568627450980393],[0.03529411764705882,0.12549019607843137,0.9568627450980393],[0.03529411764705882,0.12549019607843137,0.9568627450980393]] as [number, number, number][],
+const DARK_UNIFORMS = {
+  colors: [
+    [0.0627, 0.0, 0.1686],
+    [0.4980, 0.0, 1.0],
+    [0.2, 0.6823, 0.7254],
+    [0.0352, 0.1254, 0.9568],
+    [0.0352, 0.1254, 0.9568],
+    [0.0352, 0.1254, 0.9568],
+    [0.0352, 0.1254, 0.9568],
+    [0.0352, 0.1254, 0.9568]
+  ] as [number, number, number][],
   colorCount: 4,
   scale: 1.100,
   intensity: 0.340,
@@ -304,7 +249,6 @@ const UNIFORMS = {
   offsetX: 0.000,
   offsetY: 0.000,
   drift: 0.000,
-  cursorEnabled: false,
   cursorEffect: 2.0,
   cursorStrength: 0.650,
   cursorRadius: 0.460,
@@ -312,10 +256,53 @@ const UNIFORMS = {
   timeScale: 0.727,
 }
 
+const LIGHT_UNIFORMS = {
+  colors: [
+    [0.95, 0.94, 0.99],   // Soft Lavender / Crisp Light base
+    [0.78, 0.65, 0.96],   // Ethereal Soft Purple
+    [0.65, 0.82, 0.97],   // Sky pastel Cyan
+    [0.96, 0.75, 0.88],   // Pastel Rose / Peach Pink
+    [0.95, 0.94, 0.99],
+    [0.78, 0.65, 0.96],
+    [0.65, 0.82, 0.97],
+    [0.96, 0.75, 0.88]
+  ] as [number, number, number][],
+  colorCount: 4,
+  scale: 0.950,
+  intensity: 0.300,
+  paramA: 0.500,
+  warp: 0.000,
+  detail: 2.200,
+  contrast: 1.080,
+  brightness: 0.020,
+  saturation: 1.150,
+  hue: 0.0000,
+  vignette: 0.050,
+  blur: 0.0350,
+  grain: 0.015,
+  seed: 1453.0,
+  rotate: 0.0000,
+  offsetX: 0.000,
+  offsetY: 0.000,
+  drift: 0.000,
+  cursorEffect: 2.0,
+  cursorStrength: 0.650,
+  cursorRadius: 0.460,
+  oklab: 0.0,
+  timeScale: 0.620,
+}
+
 const pendingContextReleases = new WeakMap<HTMLCanvasElement, number>()
 
-export function ShaderBackground({ className }: { className?: string }) {
+export interface ShaderBackgroundProps {
+  className?: string;
+  theme?: 'dark' | 'light';
+}
+
+export function ShaderBackground({ className, theme = 'dark' }: ShaderBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const isLight = theme === 'light'
+  const UNIFORMS = isLight ? LIGHT_UNIFORMS : DARK_UNIFORMS
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -400,15 +387,6 @@ export function ShaderBackground({ className }: { className?: string }) {
       UNIFORMS.cursorRadius,
     )
 
-    let targetX = 0
-    let targetY = 0
-    let targetPresence = 0
-    let mouseX = 0
-    let mouseY = 0
-    let cursorPresence = 0
-    let pointerKnown = false
-    let pointerClientX = 0
-    let pointerClientY = 0
     let bounds = canvas.getBoundingClientRect()
     let raf = 0
     let lastNow: number | null = null
@@ -441,56 +419,12 @@ export function ShaderBackground({ className }: { className?: string }) {
       }
     }
 
-    const updatePointerTarget = () => {
-      if (!pointerKnown) return
-      if (bounds.width === 0 || bounds.height === 0) return
-      const inside =
-        pointerClientX >= bounds.left &&
-        pointerClientX <= bounds.right &&
-        pointerClientY >= bounds.top &&
-        pointerClientY <= bounds.bottom
-      if (!inside) {
-        targetPresence = 0
-        requestRender()
-        return
-      }
-      const nextX = ((pointerClientX - bounds.left) / bounds.width) * 2 - 1
-      const nextY = -(((pointerClientY - bounds.top) / bounds.height) * 2 - 1)
-      if (targetPresence === 0 && cursorPresence < 0.01) {
-        mouseX = nextX
-        mouseY = nextY
-      }
-      targetX = nextX
-      targetY = nextY
-      targetPresence = 1
-      requestRender()
-    }
-    const onPointerMove = (event: PointerEvent) => {
-      pointerKnown = true
-      pointerClientX = event.clientX
-      pointerClientY = event.clientY
-      bounds = canvas.getBoundingClientRect()
-      updatePointerTarget()
-    }
-    const onPointerLeave = () => {
-      pointerKnown = false
-      targetPresence = 0
-      requestRender()
-    }
     const updateLayout = () => {
       bounds = canvas.getBoundingClientRect()
       resizeCanvas()
-      updatePointerTarget()
       requestRender()
     }
     window.addEventListener("resize", updateLayout)
-    if (UNIFORMS.cursorEnabled) {
-      window.addEventListener("pointermove", onPointerMove, { passive: true })
-      window.addEventListener("pointercancel", onPointerLeave)
-      window.addEventListener("scroll", updateLayout, true)
-      window.addEventListener("blur", onPointerLeave)
-      document.documentElement.addEventListener("pointerleave", onPointerLeave)
-    }
 
     const resizeObserver = new ResizeObserver(updateLayout)
     resizeObserver.observe(canvas)
@@ -518,12 +452,7 @@ export function ShaderBackground({ className }: { className?: string }) {
     function render(now: number) {
       raf = 0
       if (disposed || !visible || !inView) return
-      const dt = lastNow === null ? 0 : Math.min((now - lastNow) / 1000, 0.1)
       lastNow = now
-      const follow = 1 - Math.exp(-12 * dt)
-      mouseX += (targetX - mouseX) * follow
-      mouseY += (targetY - mouseY) * follow
-      cursorPresence += (targetPresence - cursorPresence) * follow
       resizeCanvas()
       const width = canvas.width
       const height = canvas.height
@@ -538,22 +467,18 @@ export function ShaderBackground({ className }: { className?: string }) {
         uni.space,
         UNIFORMS.offsetX,
         UNIFORMS.offsetY,
-        mouseX,
-        mouseY,
+        0,
+        0,
       )
       gl.uniform4f(
         uni.cursor,
-        UNIFORMS.cursorEnabled ? cursorPresence : 0,
+        0,
         UNIFORMS.cursorEffect,
         UNIFORMS.cursorStrength,
         UNIFORMS.cursorRadius,
       )
       gl.drawArrays(gl.TRIANGLES, 0, 3)
-      const pointerSettling =
-        Math.abs(targetX - mouseX) > 0.001 ||
-        Math.abs(targetY - mouseY) > 0.001 ||
-        Math.abs(targetPresence - cursorPresence) > 0.001
-      if (timeAnimated || pointerSettling) requestRender()
+      if (timeAnimated) requestRender()
       else lastNow = null
     }
     requestRender()
@@ -564,16 +489,6 @@ export function ShaderBackground({ className }: { className?: string }) {
       intersectionObserver.disconnect()
       document.removeEventListener("visibilitychange", onVisibilityChange)
       window.removeEventListener("resize", updateLayout)
-      if (UNIFORMS.cursorEnabled) {
-        window.removeEventListener("pointermove", onPointerMove)
-        window.removeEventListener("pointercancel", onPointerLeave)
-        window.removeEventListener("scroll", updateLayout, true)
-        window.removeEventListener("blur", onPointerLeave)
-        document.documentElement.removeEventListener(
-          "pointerleave",
-          onPointerLeave,
-        )
-      }
       gl.deleteBuffer(buf)
       gl.deleteProgram(program)
       const releaseTimer = window.setTimeout(() => {
@@ -585,7 +500,7 @@ export function ShaderBackground({ className }: { className?: string }) {
       }, 0)
       pendingContextReleases.set(canvas, releaseTimer)
     }
-  }, [])
+  }, [isLight])
 
   return (
     <canvas ref={canvasRef} className={className} style={{ display: "block", width: "100%", height: "100%" }} />

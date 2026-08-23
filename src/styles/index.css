@@ -198,8 +198,29 @@
 }
 
 /* 5. Inputs, Search Bar & Select Dropdowns */
-.light-theme form .bg-\[\#121212\] {
-  background-color: #ffffff !important;
+.light-theme form button[type="submit"] {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2) !important;
+}
+
+.light-theme form button[type="submit"]:hover {
+  background-color: #1e293b !important;
+}
+
+.light-theme form button[type="submit"] span,
+.light-theme form button[type="submit"] svg {
+  color: #ffffff !important;
+}
+
+.light-theme .text-\[\#717171\] {
+  color: #475569 !important;
+  font-weight: 500 !important;
+}
+
+.light-theme .text-\[\#aaaaaa\] {
+  color: #334155 !important;
+  font-weight: 500 !important;
 }
 
 .light-theme form input,
@@ -208,6 +229,7 @@
   background-color: transparent !important;
   box-shadow: none !important;
   outline: none !important;
+  color: #0f172a !important;
 }
 
 .light-theme input[type="text"]:not(form input),

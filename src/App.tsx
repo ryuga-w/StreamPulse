@@ -553,10 +553,10 @@ export const App: React.FC = () => {
           {activeTab === 'downloader' && (
             <div className="relative min-h-full flex flex-col justify-start">
               {/* WebGL Shader Mesh Drift Canvas */}
-              <div className={`absolute -inset-6 pointer-events-none overflow-hidden ${effectiveTheme === 'light' ? 'opacity-35' : 'opacity-65'} transition-opacity duration-500`}>
-                <ShaderBackground className="w-full h-full" />
+              <div className={`absolute -inset-6 pointer-events-none overflow-hidden ${effectiveTheme === 'light' ? 'opacity-85' : 'opacity-65'} transition-opacity duration-500`}>
+                <ShaderBackground className="w-full h-full" theme={effectiveTheme} />
                 {/* Gradient mask for supreme clarity */}
-                <div className={`absolute inset-0 ${effectiveTheme === 'light' ? 'bg-gradient-to-b from-transparent via-[#f9f9f9]/80 to-[#f9f9f9]' : 'bg-gradient-to-b from-transparent via-[#030303]/70 to-[#030303]'}`}></div>
+                <div className={`absolute inset-0 ${effectiveTheme === 'light' ? 'bg-gradient-to-b from-transparent via-[#f9f9f9]/40 to-[#f9f9f9]/90' : 'bg-gradient-to-b from-transparent via-[#030303]/70 to-[#030303]'}`}></div>
               </div>
 
               <div className="relative z-10 max-w-3xl mx-auto space-y-6 animate-in fade-in duration-150 w-full">
