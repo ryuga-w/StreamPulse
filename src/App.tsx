@@ -7,6 +7,7 @@ import { QueueView } from './components/QueueView';
 import { HistoryView } from './components/HistoryView';
 import { SettingsView } from './components/SettingsView';
 import { MediaPlayer } from './components/MediaPlayer';
+import { ShaderBackground } from './components/ui/valley-of-the-mind';
 import {
   VideoMetadata,
   DownloadItem,
@@ -550,33 +551,42 @@ export const App: React.FC = () => {
           <div className="absolute bottom-10 left-10 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
 
           {activeTab === 'downloader' && (
-            <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-150">
-              <div className="text-center space-y-2 pt-2">
-                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-xs text-purple-300 font-medium shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                  <span>{t.heroBadge}</span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-indigo-300 to-pink-400 bg-clip-text text-transparent">
-                  {t.heroTitle}
-                </h1>
-                <p className="text-xs text-[#aaaaaa] max-w-lg mx-auto">
-                  {t.heroSubtitle}
-                </p>
+            <div className="relative min-h-full flex flex-col justify-start">
+              {/* WebGL Shader Mesh Drift Canvas */}
+              <div className={`absolute -inset-6 pointer-events-none overflow-hidden ${effectiveTheme === 'light' ? 'opacity-35' : 'opacity-65'} transition-opacity duration-500`}>
+                <ShaderBackground className="w-full h-full" />
+                {/* Gradient mask for supreme clarity */}
+                <div className={`absolute inset-0 ${effectiveTheme === 'light' ? 'bg-gradient-to-b from-transparent via-[#f9f9f9]/80 to-[#f9f9f9]' : 'bg-gradient-to-b from-transparent via-[#030303]/70 to-[#030303]'}`}></div>
               </div>
 
-              <UrlInput
-                onFetch={handleFetchUrl}
-                isLoading={isLoadingMetadata}
-                autoClipboard={settings.autoClipboard}
-              />
+              <div className="relative z-10 max-w-3xl mx-auto space-y-6 animate-in fade-in duration-150 w-full">
+                <div className="text-center space-y-2 pt-2">
+                  <div className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full ${effectiveTheme === 'light' ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-purple-500/10 border-purple-500/20 text-purple-300'} border text-xs font-semibold shadow-sm backdrop-blur-md`}>
+                    <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                    <span>{t.heroBadge}</span>
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-indigo-300 to-pink-400 bg-clip-text text-transparent drop-shadow-sm">
+                    {t.heroTitle}
+                  </h1>
+                  <p className={`text-xs ${effectiveTheme === 'light' ? 'text-slate-600 font-medium' : 'text-[#aaaaaa]'} max-w-lg mx-auto`}>
+                    {t.heroSubtitle}
+                  </p>
+                </div>
 
-              {currentMetadata && (
-                <MediaPreview
-                  metadata={currentMetadata}
-                  onDownload={handleStartDownload}
-                  onDownloadPlaylist={handleDownloadPlaylist}
+                <UrlInput
+                  onFetch={handleFetchUrl}
+                  isLoading={isLoadingMetadata}
+                  autoClipboard={settings.autoClipboard}
                 />
-              )}
+
+                {currentMetadata && (
+                  <MediaPreview
+                    metadata={currentMetadata}
+                    onDownload={handleStartDownload}
+                    onDownloadPlaylist={handleDownloadPlaylist}
+                  />
+                )}
+              </div>
             </div>
           )}
 
