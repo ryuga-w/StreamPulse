@@ -360,16 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { baseR: 77, amp: 6.8, freq: 5, speed: -0.40, colors: ['#8b5cf6', '#ec4899', '#06b6d4'], bandIdx: 3, width: 1.6 },
         { baseR: 88, amp: 7.2, freq: 3, speed: 0.30, colors: ['#6366f1', '#a855f7', '#f43f5e'], bandIdx: 4, width: 1.4 },
       ];
-
-      // Microscopic Celestial Quantum Sparkles (Google Gemini Star Dust)
-      this.sparks = Array.from({ length: 12 }, (_, i) => ({
-        angle: (i / 12) * Math.PI * 2,
-        speed: (0.0012 + (i % 5) * 0.0006) * (i % 2 === 0 ? 1 : -1),
-        ribbonIdx: i % 4,
-        size: 0.7 + (i % 3) * 0.35,
-        alpha: 0.25 + (i % 4) * 0.15,
-        pulseSpeed: 0.6 + (i % 3) * 0.3,
-      }));
     }
 
     setMode(mode) {
@@ -508,32 +498,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.globalAlpha = Math.max(0.25, alpha);
         ctx.stroke();
 
-        ctx.restore();
-      }
-
-      // 4. Microscopic Quantum Star Dust (Celestial Intelligence Sparks)
-      for (const sp of this.sparks) {
-        sp.angle += sp.speed * (isListening ? 1.2 : 1.0);
-        const r = this.ribbons[sp.ribbonIdx];
-        const phase = t * r.speed + sp.ribbonIdx * 1.4;
-        const w1 = Math.sin(sp.angle * r.freq + phase);
-        const w2 = Math.cos(sp.angle * (r.freq * 1.5) - phase * 0.75) * 0.45;
-        const wave = (w1 + w2) * (r.amp + (this.bands[sp.ribbonIdx] || 0) * 15);
-        const radius = r.baseR + wave;
-
-        const sx = this.cx + Math.cos(sp.angle) * radius;
-        const sy = this.cy + Math.sin(sp.angle) * radius;
-        const pulse = (Math.sin(t * sp.pulseSpeed) + 1) * 0.5;
-        const sparkAlpha = Math.min(1, sp.alpha * (0.5 + pulse * 0.5) + this.energy * 0.4);
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(sx, sy, sp.size * (isListening ? 1.3 : 1.0), 0, Math.PI * 2);
-        ctx.fillStyle = '#ffffff';
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = '#ec4899';
-        ctx.globalAlpha = sparkAlpha;
-        ctx.fill();
         ctx.restore();
       }
     }
