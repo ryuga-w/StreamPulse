@@ -987,8 +987,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Open Desktop App Button
-  btnOpenApp.addEventListener('click', () => {
+  btnOpenApp.addEventListener('click', async () => {
     showFeedback(t.openingApp, 'info');
+
+    try {
+      const res = await fetch('http://127.0.0.1:3001/api/focus', { method: 'POST' });
+      if (res.ok) {
+        showFeedback(t.appLaunched, 'success');
+        return;
+      }
+    } catch (e) {}
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs && tabs[0]?.id) {

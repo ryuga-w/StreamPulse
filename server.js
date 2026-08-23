@@ -39,6 +39,30 @@ app.get(['/api/health', '/api/ping', '/api/status'], (_req, res) => {
   });
 });
 
+app.post(['/api/focus', '/api/open-app', '/api/open'], (_req, res) => {
+  try {
+    if (global.electronMainWindow && !global.electronMainWindow.isDestroyed()) {
+      if (global.electronMainWindow.isMinimized()) global.electronMainWindow.restore();
+      global.electronMainWindow.show();
+      global.electronMainWindow.focus();
+      return res.json({ success: true, focused: true });
+    }
+  } catch (e) {}
+
+  try {
+    const { exec } = require('child_process');
+    const electronBin = path.join(__dirname, 'node_modules/.bin/electron.cmd');
+    if (fs.existsSync(electronBin)) {
+      exec(`"${electronBin}" "${path.join(__dirname, 'electron/main.js')}"`, { cwd: __dirname });
+    } else {
+      exec(`npx electron electron/main.js`, { cwd: __dirname });
+    }
+    return res.json({ success: true, launched: true });
+  } catch (err) {
+    return res.json({ success: false, error: err.message });
+  }
+});
+
 app.post('/api/open-extension-folder', (_req, res) => {
   try {
     const { exec } = require('child_process');
