@@ -183,12 +183,17 @@ function createWindow() {
 
   global.electronMainWindow = mainWindow;
 
-  const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
-
-  if (isDev) {
-    mainWindow.loadURL('http://localhost:5173');
+  const distIndex = path.join(__dirname, '../dist/index.html');
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.loadURL('http://localhost:5173').catch(() => {
+      if (fs.existsSync(distIndex)) {
+        mainWindow.loadFile(distIndex);
+      }
+    });
+  } else if (fs.existsSync(distIndex)) {
+    mainWindow.loadFile(distIndex);
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    mainWindow.loadURL('http://localhost:5173');
   }
 
   mainWindow.once('ready-to-show', () => {

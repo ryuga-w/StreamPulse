@@ -661,6 +661,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function triggerRecognitionStart() {
     if (isRecognizing) return;
+
+    const isInternalPage = currentTabUrl.startsWith('chrome://') || currentTabUrl.startsWith('edge://') || currentTabUrl.startsWith('about:') || currentTabUrl.startsWith('chrome-extension://');
+    if (isInternalPage) {
+      showFeedback(currentLanguage === 'en' ? 'Cannot capture audio on internal browser tabs (chrome://). Please open a YouTube or web page.' : 'Tarayıcı iç sayfalarında (chrome://) ses yakalanamaz. Lütfen bir YouTube veya web sekmesi açıp deneyin.', 'error');
+      return;
+    }
+
     isRecognizing = true;
 
     if (btnStartRecognition) btnStartRecognition.classList.add('listening');
