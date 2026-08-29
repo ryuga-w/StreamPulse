@@ -329,16 +329,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   class AIAuroraFluidRibbons {
     constructor(canvasId) {
-      this.canvas = document.getElementById(canvasId);
-      if (!this.canvas) return;
-      this.ctx = this.canvas.getContext('2d');
+      this.canvas = typeof canvasId === 'string' ? document.getElementById(canvasId) : canvasId;
+      this.ctx = null;
       this.dpr = window.devicePixelRatio || 1;
       this.width = 240;
       this.height = 240;
-      this.canvas.width = this.width * this.dpr;
-      this.canvas.height = this.height * this.dpr;
-      this.ctx.scale(this.dpr, this.dpr);
-
       this.mode = 'ambient'; // 'ambient' | 'listening'
       this.running = false;
       this.animId = null;
@@ -362,6 +357,16 @@ document.addEventListener('DOMContentLoaded', () => {
       ];
     }
 
+    init() {
+      if (!this.canvas) return false;
+      this.ctx = this.canvas.getContext('2d');
+      if (!this.ctx) return false;
+      this.canvas.width = this.width * this.dpr;
+      this.canvas.height = this.height * this.dpr;
+      this.ctx.scale(this.dpr, this.dpr);
+      return true;
+    }
+
     setMode(mode) {
       this.mode = mode;
       if (mode === 'ambient') {
@@ -383,7 +388,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     start() {
-      if (this.running || !this.ctx) return;
+      if (this.running) return;
+      if (!this.ctx) this.init();
+      if (!this.ctx) return;
       this.running = true;
       const loop = () => {
         if (!this.running) return;
@@ -406,6 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     draw() {
       const ctx = this.ctx;
+      if (!ctx) return;
       const t = this.time;
       ctx.clearRect(0, 0, this.width, this.height);
 
@@ -505,29 +513,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let aiVisualizer = null;
 
-  async function initOrbVisualizer() {
-    const fallback = new AIAuroraFluidRibbons('shazam-ai-canvas');
-    if (typeof StreamPulseLiquidOrb !== 'undefined') {
-      try {
-        const orb = new StreamPulseLiquidOrb('shazam-ai-canvas');
-        orb.fallbackVisualizer = fallback;
-        const supported = await orb.init();
-        if (supported) {
-          aiVisualizer = orb;
-        } else {
-          aiVisualizer = fallback;
-        }
-      } catch (e) {
-        console.warn('WebGPU Orb init failed, falling back to 2D canvas:', e);
-        aiVisualizer = fallback;
-      }
-    } else {
-      aiVisualizer = fallback;
+  function initOrbVisualizer() {
+    if (window.liquidOrb) {
+      aiVisualizer = window.liquidOrb;
+      console.log('[StreamPulse] Exact WebGPU Liquid Orb visualizer active 🔮');
+      return;
     }
-    aiVisualizer.start();
+
+    // Fallback 2D
+    const fallback = new AIAuroraFluidRibbons('shazam-ai-canvas');
+    if (fallback.init()) {
+      aiVisualizer = fallback;
+      aiVisualizer.start();
+      console.log('[StreamPulse] 2D Aurora Ribbons active (fallback)');
+    }
   }
 
-  initOrbVisualizer();
+  setTimeout(initOrbVisualizer, 50);
 
   // Listen for Live Audio Equalizer Levels from Offscreen Document
   chrome.runtime.onMessage.addListener((msg) => {

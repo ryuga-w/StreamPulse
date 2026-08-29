@@ -375,12 +375,22 @@ body {
 
 .shazam-btn-wrapper {
   position: relative;
-  width: 190px;
-  height: 190px;
+  width: 230px;
+  height: 230px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shazam-btn-wrapper:hover {
+  transform: scale(1.04);
+}
+
+.shazam-btn-wrapper:active {
+  transform: scale(0.96);
 }
 
 .shazam-ai-canvas {
@@ -395,50 +405,41 @@ body {
   border-radius: 50%;
 }
 
-/* Glassmorphic Liquid Core Button */
+/* Crystal Minimal Center Floating Icon (zero obstruction) */
 .shazam-circle-btn {
   position: relative;
-  width: 84px;
-  height: 84px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.12), rgba(10, 10, 20, 0.45));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1.2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 
-    0 8px 30px rgba(0, 0, 0, 0.5),
-    0 0 25px rgba(139, 92, 246, 0.25),
-    inset 0 1.5px 3px rgba(255, 255, 255, 0.45),
-    inset 0 -2px 6px rgba(0, 0, 0, 0.4);
+    0 4px 20px rgba(0, 0, 0, 0.35),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
   z-index: 2;
+  pointer-events: none; /* Let wrapper handle clicks smoothly */
 }
 
-.shazam-circle-btn:hover {
-  transform: scale(1.06);
-  border-color: rgba(255, 255, 255, 0.7);
+.shazam-btn-wrapper:hover .shazam-circle-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.45);
   box-shadow: 
-    0 12px 35px rgba(139, 92, 246, 0.5),
-    0 0 35px rgba(56, 189, 248, 0.45),
-    inset 0 1.5px 4px rgba(255, 255, 255, 0.85);
+    0 0 25px rgba(139, 92, 246, 0.6),
+    inset 0 1px 3px rgba(255, 255, 255, 0.6);
+  transform: scale(1.08);
 }
 
-.shazam-circle-btn:active {
-  transform: scale(0.94);
-  transition-duration: 0.1s;
-}
-
-.shazam-circle-btn.listening {
-  border-color: rgba(236, 72, 153, 0.85);
-  background: radial-gradient(circle at 35% 30%, rgba(236, 72, 153, 0.25), rgba(10, 10, 25, 0.55));
-  box-shadow: 
-    0 0 45px rgba(236, 72, 153, 0.65),
-    0 0 75px rgba(56, 189, 248, 0.5),
-    inset 0 1.5px 4px rgba(255, 255, 255, 0.9);
+.shazam-btn-wrapper.listening .shazam-circle-btn {
+  border-color: rgba(236, 72, 153, 0.8);
+  background: rgba(236, 72, 153, 0.15);
+  box-shadow: 0 0 35px rgba(236, 72, 153, 0.7);
 }
 
 .shazam-icon-center {
