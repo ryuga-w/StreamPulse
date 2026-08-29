@@ -503,14 +503,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  const aiNeuralCanvas = new AIAuroraFluidRibbons('shazam-ai-canvas');
-  aiNeuralCanvas.start();
+  let aiVisualizer = null;
+
+  async function initOrbVisualizer() {
+    const fallback = new AIAuroraFluidRibbons('shazam-ai-canvas');
+    if (typeof StreamPulseLiquidOrb !== 'undefined') {
+      try {
+        const orb = new StreamPulseLiquidOrb('shazam-ai-canvas');
+        orb.fallbackVisualizer = fallback;
+        const supported = await orb.init();
+        if (supported) {
+          aiVisualizer = orb;
+        } else {
+          aiVisualizer = fallback;
+        }
+      } catch (e) {
+        console.warn('WebGPU Orb init failed, falling back to 2D canvas:', e);
+        aiVisualizer = fallback;
+      }
+    } else {
+      aiVisualizer = fallback;
+    }
+    aiVisualizer.start();
+  }
+
+  initOrbVisualizer();
 
   // Listen for Live Audio Equalizer Levels from Offscreen Document
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'AUDIO_LEVELS' && msg.levels) {
-      if (aiNeuralCanvas && isRecognizing) {
-        aiNeuralCanvas.setAudioLevels(msg.levels);
+      if (aiVisualizer && isRecognizing) {
+        aiVisualizer.setAudioLevels(msg.levels);
       }
     }
   });
@@ -523,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (segmentContainer) segmentContainer.classList.remove('active-shazam');
       viewGrabber.style.display = 'flex';
       viewShazam.style.display = 'none';
-      aiNeuralCanvas.stop();
+      if (aiVisualizer) aiVisualizer.stop();
     });
   }
 
@@ -535,7 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
       viewShazam.style.display = 'flex';
       viewGrabber.style.display = 'none';
       loadHistory();
-      aiNeuralCanvas.start();
+      if (aiVisualizer) aiVisualizer.start();
     });
   }
 
@@ -550,7 +573,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnStopListening) btnStopListening.style.display = 'none';
     if (shazamStatusTitle) shazamStatusTitle.textContent = t.shazamTitle;
     if (shazamStatusDesc) shazamStatusDesc.textContent = t.shazamDesc;
-    aiNeuralCanvas.setMode('ambient');
+    if (aiVisualizer) {
+      if (aiVisualizer.setState) aiVisualizer.setState('idle');
+      else if (aiVisualizer.setMode) aiVisualizer.setMode('ambient');
+    }
   }
 
   async function triggerRecognitionStart() {
@@ -566,7 +592,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (shazamStatusDesc) shazamStatusDesc.textContent = t.listeningDesc;
     showFeedback(t.listeningTitle, 'info');
 
-    aiNeuralCanvas.setMode('listening');
+    if (aiVisualizer) {
+      if (aiVisualizer.setState) aiVisualizer.setState('thinking');
+      else if (aiVisualizer.setMode) aiVisualizer.setMode('listening');
+    }
 
     try {
       chrome.runtime.sendMessage(
@@ -580,6 +609,12 @@ document.addEventListener('DOMContentLoaded', () => {
             currentRecognizedTrack = response.track;
             renderRecognizedTrack(response.track, response.engine);
             showFeedback(t.recSuccess, 'success');
+            if (aiVisualizer && aiVisualizer.setState) {
+              aiVisualizer.setState('found');
+              setTimeout(() => {
+                if (aiVisualizer && aiVisualizer.setState) aiVisualizer.setState('idle');
+              }, 2500);
+            }
           } else {
             showFeedback(response?.error || t.recFailed, 'error');
           }
