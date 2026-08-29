@@ -534,7 +534,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Listen for Live Audio Equalizer Levels from Offscreen Document
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'AUDIO_LEVELS' && msg.levels) {
-      if (aiVisualizer && isRecognizing) {
+      if (window.liquidOrb && window.liquidOrb.setAudioLevels) {
+        window.liquidOrb.setAudioLevels(msg.levels);
+      } else if (window.setOrbAudioLevels) {
+        window.setOrbAudioLevels(msg.levels);
+      }
+      if (aiVisualizer && aiVisualizer.setAudioLevels) {
         aiVisualizer.setAudioLevels(msg.levels);
       }
     }
