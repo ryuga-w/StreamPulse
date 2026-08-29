@@ -570,8 +570,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function resetShazamStage() {
     isRecognizing = false;
     if (btnStartRecognition) btnStartRecognition.classList.remove('listening');
-    if (shazamIconIdle) shazamIconIdle.style.display = 'flex';
-    if (shazamLiveWave) shazamLiveWave.style.display = 'none';
     if (btnStopListening) btnStopListening.style.display = 'none';
     if (shazamStatusTitle) shazamStatusTitle.textContent = t.shazamTitle;
     if (shazamStatusDesc) shazamStatusDesc.textContent = t.shazamDesc;
@@ -586,8 +584,6 @@ document.addEventListener('DOMContentLoaded', () => {
     isRecognizing = true;
 
     if (btnStartRecognition) btnStartRecognition.classList.add('listening');
-    if (shazamIconIdle) shazamIconIdle.style.display = 'none';
-    if (shazamLiveWave) shazamLiveWave.style.display = 'flex';
     if (btnStopListening) btnStopListening.style.display = 'flex';
 
     if (shazamStatusTitle) shazamStatusTitle.textContent = t.listeningTitle;
@@ -630,13 +626,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnStartRecognition) {
     btnStartRecognition.addEventListener('click', triggerRecognitionStart);
-  }
-  const shazamPulseBtn = document.getElementById('shazam-pulse-btn');
-  if (shazamPulseBtn) {
-    shazamPulseBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      triggerRecognitionStart();
-    });
   }
 
   // Stop / Cancel Button Action
