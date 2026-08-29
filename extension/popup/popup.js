@@ -511,110 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // =========================================================================
-  // SIRI / APPLE INTELLIGENCE GLOWING LIQUID WAVE VISUALIZER
-  // =========================================================================
-  class SiriFluidWaveVisualizer {
-    constructor(canvasId) {
-      this.canvas = document.getElementById(canvasId);
-      this.ctx = this.canvas ? this.canvas.getContext('2d') : null;
-      this.isRunning = false;
-      this.isListening = false;
-      this.animId = null;
-      this.phase = 0;
-      this.amplitude = 0.15;
-      this.targetAmplitude = 0.15;
-      this.energy = 0;
-      this.targetEnergy = 0;
-    }
-
-    start() {
-      if (!this.ctx || this.isRunning) return;
-      this.isRunning = true;
-      const loop = () => {
-        if (!this.isRunning) return;
-        this.render();
-        this.animId = requestAnimationFrame(loop);
-      };
-      this.animId = requestAnimationFrame(loop);
-    }
-
-    stop() {
-      this.isRunning = false;
-      if (this.animId) {
-        cancelAnimationFrame(this.animId);
-        this.animId = null;
-      }
-    }
-
-    setListening(val) {
-      this.isListening = val;
-      this.targetAmplitude = val ? 0.75 : 0.15;
-      const pill = document.getElementById('siri-wave-pill');
-      if (pill) {
-        if (val) pill.classList.add('active');
-        else pill.classList.remove('active');
-      }
-    }
-
-    setAudioLevels(levels) {
-      if (!levels || !this.isListening) return;
-      this.targetEnergy = Math.min(1.0, (levels.energy || 0) * 1.5 + (levels.kick || 0) * 0.8);
-      this.targetAmplitude = 0.35 + this.targetEnergy * 0.65;
-    }
-
-    render() {
-      const ctx = this.ctx;
-      if (!ctx) return;
-      const w = this.canvas.width;
-      const h = this.canvas.height;
-      const cy = h / 2;
-
-      ctx.clearRect(0, 0, w, h);
-
-      // Smooth interpolation
-      this.amplitude += (this.targetAmplitude - this.amplitude) * 0.08;
-      this.energy += (this.targetEnergy - this.energy) * 0.10;
-      this.phase += 0.05 + this.energy * 0.05;
-
-      const waves = [
-        { color: 'rgba(56, 189, 248, 0.85)', glow: '#38bdf8', freq: 1.8, speed: 1.0, amp: 1.0, width: 2.5 },
-        { color: 'rgba(168, 85, 247, 0.80)', glow: '#a855f7', freq: 2.4, speed: -1.2, amp: 0.8, width: 2.0 },
-        { color: 'rgba(236, 72, 153, 0.75)', glow: '#ec4899', freq: 3.1, speed: 1.4, amp: 0.6, width: 1.8 },
-        { color: 'rgba(255, 255, 255, 0.95)', glow: '#ffffff', freq: 1.5, speed: 0.8, amp: 0.4, width: 1.5 },
-      ];
-
-      for (const wave of waves) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.strokeStyle = wave.color;
-        ctx.lineWidth = wave.width;
-        ctx.shadowBlur = this.isListening ? 10 : 4;
-        ctx.shadowColor = wave.glow;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-
-        const maxAmp = (h * 0.42) * this.amplitude * wave.amp;
-
-        for (let x = 0; x <= w; x += 2) {
-          const normX = (x / w) * 2 - 1; // -1 to 1
-          // Bell curve window (attenuates at edges)
-          const envelope = Math.pow(Math.max(0, 1 - normX * normX), 2);
-          const y = cy + Math.sin((x / w) * Math.PI * 2 * wave.freq + this.phase * wave.speed) * maxAmp * envelope;
-
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-
-        ctx.stroke();
-        ctx.restore();
-      }
-    }
-  }
-
   let aiVisualizer = null;
-  const siriWave = new SiriFluidWaveVisualizer('siri-wave-canvas');
-  siriWave.start();
 
   function initOrbVisualizer() {
     if (window.liquidOrb) {
@@ -634,13 +531,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setTimeout(initOrbVisualizer, 50);
 
-  // Listen for Live Audio Equalizer Levels from Offscreen Document
-  chrome.runtime.onMessage.addListener((msg) => {
-    if (msg.type === 'AUDIO_LEVELS' && msg.levels) {
-      siriWave.setAudioLevels(msg.levels);
-    }
-  });
-
   // Tab Switching Canvas Power Management
   if (tabBtnGrabber) {
     tabBtnGrabber.addEventListener('click', () => {
@@ -650,7 +540,6 @@ document.addEventListener('DOMContentLoaded', () => {
       viewGrabber.style.display = 'flex';
       viewShazam.style.display = 'none';
       if (aiVisualizer) aiVisualizer.stop();
-      siriWave.stop();
     });
   }
 
@@ -663,7 +552,6 @@ document.addEventListener('DOMContentLoaded', () => {
       viewGrabber.style.display = 'none';
       loadHistory();
       if (aiVisualizer) aiVisualizer.start();
-      siriWave.start();
     });
   }
 
@@ -672,7 +560,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   function resetShazamStage() {
     isRecognizing = false;
-    siriWave.setListening(false);
     if (btnStartRecognition) btnStartRecognition.classList.remove('listening');
     if (btnStopListening) btnStopListening.style.display = 'none';
     if (shazamStatusTitle) shazamStatusTitle.textContent = t.shazamTitle;
@@ -686,7 +573,6 @@ document.addEventListener('DOMContentLoaded', () => {
   async function triggerRecognitionStart() {
     if (isRecognizing) return;
     isRecognizing = true;
-    siriWave.setListening(true);
 
     if (btnStartRecognition) btnStartRecognition.classList.add('listening');
     if (btnStopListening) btnStopListening.style.display = 'flex';
