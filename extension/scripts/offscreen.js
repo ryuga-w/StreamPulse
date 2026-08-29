@@ -43,13 +43,14 @@ async function startDirectPcmCapture(streamId, duration = 3800, hintText = '') {
     // Keep tab audio playing through destination without lag
     source.connect(audioContext.destination);
 
-    // Real-Time Audio Frequency Analyser (for live AI equalizer visualizer)
+    // Real-Time High-Sensitivity Audio Frequency Analyser
     const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 64;
-    analyser.smoothingTimeConstant = 0.75;
+    analyser.fftSize = 128;
+    analyser.smoothingTimeConstant = 0.25; // Ultra-snappy transient capture
     source.connect(analyser);
 
     const freqData = new Uint8Array(analyser.frequencyBinCount);
+    let prevEnergy = 0;
     const levelInterval = setInterval(() => {
       if (!isRecording) {
         clearInterval(levelInterval);
@@ -57,20 +58,28 @@ async function startDirectPcmCapture(streamId, duration = 3800, hintText = '') {
       }
       try {
         analyser.getByteFrequencyData(freqData);
-        const b0 = (freqData[1] || 0) / 255;
-        const b1 = (freqData[3] || 0) / 255;
-        const b2 = (freqData[6] || 0) / 255;
-        const b3 = (freqData[10] || 0) / 255;
-        const b4 = (freqData[16] || 0) / 255;
-        const b5 = (freqData[22] || 0) / 255;
-        const energy = (b0 * 1.6 + b1 * 1.3 + b2 + b3 + b4 + b5) / 6;
+        // Sub-Bass (20 - 80Hz)
+        const subBass = (freqData[0] + freqData[1]) / (2 * 255);
+        // Kick Drum (80 - 200Hz)
+        const kick = (freqData[2] + freqData[3] + freqData[4]) / (3 * 255);
+        // Low Mids (200 - 800Hz)
+        const lowMids = (freqData[5] + freqData[7] + freqData[9]) / (3 * 255);
+        // Mids & Vocals (800 - 3000Hz)
+        const mids = (freqData[11] + freqData[14] + freqData[18]) / (3 * 255);
+        // Treble & Transients (3kHz - 14kHz)
+        const treble = (freqData[22] + freqData[28] + freqData[36] + freqData[45]) / (4 * 255);
+        // Instant Peak Beat Transient (Onset detector)
+        const rawEnergy = kick * 1.8 + subBass * 1.4 + lowMids * 1.0 + mids * 0.8 + treble * 0.6;
+        const energy = Math.min(1, rawEnergy / 2.5);
+        const beatHit = Math.max(0, energy - prevEnergy);
+        prevEnergy = energy * 0.85;
 
         chrome.runtime.sendMessage({
           type: 'AUDIO_LEVELS',
-          levels: { b0, b1, b2, b3, b4, b5, energy }
+          levels: { subBass, kick, lowMids, mids, treble, energy, beatHit }
         }).catch(() => {});
       } catch (err) {}
-    }, 32);
+    }, 16); // 60 FPS real-time updates
 
     // Direct buffer collector: 4096 buffer size
     const bufferSize = 4096;

@@ -576,6 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (aiVisualizer) {
       if (aiVisualizer.setState) aiVisualizer.setState('idle');
       else if (aiVisualizer.setMode) aiVisualizer.setMode('ambient');
+      if (aiVisualizer.setAudioLevels) aiVisualizer.setAudioLevels({ kick: 0, subBass: 0, mids: 0, treble: 0, energy: 0, beatHit: 0 });
     }
   }
 
