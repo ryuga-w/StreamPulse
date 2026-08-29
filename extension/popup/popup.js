@@ -511,7 +511,123 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // =========================================================================
+  // STUDIO-GRADE LIVE AUDIO SPECTRUM VISUALIZER
+  // =========================================================================
+  class LiveSpectrumVisualizer {
+    constructor(canvasId) {
+      this.canvas = document.getElementById(canvasId);
+      this.ctx = this.canvas ? this.canvas.getContext('2d') : null;
+      this.barCount = 28;
+      this.bars = new Float32Array(this.barCount);
+      this.targets = new Float32Array(this.barCount);
+      this.peaks = new Float32Array(this.barCount);
+      this.isRunning = false;
+      this.animId = null;
+      this.isListening = false;
+    }
+
+    start() {
+      if (!this.ctx || this.isRunning) return;
+      this.isRunning = true;
+      const loop = (time) => {
+        if (!this.isRunning) return;
+        this.render(time);
+        this.animId = requestAnimationFrame(loop);
+      };
+      this.animId = requestAnimationFrame(loop);
+    }
+
+    stop() {
+      this.isRunning = false;
+      if (this.animId) {
+        cancelAnimationFrame(this.animId);
+        this.animId = null;
+      }
+    }
+
+    setListening(val) {
+      this.isListening = val;
+      const wrapper = document.getElementById('audio-spectrum-wrapper');
+      if (wrapper) {
+        if (val) wrapper.classList.add('active');
+        else wrapper.classList.remove('active');
+      }
+    }
+
+    setAudioLevels(levels) {
+      if (!levels || !this.isListening) return;
+      const bands = [
+        levels.subBass || 0,
+        levels.kick || 0,
+        levels.lowMids || 0,
+        levels.mids || 0,
+        levels.treble || 0,
+        levels.energy || 0
+      ];
+      
+      const mid = Math.floor(this.barCount / 2);
+      for (let i = 0; i < this.barCount; i++) {
+        const distFromCenter = Math.abs(i - mid) / mid;
+        const bandIdx = Math.min(bands.length - 1, Math.floor((1 - distFromCenter) * bands.length));
+        const val = bands[bandIdx] || 0;
+        const noise = Math.sin(performance.now() * 0.008 + i * 0.4) * 0.15;
+        this.targets[i] = Math.max(0.12, Math.min(1.0, val * 1.6 + noise));
+      }
+    }
+
+    render(time) {
+      const ctx = this.ctx;
+      if (!ctx) return;
+      const w = this.canvas.width;
+      const h = this.canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const barWidth = 4;
+      const gap = (w - (this.barCount * barWidth)) / (this.barCount - 1);
+      const t = time * 0.003;
+
+      for (let i = 0; i < this.barCount; i++) {
+        if (!this.isListening) {
+          const wave = Math.sin(t + i * 0.25) * 0.5 + 0.5;
+          this.targets[i] = 0.08 + wave * 0.12;
+        }
+
+        this.bars[i] += (this.targets[i] - this.bars[i]) * 0.28;
+        if (this.bars[i] > this.peaks[i]) {
+          this.peaks[i] = this.bars[i];
+        } else {
+          this.peaks[i] = Math.max(0, this.peaks[i] - 0.015);
+        }
+
+        const barH = Math.max(3, this.bars[i] * (h - 6));
+        const x = i * (barWidth + gap);
+        const y = (h - barH) / 2;
+
+        const grad = ctx.createLinearGradient(0, y, 0, y + barH);
+        grad.addColorStop(0, '#38bdf8');
+        grad.addColorStop(0.5, '#a855f7');
+        grad.addColorStop(1, '#ec4899');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(x, y, barWidth, barH, 2);
+        ctx.fill();
+
+        if (this.isListening && this.peaks[i] > 0.35) {
+          const peakY = (h - (this.peaks[i] * (h - 6))) / 2 - 2;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(x + barWidth / 2, Math.max(1, peakY), 1.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+  }
+
   let aiVisualizer = null;
+  const liveSpectrum = new LiveSpectrumVisualizer('audio-spectrum-canvas');
+  liveSpectrum.start();
 
   function initOrbVisualizer() {
     if (window.liquidOrb) {
@@ -531,6 +647,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setTimeout(initOrbVisualizer, 50);
 
+  // Listen for Live Audio Equalizer Levels from Offscreen Document
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.type === 'AUDIO_LEVELS' && msg.levels) {
+      liveSpectrum.setAudioLevels(msg.levels);
+    }
+  });
+
   // Tab Switching Canvas Power Management
   if (tabBtnGrabber) {
     tabBtnGrabber.addEventListener('click', () => {
@@ -540,6 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
       viewGrabber.style.display = 'flex';
       viewShazam.style.display = 'none';
       if (aiVisualizer) aiVisualizer.stop();
+      liveSpectrum.stop();
     });
   }
 
@@ -552,6 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
       viewGrabber.style.display = 'none';
       loadHistory();
       if (aiVisualizer) aiVisualizer.start();
+      liveSpectrum.start();
     });
   }
 
@@ -560,6 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   function resetShazamStage() {
     isRecognizing = false;
+    liveSpectrum.setListening(false);
     if (btnStartRecognition) btnStartRecognition.classList.remove('listening');
     if (btnStopListening) btnStopListening.style.display = 'none';
     if (shazamStatusTitle) shazamStatusTitle.textContent = t.shazamTitle;
@@ -573,6 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function triggerRecognitionStart() {
     if (isRecognizing) return;
     isRecognizing = true;
+    liveSpectrum.setListening(true);
 
     if (btnStartRecognition) btnStartRecognition.classList.add('listening');
     if (btnStopListening) btnStopListening.style.display = 'flex';
