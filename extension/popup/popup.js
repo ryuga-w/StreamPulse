@@ -799,13 +799,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function animateButtonSuccess(btn, successMsg) {
+    if (!btn) return;
+    const originalHtml = btn.innerHTML;
+    const msg = successMsg || (currentLanguage === 'en' ? 'Download Started!' : 'İndirme Başlatıldı!');
+    
+    btn.classList.add('success-state');
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      <span>${msg}</span>
+    `;
+
+    setTimeout(() => {
+      btn.classList.remove('success-state');
+      btn.innerHTML = originalHtml;
+    }, 2800);
+  }
+
   // One-Click Download for Recognized Track
   btnDownloadRecognized.addEventListener('click', async () => {
     if (!currentRecognizedTrack) return;
 
-    btnDownloadRecognized.disabled = true;
-    btnDownloadRecognized.style.opacity = '0.7';
-    showFeedback(t.sending, 'info');
+    animateButtonSuccess(btnDownloadRecognized, currentLanguage === 'en' ? 'Download Started!' : 'İndirme Başlatıldı!');
 
     const downloadQuery = currentRecognizedTrack.youtubeQuery || `${currentRecognizedTrack.artist} - ${currentRecognizedTrack.title}`;
     const payload = {
@@ -828,15 +843,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       if (res.ok) {
         sent = true;
-        btnDownloadRecognized.disabled = false;
-        btnDownloadRecognized.style.opacity = '1';
-        showFeedback(t.started, 'success');
       }
     } catch (e) {}
 
     if (!sent) {
-      btnDownloadRecognized.disabled = false;
-      btnDownloadRecognized.style.opacity = '1';
       chrome.runtime.sendMessage({
         type: 'START_DOWNLOAD',
         url: downloadQuery,
@@ -844,7 +854,6 @@ document.addEventListener('DOMContentLoaded', () => {
         quality: '320',
         metadata: currentRecognizedTrack
       });
-      showFeedback(t.appLaunched, 'success');
     }
   });
 
@@ -857,9 +866,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      btnExtractDirect.disabled = true;
-      btnExtractDirect.style.opacity = '0.7';
-      showFeedback(t.sending, 'info');
+      animateButtonSuccess(btnExtractDirect, currentLanguage === 'en' ? 'Audio Queued!' : 'Ses Kuyruğa Eklendi!');
 
       const payload = {
         id: 'edit_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
@@ -879,22 +886,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (res.ok) {
           sent = true;
-          btnExtractDirect.disabled = false;
-          btnExtractDirect.style.opacity = '1';
-          showFeedback(t.started, 'success');
         }
       } catch (e) {}
 
       if (!sent) {
-        btnExtractDirect.disabled = false;
-        btnExtractDirect.style.opacity = '1';
         chrome.runtime.sendMessage({
           type: 'START_DOWNLOAD',
           url: targetUrl,
           formatType: 'mp3',
           quality: '320'
         });
-        showFeedback(t.appLaunched, 'success');
       }
     });
   }
@@ -919,9 +920,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    btnDownload.disabled = true;
-    btnDownload.style.opacity = '0.7';
-    showFeedback(t.sending, 'info');
+    animateButtonSuccess(btnDownload, currentLanguage === 'en' ? 'Download Started!' : 'İndirme Başlatıldı!');
 
     const payload = {
       id: 'ext_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
@@ -942,18 +941,12 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       if (res.ok) {
         sent = true;
-        btnDownload.disabled = false;
-        btnDownload.style.opacity = '1';
-        showFeedback(t.started, 'success');
       }
     } catch (e) {}
 
     if (!sent) {
       const deepLink = `streampulse://download?url=${encodeURIComponent(downloadUrl)}&format=${selectedType}&quality=${selectedQuality}`;
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        btnDownload.disabled = false;
-        btnDownload.style.opacity = '1';
-        showFeedback(t.appLaunched, 'success');
         if (tabs && tabs[0]?.id) {
           chrome.tabs.sendMessage(tabs[0].id, { action: 'OPEN_PROTOCOL', url: deepLink }, (res) => {
             if (chrome.runtime.lastError || !res?.success) {
