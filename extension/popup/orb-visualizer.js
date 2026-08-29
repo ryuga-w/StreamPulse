@@ -66,13 +66,13 @@ const shaderSource = "// Glass Liquid — curated flow programs with an optional
 
     function setAudioLevels(levels) {
       if (!levels) return;
-      audioState.targetKick = Math.min(1.5, (levels.kick || 0) * 1.8);
-      audioState.targetSubBass = Math.min(1.5, (levels.subBass || 0) * 1.8);
-      audioState.targetLowMids = Math.min(1.5, (levels.lowMids || 0) * 1.6);
-      audioState.targetMids = Math.min(1.5, (levels.mids || 0) * 1.6);
-      audioState.targetTreble = Math.min(1.5, (levels.treble || 0) * 2.0);
-      audioState.targetEnergy = Math.min(1.5, (levels.energy || 0) * 1.8);
-      audioState.targetBeatHit = Math.min(2.0, (levels.beatHit || 0) * 2.5);
+      audioState.targetKick = Math.min(2.5, (levels.kick || 0) * 2.5);
+      audioState.targetSubBass = Math.min(2.5, (levels.subBass || 0) * 2.2);
+      audioState.targetLowMids = Math.min(2.0, (levels.lowMids || 0) * 2.0);
+      audioState.targetMids = Math.min(2.0, (levels.mids || 0) * 2.0);
+      audioState.targetTreble = Math.min(2.5, (levels.treble || 0) * 2.5);
+      audioState.targetEnergy = Math.min(2.5, (levels.energy || 0) * 2.5);
+      audioState.targetBeatHit = Math.min(3.0, (levels.beatHit || 0) * 3.5);
     }
 
     function setState(nextState) {
@@ -241,26 +241,36 @@ const shaderSource = "// Glass Liquid — curated flow programs with an optional
           values.set(sampleTransition(now));
 
           // Real-Time Ultra-Punchy Physical Beat Reactivity
-          audioState.kick += (audioState.targetKick - audioState.kick) * 0.55;
-          audioState.subBass += (audioState.targetSubBass - audioState.subBass) * 0.45;
-          audioState.lowMids += (audioState.targetLowMids - audioState.lowMids) * 0.40;
-          audioState.mids += (audioState.targetMids - audioState.mids) * 0.40;
-          audioState.treble += (audioState.targetTreble - audioState.treble) * 0.50;
-          audioState.energy += (audioState.targetEnergy - audioState.energy) * 0.45;
-          audioState.beatHit += (audioState.targetBeatHit - audioState.beatHit) * 0.70;
+          audioState.kick += (audioState.targetKick - audioState.kick) * 0.60;
+          audioState.subBass += (audioState.targetSubBass - audioState.subBass) * 0.50;
+          audioState.lowMids += (audioState.targetLowMids - audioState.lowMids) * 0.45;
+          audioState.mids += (audioState.targetMids - audioState.mids) * 0.45;
+          audioState.treble += (audioState.targetTreble - audioState.treble) * 0.55;
+          audioState.energy += (audioState.targetEnergy - audioState.energy) * 0.50;
+          audioState.beatHit += (audioState.targetBeatHit - audioState.beatHit) * 0.75;
 
-          if (state === "thinking" || audioState.energy > 0.01) {
-            const kickPunch = audioState.kick * 2.4 + audioState.beatHit * 3.0;
-            values[36] += kickPunch * 1.6 + audioState.subBass * 1.0; // ribbonBreath (Massive Expansion on Kick)
-            values[33] += audioState.kick * 0.65 + audioState.lowMids * 0.45; // ribbonWidth
-            values[37] += audioState.kick * 0.95; // particleSize
-            values[4]  += audioState.kick * 0.08 + audioState.beatHit * 0.06; // radius (Subwoofer punch)
-            values[38] += audioState.energy * 1.6 + audioState.treble * 3.2 + audioState.beatHit * 2.2; // particleBloom (Neon flashes)
-            values[3]  += audioState.energy * 1.4; // speed (Beat acceleration)
-            values[34] += audioState.mids * 1.6; // ribbonTwist
-            values[35] += audioState.lowMids * 1.2; // ribbonFold
-            values[13] += audioState.beatHit * 0.75 + audioState.kick * 0.45; // exposure flare
-            values[6]  += audioState.subBass * 0.8; // fluid warp
+          if (state === "thinking" || audioState.energy > 0.005) {
+            const kickPunch = audioState.kick * 2.8 + audioState.beatHit * 3.5;
+            // 37: ribbonBreath (Massive Physical Ribbons PUMP on Beat)
+            values[37] += kickPunch * 2.4 + audioState.subBass * 1.8;
+            // 34: ribbonWidth (Ribbons expand thicker on hits)
+            values[34] += audioState.kick * 0.85 + audioState.lowMids * 0.65;
+            // 38: particleSize (Particles grow larger on beats)
+            values[38] += audioState.kick * 1.5;
+            // 39: particleBloom (Blinding neon flares on snare & treble)
+            values[39] += audioState.energy * 2.5 + audioState.treble * 4.0 + audioState.beatHit * 3.0;
+            // 4: radius (Subwoofer physical punch)
+            values[4]  += audioState.kick * 0.12 + audioState.beatHit * 0.09;
+            // 3: speed (Rapid spin with music BPM)
+            values[3]  += audioState.energy * 2.0;
+            // 35: ribbonTwist (Warp on vocals)
+            values[35] += audioState.mids * 2.2;
+            // 36: ribbonFold
+            values[36] += audioState.lowMids * 1.5;
+            // 14: exposure (Luminous flash)
+            values[14] += audioState.beatHit * 1.2 + audioState.kick * 0.7;
+            // 6: warp
+            values[6]  += audioState.subBass * 1.2;
           }
 
           const frameDelta = lastFrameAt === null
