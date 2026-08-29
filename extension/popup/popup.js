@@ -531,20 +531,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setTimeout(initOrbVisualizer, 50);
 
-  // Listen for Live Audio Equalizer Levels from Offscreen Document
-  chrome.runtime.onMessage.addListener((msg) => {
-    if (msg.type === 'AUDIO_LEVELS' && msg.levels) {
-      if (window.liquidOrb && window.liquidOrb.setAudioLevels) {
-        window.liquidOrb.setAudioLevels(msg.levels);
-      } else if (window.setOrbAudioLevels) {
-        window.setOrbAudioLevels(msg.levels);
-      }
-      if (aiVisualizer && aiVisualizer.setAudioLevels) {
-        aiVisualizer.setAudioLevels(msg.levels);
-      }
-    }
-  });
-
   // Tab Switching Canvas Power Management
   if (tabBtnGrabber) {
     tabBtnGrabber.addEventListener('click', () => {
@@ -581,7 +567,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (aiVisualizer) {
       if (aiVisualizer.setState) aiVisualizer.setState('idle');
       else if (aiVisualizer.setMode) aiVisualizer.setMode('ambient');
-      if (aiVisualizer.setAudioLevels) aiVisualizer.setAudioLevels({ kick: 0, subBass: 0, mids: 0, treble: 0, energy: 0, beatHit: 0 });
     }
   }
 

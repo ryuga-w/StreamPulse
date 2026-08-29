@@ -58,18 +58,6 @@ const shaderSource = "// Glass Liquid — curated flow programs with an optional
       return displayedUniforms;
     }
 
-    
-    let smoothEnergy = 0;
-    let smoothBass = 0;
-    let targetEnergy = 0;
-    let targetBass = 0;
-
-    function setAudioLevels(levels) {
-      if (!levels) return;
-      targetEnergy = Math.min(1.0, (levels.energy || 0));
-      targetBass = Math.min(1.0, ((levels.kick || 0) + (levels.subBass || 0)) * 0.6);
-    }
-
     function setState(nextState) {
       if (!Object.prototype.hasOwnProperty.call(stateSeeds, nextState)) {
         throw new TypeError(`Unknown liquid orb state: ${nextState}`);
@@ -232,20 +220,7 @@ const shaderSource = "// Glass Liquid — curated flow programs with an optional
             ribbonTarget = null;
             ribbonCompositeBindGroup = null;
           }
-          
-          values.set(sampleTransition(now));
-
-          // Silky-Smooth Organic Damping (Apple Siri/Liquid fluid physics)
-          smoothEnergy += (targetEnergy - smoothEnergy) * 0.08;
-          smoothBass += (targetBass - smoothBass) * 0.10;
-
-          if (state === "thinking") {
-            // Smooth organic ribbon breathing (swells gracefully with volume)
-            values[37] += smoothBass * 0.45;
-            // Smooth fluid speed acceleration
-            values[3]  += smoothEnergy * 0.35;
-          }
-
+          values.set(sampleTransition(now));
           const frameDelta = lastFrameAt === null
             ? 0
             : Math.min(0.1, Math.max(0, (now - lastFrameAt) / 1000));
