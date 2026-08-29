@@ -60,20 +60,6 @@
         }
       });
     }
-
-    fetch('http://127.0.0.1:3001/api/health')
-      .then(res => res.json())
-      .then(data => {
-        const lang = data.language || (data.settings && data.settings.language);
-        if (lang && lang !== currentLanguage) {
-          currentLanguage = lang;
-          if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-            chrome.storage.local.set({ streampulse_language: lang });
-          }
-          updateInjectedBtnText();
-        }
-      })
-      .catch(() => {});
   }
 
   syncLanguage();
@@ -148,23 +134,8 @@
       source: 'extension'
     };
 
-    let sent = false;
-
-    // 1. Direct fetch to local engine (Bypasses sleeping Service Worker)
-    try {
-      const res = await fetch('http://127.0.0.1:3001/api/download', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        sent = true;
-        showInPageToast('İndirme Başlatıldı', `Masaüstü StreamPulse kütüphanenize indiriyor (${formatType.toUpperCase()})`);
-      }
-    } catch (e) {}
-
-    // 2. Extension background fallback
-    if (!sent && typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+    // Route via extension background or deep link (Zero page-level localhost fetch)
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
       try {
         chrome.runtime.sendMessage(
           { action: 'download_media', url: targetUrl, formatType, quality, title: pageTitle, thumbnail },
@@ -180,6 +151,8 @@
       } catch (err) {
         window.location.href = `streampulse://download?url=${encodeURIComponent(targetUrl)}&format=${formatType}&quality=${quality}`;
       }
+    } else {
+      window.location.href = `streampulse://download?url=${encodeURIComponent(targetUrl)}&format=${formatType}&quality=${quality}`;
     }
   }
 
