@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  const SCRIPT_VERSION = '1.3.4';
+  const SCRIPT_VERSION = '1.3.5';
   const HOST_ID = 'streampulse-glass-host';
 
   // Always clean up any stale container from previous injections
@@ -516,6 +516,7 @@
           justify-content: center;
           cursor: pointer;
           border-radius: 50%;
+          background: radial-gradient(circle, rgba(139, 92, 246, 0.16) 0%, rgba(59, 130, 246, 0.05) 50%, transparent 70%);
           transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
         }
 
@@ -548,113 +549,92 @@
           gap: 6px;
         }
 
-        /* Apple Liquid Glass Play/Pause Control Button */
+        /* Apple VisionOS Frosted Liquid Glass Button */
         .orb-center-btn {
           position: absolute;
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 62px;
-          height: 62px;
+          width: 74px;
+          height: 74px;
           border-radius: 50%;
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(139, 92, 246, 0.18) 100%);
-          backdrop-filter: blur(24px) saturate(200%);
-          -webkit-backdrop-filter: blur(24px) saturate(200%);
-          border: 1.5px solid rgba(255, 255, 255, 0.45);
+          background: rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(28px) saturate(190%);
+          -webkit-backdrop-filter: blur(28px) saturate(190%);
+          border: 1px solid rgba(255, 255, 255, 0.22);
           box-shadow: 
-            inset 0 1.5px 3px rgba(255, 255, 255, 0.85),
-            inset 0 -2px 6px rgba(0, 0, 0, 0.35),
-            0 10px 30px rgba(0, 0, 0, 0.55),
-            0 0 28px rgba(139, 92, 246, 0.4);
+            0 12px 32px rgba(0, 0, 0, 0.4),
+            inset 0 1px 1.5px rgba(255, 255, 255, 0.35),
+            inset 0 -1px 2px rgba(0, 0, 0, 0.25);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 2;
           cursor: pointer;
-          overflow: hidden;
-          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, background 0.3s ease, border-color 0.3s ease;
-        }
-
-        /* Apple Glass Specular Glare (curved top reflection) */
-        .orb-center-btn::before {
-          content: '';
-          position: absolute;
-          top: 2px;
-          left: 9px;
-          right: 9px;
-          height: 42%;
-          border-radius: 50% 50% 45% 45% / 60% 60% 30% 30%;
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.05) 100%);
-          pointer-events: none;
-          opacity: 0.9;
+          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
         }
 
         .shazam-btn-wrapper:hover .orb-center-btn {
           transform: translate(-50%, -50%) scale(1.08);
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.12) 50%, rgba(236, 72, 153, 0.25) 100%);
-          border-color: rgba(255, 255, 255, 0.65);
+          background: rgba(255, 255, 255, 0.14);
+          border-color: rgba(255, 255, 255, 0.4);
           box-shadow: 
-            inset 0 2px 4px rgba(255, 255, 255, 0.95),
-            inset 0 -2px 6px rgba(0, 0, 0, 0.4),
-            0 12px 35px rgba(0, 0, 0, 0.6),
-            0 0 35px rgba(236, 72, 153, 0.55);
+            0 14px 40px rgba(0, 0, 0, 0.5),
+            0 0 25px rgba(139, 92, 246, 0.4),
+            inset 0 1px 2px rgba(255, 255, 255, 0.5);
         }
 
         .shazam-btn-wrapper:active .orb-center-btn {
           transform: translate(-50%, -50%) scale(0.94);
         }
 
-        /* Listening (Pause State) Liquid Glass */
+        /* Listening State (Pause) */
         .orb-center-btn.listening {
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.32) 0%, rgba(239, 68, 68, 0.25) 50%, rgba(220, 38, 38, 0.4) 100%);
-          border-color: rgba(255, 255, 255, 0.6);
+          background: rgba(239, 68, 68, 0.16);
+          border-color: rgba(239, 68, 68, 0.45);
           box-shadow: 
-            inset 0 1.5px 3px rgba(255, 255, 255, 0.95),
-            inset 0 -2px 6px rgba(0, 0, 0, 0.4),
-            0 10px 30px rgba(239, 68, 68, 0.5),
-            0 0 32px rgba(239, 68, 68, 0.6);
-          animation: liquid-pulse 2s infinite ease-in-out;
+            0 12px 32px rgba(0, 0, 0, 0.4),
+            0 0 30px rgba(239, 68, 68, 0.45),
+            inset 0 1px 1.5px rgba(255, 255, 255, 0.4);
+          animation: apple-listening-pulse 2s infinite ease-in-out;
         }
 
-        @keyframes liquid-pulse {
+        @keyframes apple-listening-pulse {
           0%, 100% {
             box-shadow: 
-              inset 0 1.5px 3px rgba(255, 255, 255, 0.95),
-              inset 0 -2px 6px rgba(0, 0, 0, 0.4),
-              0 10px 30px rgba(239, 68, 68, 0.45),
-              0 0 25px rgba(239, 68, 68, 0.5);
+              0 12px 32px rgba(0, 0, 0, 0.4),
+              0 0 20px rgba(239, 68, 68, 0.35),
+              inset 0 1px 1.5px rgba(255, 255, 255, 0.4);
           }
           50% {
             box-shadow: 
-              inset 0 2px 4px rgba(255, 255, 255, 1),
-              inset 0 -2px 6px rgba(0, 0, 0, 0.4),
-              0 12px 35px rgba(239, 68, 68, 0.7),
-              0 0 45px rgba(239, 68, 68, 0.85);
+              0 14px 40px rgba(0, 0, 0, 0.5),
+              0 0 35px rgba(239, 68, 68, 0.65),
+              inset 0 1px 2px rgba(255, 255, 255, 0.6);
           }
         }
 
         .shazam-btn-wrapper:hover .orb-center-btn.listening {
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(239, 68, 68, 0.38) 50%, rgba(220, 38, 38, 0.52) 100%);
-          border-color: rgba(255, 255, 255, 0.8);
+          background: rgba(239, 68, 68, 0.24);
+          border-color: rgba(239, 68, 68, 0.65);
           box-shadow: 
-            inset 0 2px 4px rgba(255, 255, 255, 1),
-            inset 0 -2px 6px rgba(0, 0, 0, 0.4),
-            0 12px 35px rgba(239, 68, 68, 0.75),
-            0 0 45px rgba(239, 68, 68, 0.85);
+            0 14px 40px rgba(0, 0, 0, 0.5),
+            0 0 40px rgba(239, 68, 68, 0.75),
+            inset 0 1px 2px rgba(255, 255, 255, 0.6);
         }
 
         .orb-icon {
-          width: 24px;
-          height: 24px;
+          width: 28px;
+          height: 28px;
           fill: #ffffff;
-          filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
-          transition: transform 0.2s ease, opacity 0.2s ease;
+          filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
           position: relative;
           z-index: 1;
         }
 
         .orb-icon-start {
-          margin-left: 3px;
+          margin-left: 4px;
         }
 
         .orb-icon-pause {
@@ -1257,11 +1237,12 @@
         v1 *= light1(1.0, 50.0, d0);
 
         float v2 = smoothstep(1.0, mix(innerRadius, 1.0, n0 * 0.5), len);
-        float v3 = smoothstep(innerRadius, mix(innerRadius, 1.0, 0.5), len);
+        float v3 = smoothstep(0.18, mix(innerRadius, 1.0, 0.5), len);
+        float core = smoothstep(0.75, 0.0, len) * 0.28;
 
         vec3 col = mix(color1, color2, cl);
         col = mix(color3, col, v0);
-        col = (col + v1) * v2 * v3;
+        col = (col + v1) * v2 * v3 + mix(color1, color3, 0.5) * core;
         col = clamp(col, 0.0, 1.0);
 
         return extractAlpha(col);
