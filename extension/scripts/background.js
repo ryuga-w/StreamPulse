@@ -315,3 +315,30 @@ function notifyUser(title, message) {
     });
   } catch (e) {}
 }
+
+// 5. Action Icon Click (Toolbar) -> Toggle In-Page Glass Studio
+chrome.action.onClicked.addListener(async (tab) => {
+  if (!tab || !tab.id) return;
+
+  if (tab.url?.startsWith('chrome://') || tab.url?.startsWith('edge://') || tab.url?.startsWith('chrome-extension://')) {
+    notifyUser(
+      'StreamPulse Cam Panel',
+      'Chrome dahili sayfalarında (chrome://) güvenlik gereği sayfa içi panel açılamaz. Lütfen bir web sitesinde (YouTube vb.) deneyin.'
+    );
+    return;
+  }
+
+  try {
+    await chrome.tabs.sendMessage(tab.id, { action: 'TOGGLE_STREAM_PULSE_GLASS' });
+  } catch (err) {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['scripts/glass-panel.js']
+      });
+      await chrome.tabs.sendMessage(tab.id, { action: 'TOGGLE_STREAM_PULSE_GLASS' });
+    } catch (e) {
+      console.error('Failed to inject glass panel:', e);
+    }
+  }
+});
