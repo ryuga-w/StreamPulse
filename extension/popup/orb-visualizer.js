@@ -262,32 +262,42 @@
     const dt = lastTime ? Math.min(0.1, (timeMs - lastTime) * 0.001) : 0.016;
     lastTime = timeMs;
 
-    // Smooth state transitions
+    // Smooth audio envelope follower
+    audioEnergy += (targetAudioEnergy - audioEnergy) * 0.25;
+
+    // Strict Voice & Audio Reactive Logic (from voice-powered-orb.tsx)
     if (state === 'thinking') {
-      targetHover = 0.95;
-      targetHoverIntensity = 0.85;
-      targetSpeed = 1.35;
+      // If voice / tab audio is detected (> 0.04)
+      if (audioEnergy > 0.04) {
+        // Map audio level directly to rotation speed (higher volume = faster spin)
+        const voiceRotationSpeed = 0.35 + (audioEnergy * 2.2);
+        currentRot += dt * voiceRotationSpeed;
+
+        // Drive hover distortion directly with voice level
+        targetHover = Math.min(audioEnergy * 2.0, 1.0);
+        targetHoverIntensity = Math.min(audioEnergy * 0.8, 0.8);
+      } else {
+        // No sound / silence: stop rotation and keep effects at 0!
+        targetHover = 0.0;
+        targetHoverIntensity = 0.0;
+      }
     } else {
-      // idle
-      targetHover = 0.08;
-      targetHoverIntensity = 0.15;
-      targetSpeed = 0.35;
+      // Idle state: subtle ambient drift, zero distortion
+      currentRot += dt * 0.12;
+      targetHover = 0.0;
+      targetHoverIntensity = 0.0;
     }
 
-    currentHover += (targetHover - currentHover) * 0.08;
-    currentHoverIntensity += (targetHoverIntensity - currentHoverIntensity) * 0.08;
-    currentSpeed += (targetSpeed - currentSpeed) * 0.08;
-    audioEnergy += (targetAudioEnergy - audioEnergy) * 0.15;
-
-    currentRot += dt * (currentSpeed + audioEnergy * 1.5);
+    currentHover += (targetHover - currentHover) * 0.15;
+    currentHoverIntensity += (targetHoverIntensity - currentHoverIntensity) * 0.15;
 
     gl.useProgram(prog);
     gl.uniform1f(uTime, t);
     gl.uniform3f(uRes, canvas.width, canvas.height, canvas.width / canvas.height);
     gl.uniform1f(uHue, 0.0);
-    gl.uniform1f(uHover, currentHover + audioEnergy * 0.6);
+    gl.uniform1f(uHover, currentHover);
     gl.uniform1f(uRot, currentRot);
-    gl.uniform1f(uHoverInt, currentHoverIntensity + audioEnergy * 0.5);
+    gl.uniform1f(uHoverInt, currentHoverIntensity);
 
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLES, 0, 3);

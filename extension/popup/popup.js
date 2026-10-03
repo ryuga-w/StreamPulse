@@ -531,6 +531,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setTimeout(initOrbVisualizer, 50);
 
+  // Forward Live Tab Audio Levels to Voice Powered Orb
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.type === 'AUDIO_LEVELS' && msg.levels) {
+      if (window.liquidOrb && window.liquidOrb.setAudioLevels) {
+        window.liquidOrb.setAudioLevels(msg.levels);
+      }
+    }
+  });
+
   // Tab Switching Canvas Power Management
   if (tabBtnGrabber) {
     tabBtnGrabber.addEventListener('click', () => {
