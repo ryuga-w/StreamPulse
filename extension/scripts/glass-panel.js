@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  const SCRIPT_VERSION = '1.3.8';
+  const SCRIPT_VERSION = '1.3.9';
   const HOST_ID = 'streampulse-glass-host';
 
   // Always clean up any stale container from previous injections
@@ -281,14 +281,18 @@
           fill: currentColor;
         }
 
-        /* 2. Tabs */
+        /* 2. Tabs - Apple Liquid Glass */
         .tabs {
           display: flex;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(20px) saturate(180%);
+          -webkit-backdrop-filter: blur(20px) saturate(180%);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-top: 1.5px solid rgba(255, 255, 255, 0.25);
           border-radius: 16px;
           padding: 4px;
           gap: 4px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.15);
         }
 
         .tab-btn {
@@ -299,30 +303,27 @@
           gap: 6px;
           padding: 7px 10px;
           background: transparent;
-          border: none;
+          border: 1px solid transparent;
           border-radius: 12px;
           color: #a1a1aa;
           font-size: 11.5px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.15s ease;
-        }
-
-        .tab-btn svg {
-          width: 14px;
-          height: 14px;
-          fill: currentColor;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .tab-btn:hover {
           color: #ffffff;
+          background: rgba(255, 255, 255, 0.06);
+          border-color: rgba(255, 255, 255, 0.1);
         }
 
         .tab-btn.active {
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.28) 0%, rgba(236, 72, 153, 0.2) 100%);
-          border: 1px solid rgba(139, 92, 246, 0.38);
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.45) 0%, rgba(236, 72, 153, 0.35) 100%);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-top: 1.5px solid rgba(255, 255, 255, 0.65);
           color: #ffffff;
-          box-shadow: 0 2px 10px rgba(139, 92, 246, 0.2);
+          box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35), inset 0 1px 1.5px rgba(255, 255, 255, 0.5);
         }
 
         /* 3. Tab Contents */
@@ -430,21 +431,29 @@
           justify-content: center;
           gap: 1px;
           padding: 7px 4px;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+          backdrop-filter: blur(16px) saturate(180%);
+          -webkit-backdrop-filter: blur(16px) saturate(180%);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          border-top: 1.2px solid rgba(255, 255, 255, 0.35);
           border-radius: 12px;
           cursor: pointer;
-          transition: all 0.15s ease;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .format-chip:hover {
-          background: rgba(255, 255, 255, 0.08);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.06) 100%);
+          border-color: rgba(255, 255, 255, 0.3);
+          transform: translateY(-1.5px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), inset 0 1px 1.5px rgba(255, 255, 255, 0.4);
         }
 
         .format-chip.active {
-          background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #ec4899 100%);
-          border-color: transparent;
-          box-shadow: 0 2px 8px rgba(139, 92, 246, 0.35);
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.85) 0%, rgba(99, 102, 241, 0.75) 50%, rgba(236, 72, 153, 0.85) 100%);
+          border: 1px solid rgba(255, 255, 255, 0.45);
+          border-top: 1.5px solid rgba(255, 255, 255, 0.8);
+          box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5), inset 0 1.5px 2px rgba(255, 255, 255, 0.7);
         }
 
         .format-chip strong {
@@ -459,14 +468,18 @@
         }
 
         .format-chip.active small {
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(255, 255, 255, 0.95);
         }
 
+        /* Apple Liquid Glass Main Button */
         .btn-main {
           width: 100%;
-          padding: 9.5px;
-          background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #ec4899 100%);
-          border: none;
+          padding: 10.5px 14px;
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.85) 0%, rgba(99, 102, 241, 0.75) 50%, rgba(236, 72, 153, 0.85) 100%);
+          backdrop-filter: blur(20px) saturate(200%);
+          -webkit-backdrop-filter: blur(20px) saturate(200%);
+          border: 1px solid rgba(255, 255, 255, 0.35);
+          border-top: 1.5px solid rgba(255, 255, 255, 0.75);
           border-radius: 18px;
           color: #ffffff;
           font-size: 12px;
@@ -474,19 +487,29 @@
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
+          gap: 7px;
           cursor: pointer;
-          transition: all 0.15s ease;
-          box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+          box-shadow: 
+            0 8px 25px rgba(139, 92, 246, 0.45),
+            inset 0 1.5px 2.5px rgba(255, 255, 255, 0.7),
+            inset 0 -1.5px 2px rgba(0, 0, 0, 0.3);
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .btn-main:hover {
-          background: linear-gradient(135deg, #9333ea 0%, #818cf8 50%, #f472b6 100%);
-          box-shadow: 0 6px 18px rgba(139, 92, 246, 0.5);
+          background: linear-gradient(135deg, rgba(168, 85, 247, 0.95) 0%, rgba(129, 140, 248, 0.85) 50%, rgba(244, 114, 182, 0.95) 100%);
+          border-color: rgba(255, 255, 255, 0.55);
+          border-top-color: #ffffff;
+          box-shadow: 
+            0 12px 35px rgba(139, 92, 246, 0.65),
+            inset 0 2px 3px rgba(255, 255, 255, 0.85),
+            0 0 30px rgba(236, 72, 153, 0.5);
+          transform: translateY(-1.5px) scale(1.02);
         }
 
         .btn-main:active {
-          transform: scale(0.98);
+          transform: scale(0.97);
         }
 
         .btn-main.success-state {
@@ -496,12 +519,16 @@
           pointer-events: none;
         }
 
+        /* Apple Liquid Glass Sub Button */
         .btn-sub {
           width: 100%;
-          padding: 8px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 18px;
+          padding: 8.5px 12px;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.08) 100%);
+          backdrop-filter: blur(16px) saturate(180%);
+          -webkit-backdrop-filter: blur(16px) saturate(180%);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          border-top: 1.5px solid rgba(255, 255, 255, 0.45);
+          border-radius: 14px;
           color: #e4e4e7;
           font-size: 11.5px;
           font-weight: 600;
@@ -510,12 +537,17 @@
           justify-content: center;
           gap: 6px;
           cursor: pointer;
-          transition: all 0.15s ease;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), inset 0 1px 1.5px rgba(255, 255, 255, 0.35);
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .btn-sub:hover {
-          background: rgba(255, 255, 255, 0.1);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 50%, rgba(139, 92, 246, 0.18) 100%);
+          border-color: rgba(255, 255, 255, 0.35);
+          border-top-color: rgba(255, 255, 255, 0.7);
           color: #ffffff;
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), inset 0 1.5px 2px rgba(255, 255, 255, 0.5);
         }
 
         .btn-main svg, .btn-sub svg {
@@ -596,8 +628,8 @@
 
         /* Large Pure Liquid Glass Play & Pause Icons */
         .orb-icon {
-          width: 58px;
-          height: 58px;
+          width: 64px;
+          height: 64px;
           filter: 
             drop-shadow(0 0 16px rgba(168, 85, 247, 0.85))
             drop-shadow(0 0 32px rgba(139, 92, 246, 0.55))
@@ -662,27 +694,46 @@
           color: #ffffff;
         }
 
+        /* Apple Liquid Glass Direct Audio Extract Button */
         .btn-extract {
           width: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 7px;
-          padding: 9px 12px;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          gap: 8px;
+          padding: 10.5px 14px;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(139, 92, 246, 0.14) 100%);
+          backdrop-filter: blur(20px) saturate(190%);
+          -webkit-backdrop-filter: blur(20px) saturate(190%);
+          border: 1px solid rgba(255, 255, 255, 0.28);
+          border-top: 1.5px solid rgba(255, 255, 255, 0.65);
           border-radius: 18px;
-          color: #c4b5fd;
+          color: #ffffff;
           font-size: 11.5px;
-          font-weight: 600;
+          font-weight: 700;
           cursor: pointer;
-          transition: all 0.15s ease;
+          box-shadow: 
+            0 8px 24px rgba(0, 0, 0, 0.35),
+            inset 0 1.5px 2.5px rgba(255, 255, 255, 0.6),
+            inset 0 -1px 2px rgba(0, 0, 0, 0.25),
+            0 0 16px rgba(139, 92, 246, 0.2);
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .btn-extract:hover {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: #8b5cf6;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(236, 72, 153, 0.22) 100%);
+          border-color: rgba(255, 255, 255, 0.45);
+          border-top-color: #ffffff;
           color: #ffffff;
+          box-shadow: 
+            0 12px 30px rgba(0, 0, 0, 0.45),
+            inset 0 2px 3px rgba(255, 255, 255, 0.8),
+            0 0 25px rgba(236, 72, 153, 0.4);
+          transform: translateY(-1.5px) scale(1.02);
+        }
+
+        .btn-extract:active {
+          transform: scale(0.97);
         }
 
         .btn-extract svg {
@@ -692,9 +743,11 @@
         }
 
         .btn-extract.success-state {
-          background: rgba(16, 185, 129, 0.25) !important;
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(5, 150, 105, 0.3) 100%) !important;
           border-color: rgba(16, 185, 129, 0.8) !important;
+          border-top-color: #ffffff !important;
           color: #34d399 !important;
+          box-shadow: 0 0 25px rgba(16, 185, 129, 0.6) !important;
           pointer-events: none;
         }
 
@@ -780,15 +833,22 @@
         }
 
         .btn-ytm {
-          background: rgba(255, 0, 0, 0.1) !important;
-          border: 1px solid rgba(255, 0, 0, 0.25) !important;
-          color: #ff8a8a !important;
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(220, 38, 38, 0.08) 50%, rgba(255, 255, 255, 0.1) 100%) !important;
+          border: 1px solid rgba(239, 68, 68, 0.35) !important;
+          border-top: 1.5px solid rgba(255, 255, 255, 0.5) !important;
+          color: #fca5a5 !important;
+          backdrop-filter: blur(16px) !important;
+          -webkit-backdrop-filter: blur(16px) !important;
+          box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2), inset 0 1px 1.5px rgba(255, 255, 255, 0.4) !important;
         }
 
         .btn-ytm:hover {
-          background: rgba(255, 0, 0, 0.2) !important;
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.45) 0%, rgba(220, 38, 38, 0.2) 50%, rgba(255, 255, 255, 0.2) 100%) !important;
+          border-color: rgba(239, 68, 68, 0.6) !important;
+          border-top-color: #ffffff !important;
           color: #ffffff !important;
-          border-color: rgba(255, 0, 0, 0.45) !important;
+          box-shadow: 0 0 25px rgba(239, 68, 68, 0.45), inset 0 1.5px 2px rgba(255, 255, 255, 0.6) !important;
+          transform: translateY(-1px);
         }
 
         .ytm-icon-red {
@@ -1029,27 +1089,45 @@
             <div class="shazam-btn-wrapper" id="btn-start-recognition" title="Müziği Tanı / Durdur">
               <canvas id="shazam-ai-canvas" width="240" height="240" class="shazam-ai-canvas"></canvas>
               <div class="orb-center-btn" id="orb-center-btn" title="Başlat / Duraklat">
-                <!-- Large Pure Liquid Glass Play Icon (Idle) -->
+                <!-- Large 3D Pure Liquid Glass Play Icon (Idle) -->
                 <svg class="orb-icon orb-icon-start" id="orb-icon-start" viewBox="0 0 24 24">
                   <defs>
                     <linearGradient id="liquid-glass-play" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-                      <stop offset="45%" stop-color="#e0e7ff" stop-opacity="0.88"/>
+                      <stop offset="35%" stop-color="#f5f3ff" stop-opacity="0.85"/>
+                      <stop offset="70%" stop-color="#ddd6fe" stop-opacity="0.75"/>
                       <stop offset="100%" stop-color="#c084fc" stop-opacity="0.95"/>
                     </linearGradient>
+                    <linearGradient id="glass-specular-play" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+                      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.25"/>
+                      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+                    </linearGradient>
                   </defs>
-                  <path fill="url(#liquid-glass-play)" stroke="rgba(255, 255, 255, 0.75)" stroke-width="0.75" d="M7 5.5a1.2 1.2 0 0 1 1.8-1.04l9 5.5a1.2 1.2 0 0 1 0 2.08l-9 5.5A1.2 1.2 0 0 1 7 16.5v-11z"/>
+                  <!-- Glass Body -->
+                  <path fill="url(#liquid-glass-play)" stroke="rgba(255, 255, 255, 0.85)" stroke-width="0.85" d="M7 5.5a1.2 1.2 0 0 1 1.8-1.04l9 5.5a1.2 1.2 0 0 1 0 2.08l-9 5.5A1.2 1.2 0 0 1 7 16.5v-11z"/>
+                  <!-- Upper Glass Gloss Highlight -->
+                  <path fill="url(#glass-specular-play)" d="M7 5.5a1.2 1.2 0 0 1 1.8-1.04l9 5.5a1.2 1.2 0 0 1 0 1L7.5 12V5.5z" opacity="0.8"/>
                 </svg>
-                <!-- Large Pure Liquid Glass Pause Icon (Listening) -->
+                <!-- Large 3D Pure Liquid Glass Pause Icon (Listening) -->
                 <svg class="orb-icon orb-icon-pause" id="orb-icon-pause" viewBox="0 0 24 24" style="display: none;">
                   <defs>
                     <linearGradient id="liquid-glass-pause" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-                      <stop offset="45%" stop-color="#fed7aa" stop-opacity="0.88"/>
+                      <stop offset="35%" stop-color="#fff1f2" stop-opacity="0.85"/>
+                      <stop offset="70%" stop-color="#fecdd3" stop-opacity="0.75"/>
                       <stop offset="100%" stop-color="#f43f5e" stop-opacity="0.95"/>
                     </linearGradient>
+                    <linearGradient id="glass-specular-pause" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+                      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.25"/>
+                      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+                    </linearGradient>
                   </defs>
-                  <path fill="url(#liquid-glass-pause)" stroke="rgba(255, 255, 255, 0.75)" stroke-width="0.75" d="M6.5 5a1.5 1.5 0 0 1 1.5-1.5h1A1.5 1.5 0 0 1 10.5 5v14a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 6.5 19V5zm7 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5V5z"/>
+                  <!-- Glass Body -->
+                  <path fill="url(#liquid-glass-pause)" stroke="rgba(255, 255, 255, 0.85)" stroke-width="0.85" d="M6.5 5a1.5 1.5 0 0 1 1.5-1.5h1A1.5 1.5 0 0 1 10.5 5v14a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 6.5 19V5zm7 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5V5z"/>
+                  <!-- Upper Glass Gloss Highlights -->
+                  <path fill="url(#glass-specular-pause)" d="M6.5 5a1.5 1.5 0 0 1 1.5-1.5h1A1.5 1.5 0 0 1 10.5 5v7H6.5V5zm7 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v7h-4V5z" opacity="0.8"/>
                 </svg>
               </div>
             </div>

@@ -349,7 +349,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   try {
     const res = await chrome.tabs.sendMessage(tab.id, { action: 'PING_STUDIO_VERSION' });
-    if (!res || res.version !== '1.3.8') {
+    if (!res || res.version !== '1.3.9') {
       throw new Error('Outdated content script in tab');
     }
     await chrome.tabs.sendMessage(tab.id, { action: 'TOGGLE_STREAM_PULSE_GLASS' });
