@@ -3,10 +3,15 @@
 (function () {
   'use strict';
 
-  if (window.__streampulse_glass_initialized) return;
-  window.__streampulse_glass_initialized = true;
-
+  const SCRIPT_VERSION = '1.3.1';
   const HOST_ID = 'streampulse-glass-host';
+
+  // Always clean up any stale container from previous injections
+  const existingHost = document.getElementById(HOST_ID);
+  if (existingHost) {
+    try { existingHost.remove(); } catch (e) {}
+  }
+
   let hostEl = null;
   let shadowRoot = null;
   let isPanelVisible = false;
@@ -1657,10 +1662,16 @@
   // AUDIO LEVEL & MESSAGE BUS DISPATCHER
   // =========================================================================
   if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
-    chrome.runtime.onMessage.addListener((msg) => {
+    chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+      if (msg.action === 'PING_STUDIO_VERSION') {
+        sendResponse({ version: SCRIPT_VERSION });
+        return true;
+      }
+
       if (msg.action === 'TOGGLE_STREAM_PULSE_GLASS') {
         toggleGlassPanel();
-        return;
+        sendResponse({ success: true });
+        return true;
       }
 
       if (msg.type === 'AUDIO_LEVELS' && shadowRoot) {
