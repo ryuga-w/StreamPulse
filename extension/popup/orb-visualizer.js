@@ -258,38 +258,36 @@
 
     resize();
 
-    const t = timeMs * 0.001;
+    // Calmed fluid time clock (peaceful, hypnotic, no hyperactive spin)
+    const t = timeMs * 0.00045;
     const dt = lastTime ? Math.min(0.1, (timeMs - lastTime) * 0.001) : 0.016;
     lastTime = timeMs;
 
     // Smooth audio envelope follower
-    audioEnergy += (targetAudioEnergy - audioEnergy) * 0.25;
+    audioEnergy += (targetAudioEnergy - audioEnergy) * 0.20;
 
-    // Strict Voice & Audio Reactive Logic (from voice-powered-orb.tsx)
+    // Elegant, Soothing Voice & Audio Reactive Logic
     if (state === 'thinking') {
-      // If voice / tab audio is detected (> 0.04)
-      if (audioEnergy > 0.04) {
-        // Map audio level directly to rotation speed (higher volume = faster spin)
-        const voiceRotationSpeed = 0.35 + (audioEnergy * 2.2);
-        currentRot += dt * voiceRotationSpeed;
-
-        // Drive hover distortion directly with voice level
-        targetHover = Math.min(audioEnergy * 2.0, 1.0);
-        targetHoverIntensity = Math.min(audioEnergy * 0.8, 0.8);
+      if (audioEnergy > 0.03) {
+        // Subtle, stately turning with music (never spins like crazy)
+        currentRot += dt * (0.08 + audioEnergy * 0.25);
+        targetHover = Math.min(audioEnergy * 1.6, 1.0);
+        targetHoverIntensity = Math.min(audioEnergy * 0.75, 0.75);
       } else {
-        // No sound / silence: stop rotation and keep effects at 0!
+        // Silence: barely drifts, peaceful and still
+        currentRot += dt * 0.03;
         targetHover = 0.0;
         targetHoverIntensity = 0.0;
       }
     } else {
-      // Idle state: subtle ambient drift, zero distortion
-      currentRot += dt * 0.12;
+      // Idle state: very slow, majestic celestial drift
+      currentRot += dt * 0.03;
       targetHover = 0.0;
       targetHoverIntensity = 0.0;
     }
 
-    currentHover += (targetHover - currentHover) * 0.15;
-    currentHoverIntensity += (targetHoverIntensity - currentHoverIntensity) * 0.15;
+    currentHover += (targetHover - currentHover) * 0.12;
+    currentHoverIntensity += (targetHoverIntensity - currentHoverIntensity) * 0.12;
 
     gl.useProgram(prog);
     gl.uniform1f(uTime, t);
