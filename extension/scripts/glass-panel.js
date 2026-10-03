@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  const SCRIPT_VERSION = '1.3.2';
+  const SCRIPT_VERSION = '1.3.3';
   const HOST_ID = 'streampulse-glass-host';
 
   // Always clean up any stale container from previous injections
@@ -548,83 +548,67 @@
           gap: 6px;
         }
 
-        /* Studio Equalizer Pill */
-        .shazam-eq-pill {
+        /* Liquid Orb Center Play/Pause Control Button */
+        .orb-center-btn {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 58px;
+          height: 58px;
+          border-radius: 50%;
+          background: rgba(14, 14, 22, 0.72);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 25px rgba(139, 92, 246, 0.35);
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 3.5px;
-          height: 26px;
-          padding: 0 14px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(168, 85, 247, 0.35);
-          border-radius: 13px;
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          box-shadow: 0 0 14px rgba(168, 85, 247, 0.25);
+          z-index: 2;
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .shazam-eq-pill .eq-bar {
-          width: 2.5px;
-          height: 6px;
-          min-height: 4px;
-          max-height: 18px;
-          border-radius: 2px;
-          background: linear-gradient(180deg, #38bdf8 0%, #a855f7 50%, #ec4899 100%);
-          transition: height 0.08s ease-out;
+        .shazam-btn-wrapper:hover .orb-center-btn {
+          transform: translate(-50%, -50%) scale(1.1);
+          background: rgba(139, 92, 246, 0.35);
+          border-color: rgba(236, 72, 153, 0.6);
+          box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6), 0 0 35px rgba(236, 72, 153, 0.55);
         }
 
-        .shazam-eq-pill.active .eq-bar {
-          animation: eq-bounce 0.75s infinite alternate ease-in-out;
+        .shazam-btn-wrapper:active .orb-center-btn {
+          transform: translate(-50%, -50%) scale(0.95);
         }
 
-        .shazam-eq-pill.active .eq-bar:nth-child(1) { animation-delay: 0.05s; }
-        .shazam-eq-pill.active .eq-bar:nth-child(2) { animation-delay: 0.2s; }
-        .shazam-eq-pill.active .eq-bar:nth-child(3) { animation-delay: 0.35s; }
-        .shazam-eq-pill.active .eq-bar:nth-child(4) { animation-delay: 0.12s; }
-        .shazam-eq-pill.active .eq-bar:nth-child(5) { animation-delay: 0.28s; }
-        .shazam-eq-pill.active .eq-bar:nth-child(6) { animation-delay: 0.42s; }
-        .shazam-eq-pill.active .eq-bar:nth-child(7) { animation-delay: 0.18s; }
-        .shazam-eq-pill.active .eq-bar:nth-child(8) { animation-delay: 0.38s; }
-        .shazam-eq-pill.active .eq-bar:nth-child(9) { animation-delay: 0.24s; }
-        .shazam-eq-pill.active .eq-bar:nth-child(10) { animation-delay: 0.15s; }
-        .shazam-eq-pill.active .eq-bar:nth-child(11) { animation-delay: 0.32s; }
-        .shazam-eq-pill.active .eq-bar:nth-child(12) { animation-delay: 0.22s; }
+        .orb-center-btn.listening {
+          background: rgba(239, 68, 68, 0.25);
+          border-color: rgba(239, 68, 68, 0.6);
+          box-shadow: 0 0 25px rgba(239, 68, 68, 0.45);
+        }
 
-        @keyframes eq-bounce {
-          0% { height: 5px; opacity: 0.5; }
-          100% { height: 18px; opacity: 1; }
+        .orb-center-btn.listening:hover {
+          background: rgba(239, 68, 68, 0.4);
+          border-color: rgba(239, 68, 68, 0.8);
+          box-shadow: 0 0 35px rgba(239, 68, 68, 0.65);
+        }
+
+        .orb-icon {
+          width: 24px;
+          height: 24px;
+          fill: #ffffff;
+          filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+          transition: transform 0.2s ease;
+        }
+
+        .orb-icon-pause {
+          fill: #fca5a5;
         }
 
         .shazam-title {
           font-size: 15px;
           font-weight: 700;
           color: #ffffff;
-        }
-
-        .btn-stop {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 16px;
-          background: rgba(239, 68, 68, 0.15);
-          border: 1px solid rgba(239, 68, 68, 0.3);
-          border-radius: 18px;
-          color: #f87171;
-          font-size: 11px;
-          font-weight: 600;
-          cursor: pointer;
-        }
-
-        .btn-stop:hover {
-          background: rgba(239, 68, 68, 0.25);
-          color: #ffffff;
-        }
-
-        .btn-stop svg {
-          width: 12px;
-          height: 12px;
-          fill: currentColor;
         }
 
         .btn-extract {
@@ -990,26 +974,24 @@
         <!-- 4. TAB 2: CLEAN SHAZAM RECOGNITION WITH FULL VOICE-POWERED ORB -->
         <div class="tab-content" id="view-shazam" style="display: none;">
           <div class="shazam-view" id="shazam-stage-idle">
-            <!-- Full WebGL Voice-Powered Orb Container -->
-            <div class="shazam-btn-wrapper" id="btn-start-recognition" title="Müziği Tanı">
+            <!-- Full WebGL Voice-Powered Orb Container with Center Start/Pause Control -->
+            <div class="shazam-btn-wrapper" id="btn-start-recognition" title="Müziği Tanı / Durdur">
               <canvas id="shazam-ai-canvas" width="240" height="240" class="shazam-ai-canvas"></canvas>
+              <div class="orb-center-btn" id="orb-center-btn">
+                <!-- Start Icon (Idle) -->
+                <svg class="orb-icon orb-icon-start" id="orb-icon-start" viewBox="0 0 24 24">
+                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                </svg>
+                <!-- Pause/Stop Icon (Listening) -->
+                <svg class="orb-icon orb-icon-pause" id="orb-icon-pause" viewBox="0 0 24 24" style="display: none;">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+              </div>
             </div>
 
             <div class="shazam-meta">
-              <!-- Live Equalizer Visualizer Pill (Strictly shows while listening) -->
-              <div class="shazam-eq-pill" id="shazam-eq-pill" style="display: none;">
-                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
-                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
-                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
-                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
-              </div>
               <h3 class="shazam-title" id="shazam-status-title">Müziği Tanı</h3>
             </div>
-
-            <button class="btn-stop" id="btn-stop-listening" style="display: none;">
-              <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
-              <span id="btn-label-stop">Dinlemeyi Durdur</span>
-            </button>
 
             <!-- Direct Video Audio Extract Button -->
             <button class="btn-extract" id="btn-extract-direct">
@@ -1378,7 +1360,6 @@
     const btnDownload = root.getElementById('btn-download');
     const btnOpenApp = root.getElementById('btn-open-app');
     const btnStartRec = root.getElementById('btn-start-recognition');
-    const btnStopListening = root.getElementById('btn-stop-listening');
     const btnExtractDirect = root.getElementById('btn-extract-direct');
     const btnDownloadRecognized = root.getElementById('btn-download-recognized');
     const btnOpenYtm = root.getElementById('btn-open-ytm');
@@ -1460,14 +1441,13 @@
       showToast(root, 'StreamPulse Masaüstü başlatılıyor...', 'success');
     });
 
-    // Tab 2: Start Shazam Recognition
+    // Tab 2: Start / Pause Shazam Recognition via Center Orb Button
     btnStartRec.addEventListener('click', () => {
-      if (isRecognizing) return;
-      startShazamRecognition(root);
-    });
-
-    btnStopListening.addEventListener('click', () => {
-      stopShazamRecognition(root);
+      if (isRecognizing) {
+        stopShazamRecognition(root);
+      } else {
+        startShazamRecognition(root);
+      }
     });
 
     // Tab 2: Extract Current Tab Audio Directly
@@ -1550,17 +1530,19 @@
     if (orbInstance) orbInstance.setState('thinking');
 
     const btnWrapper = root.getElementById('btn-start-recognition');
-    const eqPill = root.getElementById('shazam-eq-pill');
+    const orbCenterBtn = root.getElementById('orb-center-btn');
+    const iconStart = root.getElementById('orb-icon-start');
+    const iconPause = root.getElementById('orb-icon-pause');
     const title = root.getElementById('shazam-status-title');
-    const btnStop = root.getElementById('btn-stop-listening');
     const resultCard = root.getElementById('shazam-result-card');
 
     if (btnWrapper) btnWrapper.classList.add('listening');
+    if (orbCenterBtn) orbCenterBtn.classList.add('listening');
+    if (iconStart) iconStart.style.display = 'none';
+    if (iconPause) iconPause.style.display = 'block';
+
     resultCard.style.display = 'none';
-    eqPill.style.display = 'flex';
-    eqPill.classList.add('active');
     title.textContent = 'Sekme Dinleniyor...';
-    btnStop.style.display = 'flex';
 
     if (typeof chrome !== 'undefined' && chrome.runtime) {
       chrome.runtime.sendMessage({ type: 'RECOGNIZE_AUDIO' }, (res) => {
@@ -1568,9 +1550,9 @@
         isRecognizing = false;
         if (orbInstance) orbInstance.setState('idle');
         if (btnWrapper) btnWrapper.classList.remove('listening');
-        eqPill.style.display = 'none';
-        eqPill.classList.remove('active');
-        btnStop.style.display = 'none';
+        if (orbCenterBtn) orbCenterBtn.classList.remove('listening');
+        if (iconStart) iconStart.style.display = 'block';
+        if (iconPause) iconPause.style.display = 'none';
 
         if (res && res.success && res.track) {
           currentRecognizedTrack = res.track;
@@ -1588,13 +1570,15 @@
     if (orbInstance) orbInstance.setState('idle');
 
     const btnWrapper = root.getElementById('btn-start-recognition');
-    const eqPill = root.getElementById('shazam-eq-pill');
+    const orbCenterBtn = root.getElementById('orb-center-btn');
+    const iconStart = root.getElementById('orb-icon-start');
+    const iconPause = root.getElementById('orb-icon-pause');
+
     if (btnWrapper) btnWrapper.classList.remove('listening');
-    if (eqPill) {
-      eqPill.style.display = 'none';
-      eqPill.classList.remove('active');
-    }
-    root.getElementById('btn-stop-listening').style.display = 'none';
+    if (orbCenterBtn) orbCenterBtn.classList.remove('listening');
+    if (iconStart) iconStart.style.display = 'block';
+    if (iconPause) iconPause.style.display = 'none';
+
     root.getElementById('shazam-status-title').textContent = 'Dinleme Durduruldu';
 
     if (typeof chrome !== 'undefined' && chrome.runtime) {
@@ -1709,27 +1693,6 @@
         // Feed into Voice-Powered WebGL Orb
         if (orbInstance) {
           orbInstance.setAudioLevels(msg.levels);
-        }
-
-        // Feed into Live Equalizer Capsule
-        if (isRecognizing) {
-          const eqBars = shadowRoot.querySelectorAll('#shazam-eq-pill .eq-bar');
-          if (eqBars && eqBars.length > 0 && msg.levels) {
-            const bands = [
-              msg.levels.subBass || 0,
-              msg.levels.kick || 0,
-              msg.levels.lowMids || 0,
-              msg.levels.mids || 0,
-              msg.levels.treble || 0,
-              msg.levels.energy || 0
-            ];
-            for (let i = 0; i < eqBars.length; i++) {
-              const bandIdx = i < 6 ? i : 11 - i;
-              const val = bands[bandIdx] || 0.08;
-              const h = Math.max(4, Math.min(18, Math.round(val * 20)));
-              eqBars[i].style.height = `${h}px`;
-            }
-          }
         }
       }
     });
