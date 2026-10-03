@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  const SCRIPT_VERSION = '1.3.5';
+  const SCRIPT_VERSION = '1.3.6';
   const HOST_ID = 'streampulse-glass-host';
 
   // Always clean up any stale container from previous injections
@@ -624,20 +624,23 @@
         }
 
         .orb-icon {
-          width: 28px;
-          height: 28px;
+          width: 32px;
+          height: 32px;
           fill: #ffffff;
           filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
           transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
           position: relative;
           z-index: 1;
+          display: block;
+          margin: 0 !important;
+          padding: 0;
+          box-sizing: border-box;
+          flex-shrink: 0;
         }
 
-        .orb-icon-start {
-          margin-left: 4px;
-        }
-
+        .orb-icon-start,
         .orb-icon-pause {
+          margin: 0 !important;
           fill: #ffffff;
         }
 
@@ -1014,13 +1017,13 @@
             <div class="shazam-btn-wrapper" id="btn-start-recognition" title="Müziği Tanı / Durdur">
               <canvas id="shazam-ai-canvas" width="240" height="240" class="shazam-ai-canvas"></canvas>
               <div class="orb-center-btn" id="orb-center-btn" title="Başlat / Duraklat">
-                <!-- Play Icon (Idle) -->
+                <!-- Play Icon (Idle) - Symmetrically Centered -->
                 <svg class="orb-icon orb-icon-start" id="orb-icon-start" viewBox="0 0 24 24">
-                  <path d="M8 5.14v13.72a1 1 0 001.5.86l11-6.86a1 1 0 000-1.72l-11-6.86a1 1 0 00-1.5.86z"/>
+                  <path d="M7 5.5a1.2 1.2 0 0 1 1.8-1.04l9 5.5a1.2 1.2 0 0 1 0 2.08l-9 5.5A1.2 1.2 0 0 1 7 16.5v-11z"/>
                 </svg>
-                <!-- Pause Icon (Listening) -->
+                <!-- Pause Icon (Listening) - Symmetrically Centered -->
                 <svg class="orb-icon orb-icon-pause" id="orb-icon-pause" viewBox="0 0 24 24" style="display: none;">
-                  <path d="M6 4.5a1.5 1.5 0 011.5-1.5h1.5A1.5 1.5 0 0110.5 4.5v15a1.5 1.5 0 01-1.5 1.5H7.5A1.5 1.5 0 016 19.5v-15zm7.5 0a1.5 1.5 0 011.5-1.5h1.5a1.5 1.5 0 011.5 1.5v15a1.5 1.5 0 01-1.5 1.5H15a1.5 1.5 0 01-1.5-1.5v-15z"/>
+                  <path d="M6.5 5a1.5 1.5 0 0 1 1.5-1.5h1A1.5 1.5 0 0 1 10.5 5v14a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 6.5 19V5zm7 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5V5z"/>
                 </svg>
               </div>
             </div>
