@@ -517,6 +517,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.liquidOrb) {
       aiVisualizer = window.liquidOrb;
       console.log('[StreamPulse] Exact WebGPU Liquid Orb visualizer active 🔮');
+      // If popup started on Tab 1 (Grabber), pause visualizer to save 100% GPU
+      if (viewGrabber && viewGrabber.style.display !== 'none' && aiVisualizer.stop) {
+        aiVisualizer.stop();
+      }
       return;
     }
 
@@ -524,12 +528,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const fallback = new AIAuroraFluidRibbons('shazam-ai-canvas');
     if (fallback.init()) {
       aiVisualizer = fallback;
-      aiVisualizer.start();
+      if (viewShazam && viewShazam.style.display !== 'none') {
+        aiVisualizer.start();
+      }
       console.log('[StreamPulse] 2D Aurora Ribbons active (fallback)');
     }
   }
 
-  setTimeout(initOrbVisualizer, 50);
+  setTimeout(initOrbVisualizer, 100);
 
   // Tab Switching Canvas Power Management
   if (tabBtnGrabber) {
