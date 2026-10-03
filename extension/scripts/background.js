@@ -132,6 +132,8 @@ async function ensureOffscreenDocument() {
   });
 }
 
+let activeRecognizingTabId = null;
+
 // 2. Recognize Tab Music using tabCapture + Offscreen Document
 async function recognizeTabMusic(targetTabId) {
   try {
@@ -147,6 +149,8 @@ async function recognizeTabMusic(targetTabId) {
       return { success: false, error: 'Aktif sekme bulunamadı.' };
     }
 
+    activeRecognizingTabId = tabId;
+
     const streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: tabId });
 
     // Send capture command to offscreen document
@@ -156,8 +160,10 @@ async function recognizeTabMusic(targetTabId) {
       data: { streamId, duration: 4500 }
     });
 
+    activeRecognizingTabId = null;
     return response;
   } catch (err) {
+    activeRecognizingTabId = null;
     return { success: false, error: err.message };
   }
 }
@@ -274,8 +280,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
   }
+  if (request.type === 'AUDIO_LEVELS') {
+    if (activeRecognizingTabId) {
+      chrome.tabs.sendMessage(activeRecognizingTabId, request).catch(() => {});
+    }
+    return;
+  }
+  if (request.type === 'STOP_RECORDING') {
+    activeRecognizingTabId = null;
+    chrome.runtime.sendMessage({ target: 'offscreen', type: 'STOP_RECORDING' }).catch(() => {});
+    sendResponse({ success: true });
+    return true;
+  }
   if (request.type === 'RECOGNIZE_AUDIO') {
-    recognizeTabMusic(request.tabId)
+    const targetTabId = request.tabId || sender.tab?.id;
+    recognizeTabMusic(targetTabId)
       .then(res => sendResponse(res))
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
@@ -330,7 +349,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   try {
     const res = await chrome.tabs.sendMessage(tab.id, { action: 'PING_STUDIO_VERSION' });
-    if (!res || res.version !== '1.3.1') {
+    if (!res || res.version !== '1.3.2') {
       throw new Error('Outdated content script in tab');
     }
     await chrome.tabs.sendMessage(tab.id, { action: 'TOGGLE_STREAM_PULSE_GLASS' });

@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  const SCRIPT_VERSION = '1.3.1';
+  const SCRIPT_VERSION = '1.3.2';
   const HOST_ID = 'streampulse-glass-host';
 
   // Always clean up any stale container from previous injections
@@ -572,6 +572,28 @@
           border-radius: 2px;
           background: linear-gradient(180deg, #38bdf8 0%, #a855f7 50%, #ec4899 100%);
           transition: height 0.08s ease-out;
+        }
+
+        .shazam-eq-pill.active .eq-bar {
+          animation: eq-bounce 0.75s infinite alternate ease-in-out;
+        }
+
+        .shazam-eq-pill.active .eq-bar:nth-child(1) { animation-delay: 0.05s; }
+        .shazam-eq-pill.active .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+        .shazam-eq-pill.active .eq-bar:nth-child(3) { animation-delay: 0.35s; }
+        .shazam-eq-pill.active .eq-bar:nth-child(4) { animation-delay: 0.12s; }
+        .shazam-eq-pill.active .eq-bar:nth-child(5) { animation-delay: 0.28s; }
+        .shazam-eq-pill.active .eq-bar:nth-child(6) { animation-delay: 0.42s; }
+        .shazam-eq-pill.active .eq-bar:nth-child(7) { animation-delay: 0.18s; }
+        .shazam-eq-pill.active .eq-bar:nth-child(8) { animation-delay: 0.38s; }
+        .shazam-eq-pill.active .eq-bar:nth-child(9) { animation-delay: 0.24s; }
+        .shazam-eq-pill.active .eq-bar:nth-child(10) { animation-delay: 0.15s; }
+        .shazam-eq-pill.active .eq-bar:nth-child(11) { animation-delay: 0.32s; }
+        .shazam-eq-pill.active .eq-bar:nth-child(12) { animation-delay: 0.22s; }
+
+        @keyframes eq-bounce {
+          0% { height: 5px; opacity: 0.5; }
+          100% { height: 18px; opacity: 1; }
         }
 
         .shazam-title {
@@ -1281,15 +1303,13 @@
       audioEnergy += (targetAudioEnergy - audioEnergy) * 0.20;
 
       if (state === 'thinking') {
-        if (audioEnergy > 0.03) {
-          currentRot += dt * (0.08 + audioEnergy * 0.25);
-          targetHover = Math.min(audioEnergy * 1.6, 1.0);
-          targetHoverIntensity = Math.min(audioEnergy * 0.75, 0.75);
-        } else {
-          currentRot += dt * 0.03;
-          targetHover = 0.0;
-          targetHoverIntensity = 0.0;
-        }
+        // Active listening ripple & pulse (always alive while listening)
+        const pulse = (Math.sin(timeMs * 0.0035) * 0.5 + 0.5) * 0.35;
+        const totalEnergy = Math.max(audioEnergy, pulse);
+
+        currentRot += dt * (0.12 + totalEnergy * 0.45);
+        targetHover = Math.min(0.25 + totalEnergy * 1.5, 1.0);
+        targetHoverIntensity = Math.min(0.25 + totalEnergy * 0.8, 0.85);
       } else {
         currentRot += dt * 0.03;
         targetHover = 0.0;
@@ -1529,13 +1549,16 @@
     isRecognizing = true;
     if (orbInstance) orbInstance.setState('thinking');
 
+    const btnWrapper = root.getElementById('btn-start-recognition');
     const eqPill = root.getElementById('shazam-eq-pill');
     const title = root.getElementById('shazam-status-title');
     const btnStop = root.getElementById('btn-stop-listening');
     const resultCard = root.getElementById('shazam-result-card');
 
+    if (btnWrapper) btnWrapper.classList.add('listening');
     resultCard.style.display = 'none';
     eqPill.style.display = 'flex';
+    eqPill.classList.add('active');
     title.textContent = 'Sekme Dinleniyor...';
     btnStop.style.display = 'flex';
 
@@ -1544,7 +1567,9 @@
         if (!isRecognizing) return;
         isRecognizing = false;
         if (orbInstance) orbInstance.setState('idle');
+        if (btnWrapper) btnWrapper.classList.remove('listening');
         eqPill.style.display = 'none';
+        eqPill.classList.remove('active');
         btnStop.style.display = 'none';
 
         if (res && res.success && res.track) {
@@ -1562,12 +1587,18 @@
     isRecognizing = false;
     if (orbInstance) orbInstance.setState('idle');
 
-    root.getElementById('shazam-eq-pill').style.display = 'none';
+    const btnWrapper = root.getElementById('btn-start-recognition');
+    const eqPill = root.getElementById('shazam-eq-pill');
+    if (btnWrapper) btnWrapper.classList.remove('listening');
+    if (eqPill) {
+      eqPill.style.display = 'none';
+      eqPill.classList.remove('active');
+    }
     root.getElementById('btn-stop-listening').style.display = 'none';
     root.getElementById('shazam-status-title').textContent = 'Dinleme Durduruldu';
 
     if (typeof chrome !== 'undefined' && chrome.runtime) {
-      chrome.runtime.sendMessage({ target: 'offscreen', type: 'STOP_RECORDING' });
+      chrome.runtime.sendMessage({ type: 'STOP_RECORDING' });
     }
   }
 
