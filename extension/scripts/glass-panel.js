@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  const SCRIPT_VERSION = '1.3.3';
+  const SCRIPT_VERSION = '1.3.4';
   const HOST_ID = 'streampulse-glass-host';
 
   // Always clean up any stale container from previous injections
@@ -548,61 +548,117 @@
           gap: 6px;
         }
 
-        /* Liquid Orb Center Play/Pause Control Button */
+        /* Apple Liquid Glass Play/Pause Control Button */
         .orb-center-btn {
           position: absolute;
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 58px;
-          height: 58px;
+          width: 62px;
+          height: 62px;
           border-radius: 50%;
-          background: rgba(14, 14, 22, 0.72);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 25px rgba(139, 92, 246, 0.35);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(139, 92, 246, 0.18) 100%);
+          backdrop-filter: blur(24px) saturate(200%);
+          -webkit-backdrop-filter: blur(24px) saturate(200%);
+          border: 1.5px solid rgba(255, 255, 255, 0.45);
+          box-shadow: 
+            inset 0 1.5px 3px rgba(255, 255, 255, 0.85),
+            inset 0 -2px 6px rgba(0, 0, 0, 0.35),
+            0 10px 30px rgba(0, 0, 0, 0.55),
+            0 0 28px rgba(139, 92, 246, 0.4);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 2;
           cursor: pointer;
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          overflow: hidden;
+          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, background 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Apple Glass Specular Glare (curved top reflection) */
+        .orb-center-btn::before {
+          content: '';
+          position: absolute;
+          top: 2px;
+          left: 9px;
+          right: 9px;
+          height: 42%;
+          border-radius: 50% 50% 45% 45% / 60% 60% 30% 30%;
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.05) 100%);
+          pointer-events: none;
+          opacity: 0.9;
         }
 
         .shazam-btn-wrapper:hover .orb-center-btn {
-          transform: translate(-50%, -50%) scale(1.1);
-          background: rgba(139, 92, 246, 0.35);
-          border-color: rgba(236, 72, 153, 0.6);
-          box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6), 0 0 35px rgba(236, 72, 153, 0.55);
+          transform: translate(-50%, -50%) scale(1.08);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.12) 50%, rgba(236, 72, 153, 0.25) 100%);
+          border-color: rgba(255, 255, 255, 0.65);
+          box-shadow: 
+            inset 0 2px 4px rgba(255, 255, 255, 0.95),
+            inset 0 -2px 6px rgba(0, 0, 0, 0.4),
+            0 12px 35px rgba(0, 0, 0, 0.6),
+            0 0 35px rgba(236, 72, 153, 0.55);
         }
 
         .shazam-btn-wrapper:active .orb-center-btn {
-          transform: translate(-50%, -50%) scale(0.95);
+          transform: translate(-50%, -50%) scale(0.94);
         }
 
+        /* Listening (Pause State) Liquid Glass */
         .orb-center-btn.listening {
-          background: rgba(239, 68, 68, 0.25);
-          border-color: rgba(239, 68, 68, 0.6);
-          box-shadow: 0 0 25px rgba(239, 68, 68, 0.45);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.32) 0%, rgba(239, 68, 68, 0.25) 50%, rgba(220, 38, 38, 0.4) 100%);
+          border-color: rgba(255, 255, 255, 0.6);
+          box-shadow: 
+            inset 0 1.5px 3px rgba(255, 255, 255, 0.95),
+            inset 0 -2px 6px rgba(0, 0, 0, 0.4),
+            0 10px 30px rgba(239, 68, 68, 0.5),
+            0 0 32px rgba(239, 68, 68, 0.6);
+          animation: liquid-pulse 2s infinite ease-in-out;
         }
 
-        .orb-center-btn.listening:hover {
-          background: rgba(239, 68, 68, 0.4);
-          border-color: rgba(239, 68, 68, 0.8);
-          box-shadow: 0 0 35px rgba(239, 68, 68, 0.65);
+        @keyframes liquid-pulse {
+          0%, 100% {
+            box-shadow: 
+              inset 0 1.5px 3px rgba(255, 255, 255, 0.95),
+              inset 0 -2px 6px rgba(0, 0, 0, 0.4),
+              0 10px 30px rgba(239, 68, 68, 0.45),
+              0 0 25px rgba(239, 68, 68, 0.5);
+          }
+          50% {
+            box-shadow: 
+              inset 0 2px 4px rgba(255, 255, 255, 1),
+              inset 0 -2px 6px rgba(0, 0, 0, 0.4),
+              0 12px 35px rgba(239, 68, 68, 0.7),
+              0 0 45px rgba(239, 68, 68, 0.85);
+          }
+        }
+
+        .shazam-btn-wrapper:hover .orb-center-btn.listening {
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(239, 68, 68, 0.38) 50%, rgba(220, 38, 38, 0.52) 100%);
+          border-color: rgba(255, 255, 255, 0.8);
+          box-shadow: 
+            inset 0 2px 4px rgba(255, 255, 255, 1),
+            inset 0 -2px 6px rgba(0, 0, 0, 0.4),
+            0 12px 35px rgba(239, 68, 68, 0.75),
+            0 0 45px rgba(239, 68, 68, 0.85);
         }
 
         .orb-icon {
           width: 24px;
           height: 24px;
           fill: #ffffff;
-          filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
-          transition: transform 0.2s ease;
+          filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
+          transition: transform 0.2s ease, opacity 0.2s ease;
+          position: relative;
+          z-index: 1;
+        }
+
+        .orb-icon-start {
+          margin-left: 3px;
         }
 
         .orb-icon-pause {
-          fill: #fca5a5;
+          fill: #ffffff;
         }
 
         .shazam-title {
@@ -977,14 +1033,14 @@
             <!-- Full WebGL Voice-Powered Orb Container with Center Start/Pause Control -->
             <div class="shazam-btn-wrapper" id="btn-start-recognition" title="Müziği Tanı / Durdur">
               <canvas id="shazam-ai-canvas" width="240" height="240" class="shazam-ai-canvas"></canvas>
-              <div class="orb-center-btn" id="orb-center-btn">
-                <!-- Start Icon (Idle) -->
+              <div class="orb-center-btn" id="orb-center-btn" title="Başlat / Duraklat">
+                <!-- Play Icon (Idle) -->
                 <svg class="orb-icon orb-icon-start" id="orb-icon-start" viewBox="0 0 24 24">
-                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                  <path d="M8 5.14v13.72a1 1 0 001.5.86l11-6.86a1 1 0 000-1.72l-11-6.86a1 1 0 00-1.5.86z"/>
                 </svg>
-                <!-- Pause/Stop Icon (Listening) -->
+                <!-- Pause Icon (Listening) -->
                 <svg class="orb-icon orb-icon-pause" id="orb-icon-pause" viewBox="0 0 24 24" style="display: none;">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                  <path d="M6 4.5a1.5 1.5 0 011.5-1.5h1.5A1.5 1.5 0 0110.5 4.5v15a1.5 1.5 0 01-1.5 1.5H7.5A1.5 1.5 0 016 19.5v-15zm7.5 0a1.5 1.5 0 011.5-1.5h1.5a1.5 1.5 0 011.5 1.5v15a1.5 1.5 0 01-1.5 1.5H15a1.5 1.5 0 01-1.5-1.5v-15z"/>
                 </svg>
               </div>
             </div>
