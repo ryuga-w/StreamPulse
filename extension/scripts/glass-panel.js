@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  const SCRIPT_VERSION = '1.3.6';
+  const SCRIPT_VERSION = '1.3.7';
   const HOST_ID = 'streampulse-glass-host';
 
   // Always clean up any stale container from previous injections
@@ -59,6 +59,33 @@
           padding: 0;
           font-family: 'YouTube Sans', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           user-select: none;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+
+        /* Custom Ultra-Slim Glass Scrollbar */
+        *::-webkit-scrollbar {
+          width: 4px;
+          height: 4px;
+        }
+
+        *::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        *::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.18);
+          border-radius: 999px;
+        }
+
+        *::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.35);
+        }
+
+        *::-webkit-scrollbar-button {
+          display: none;
+          width: 0;
+          height: 0;
         }
 
         /* Minimized Floating Pill */
@@ -1088,7 +1115,7 @@
         <footer class="footer">
           <span>StreamPulse</span>
           <span>•</span>
-          <span>v1.3.0 Cam Studio</span>
+          <span>v${SCRIPT_VERSION} Cam Studio</span>
         </footer>
       </div>
     `;
