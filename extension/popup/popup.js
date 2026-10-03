@@ -531,11 +531,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setTimeout(initOrbVisualizer, 50);
 
-  // Forward Live Tab Audio Levels to Voice Powered Orb
+  const shazamEqPill = document.getElementById('shazam-eq-pill');
+  const eqBars = document.querySelectorAll('#shazam-eq-pill .eq-bar');
+
+  // Forward Live Tab Audio Levels to Voice Powered Orb & Studio EQ Pill
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'AUDIO_LEVELS' && msg.levels) {
       if (window.liquidOrb && window.liquidOrb.setAudioLevels) {
         window.liquidOrb.setAudioLevels(msg.levels);
+      }
+      if (isRecognizing && eqBars && eqBars.length > 0) {
+        const bands = [
+          msg.levels.subBass || 0,
+          msg.levels.kick || 0,
+          msg.levels.lowMids || 0,
+          msg.levels.mids || 0,
+          msg.levels.treble || 0,
+          msg.levels.energy || 0
+        ];
+        for (let i = 0; i < eqBars.length; i++) {
+          const bandIdx = i < 6 ? i : 11 - i;
+          const val = bands[bandIdx] || 0.08;
+          const h = Math.max(4, Math.min(18, Math.round(val * 20)));
+          eqBars[i].style.height = `${h}px`;
+        }
       }
     }
   });
@@ -569,6 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   function resetShazamStage() {
     isRecognizing = false;
+    if (shazamEqPill) shazamEqPill.style.display = 'none';
     if (btnStartRecognition) btnStartRecognition.classList.remove('listening');
     if (btnStopListening) btnStopListening.style.display = 'none';
     if (shazamStatusTitle) shazamStatusTitle.textContent = t.shazamTitle;
@@ -582,6 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function triggerRecognitionStart() {
     if (isRecognizing) return;
     isRecognizing = true;
+    if (shazamEqPill) shazamEqPill.style.display = 'flex';
 
     if (btnStartRecognition) btnStartRecognition.classList.add('listening');
     if (btnStopListening) btnStopListening.style.display = 'flex';

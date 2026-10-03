@@ -476,7 +476,39 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
+}
+
+/* Apple / Spotify Studio Equalizer Pill */
+.shazam-eq-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3.5px;
+  height: 26px;
+  padding: 0 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 13px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.25);
+  animation: eq-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes eq-fade-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.shazam-eq-pill .eq-bar {
+  width: 2.5px;
+  height: 6px;
+  min-height: 4px;
+  max-height: 18px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #38bdf8 0%, #a855f7 50%, #ec4899 100%);
+  transition: height 0.08s ease-out;
 }
 
 .shazam-title {
