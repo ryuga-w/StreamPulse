@@ -1,9 +1,8 @@
 // StreamPulse - In-Page Ultra Luxury Floating Glass Studio (Shadow DOM)
-// Pure glassmorphism, 100% scoped styling, true border-radius 28px, draggable
+// 100% Feature Parity with Extension Popup + Full Voice-Powered WebGL Orb + Draggable Floating Glass
 (function () {
   'use strict';
 
-  // Prevent multiple injections
   if (window.__streampulse_glass_initialized) return;
   window.__streampulse_glass_initialized = true;
 
@@ -12,12 +11,15 @@
   let shadowRoot = null;
   let isPanelVisible = false;
   let isMinimized = false;
-  let isRecognizing = false;
+
+  // Active State
   let currentRecognizedTrack = null;
+  let isRecognizing = false;
+  let currentTabUrl = window.location.href;
   let selectedType = 'mp3';
   let selectedQuality = '320';
+  let orbInstance = null;
 
-  // Create or get Shadow DOM host
   function getShadowRoot() {
     if (shadowRoot) return shadowRoot;
 
@@ -37,11 +39,11 @@
     }
 
     shadowRoot = hostEl.attachShadow({ mode: 'open' });
-    renderGlassInterface(shadowRoot);
+    buildGlassStudio(shadowRoot);
     return shadowRoot;
   }
 
-  function renderGlassInterface(root) {
+  function buildGlassStudio(root) {
     const iconUrl = typeof chrome !== 'undefined' && chrome.runtime ? chrome.runtime.getURL('icons/icon48.png') : '';
 
     root.innerHTML = `
@@ -50,23 +52,23 @@
           box-sizing: border-box;
           margin: 0;
           padding: 0;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'YouTube Sans', sans-serif;
+          font-family: 'YouTube Sans', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           user-select: none;
         }
 
-        /* Floating Pill (Minimized state) */
+        /* Minimized Floating Pill */
         .glass-pill {
           position: fixed;
           bottom: 24px;
           right: 28px;
           height: 44px;
           padding: 0 16px 0 12px;
-          background: rgba(15, 15, 22, 0.85);
-          backdrop-filter: blur(24px) saturate(190%);
-          -webkit-backdrop-filter: blur(24px) saturate(190%);
+          background: rgba(15, 15, 22, 0.88);
+          backdrop-filter: blur(28px) saturate(190%);
+          -webkit-backdrop-filter: blur(28px) saturate(190%);
           border: 1px solid rgba(255, 255, 255, 0.15);
           border-radius: 22px;
-          box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(139, 92, 246, 0.35);
+          box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(139, 92, 246, 0.35);
           display: flex;
           align-items: center;
           gap: 9px;
@@ -87,7 +89,7 @@
 
         .glass-pill:hover {
           transform: scale(1.05) translateY(-2px);
-          box-shadow: 0 16px 42px rgba(0, 0, 0, 0.6), 0 0 30px rgba(236, 72, 153, 0.45);
+          box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7), 0 0 35px rgba(236, 72, 153, 0.45);
           border-color: rgba(255, 255, 255, 0.3);
         }
 
@@ -117,20 +119,20 @@
           position: fixed;
           top: 24px;
           right: 28px;
-          width: 360px;
-          max-height: 90vh;
+          width: 356px;
+          max-height: 92vh;
           overflow-y: auto;
           scrollbar-width: none;
-          background: rgba(13, 13, 19, 0.82);
+          background: rgba(13, 13, 19, 0.84);
           backdrop-filter: blur(36px) saturate(200%);
           -webkit-backdrop-filter: blur(36px) saturate(200%);
           border: 1px solid rgba(255, 255, 255, 0.12);
           border-radius: 28px;
-          box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 50px rgba(139, 92, 246, 0.25);
+          box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75), 0 0 45px rgba(139, 92, 246, 0.25);
           display: flex;
           flex-direction: column;
-          gap: 12px;
-          padding: 16px;
+          gap: 10px;
+          padding: 14px;
           pointer-events: auto;
           color: #f4f4f5;
           opacity: 0;
@@ -150,84 +152,85 @@
           visibility: visible;
         }
 
-        /* 1. Header & Drag Bar */
-        .glass-header {
+        /* 1. Header */
+        .header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding-bottom: 10px;
+          padding-bottom: 8px;
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
           cursor: grab;
         }
 
-        .glass-header:active {
+        .header:active {
           cursor: grabbing;
         }
 
-        .glass-brand {
+        .brand {
           display: flex;
           align-items: center;
-          gap: 9px;
+          gap: 8px;
         }
 
-        .glass-logo {
+        .logo {
           width: 24px;
           height: 24px;
           border-radius: 7px;
           box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
         }
 
-        .glass-title {
-          font-size: 14.5px;
-          font-weight: 800;
+        .title {
+          font-size: 14px;
+          font-weight: 700;
           color: #ffffff;
-          letter-spacing: -0.3px;
+          letter-spacing: -0.2px;
         }
 
-        .glass-controls {
+        .header-actions {
           display: flex;
           align-items: center;
           gap: 6px;
         }
 
-        .glass-status {
+        .status {
           display: flex;
           align-items: center;
           gap: 5px;
           padding: 4px 8px;
-          background: rgba(255, 255, 255, 0.06);
+          background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 12px;
+          border-radius: 14px;
           font-size: 10px;
           font-weight: 600;
           color: #a1a1aa;
         }
 
-        .glass-status .dot {
+        .dot {
           width: 6px;
           height: 6px;
           border-radius: 50%;
           background: #ef4444;
+          transition: all 0.2s ease;
         }
 
-        .glass-status.online .dot {
-          background: #22c55e;
-          box-shadow: 0 0 6px #22c55e;
-        }
-
-        .glass-status.online {
-          color: #86efac;
-          border-color: rgba(34, 197, 94, 0.3);
+        .status.online {
           background: rgba(34, 197, 94, 0.1);
+          border-color: rgba(34, 197, 94, 0.3);
+          color: #86efac;
         }
 
-        .btn-icon-ctl {
+        .status.online .dot {
+          background: #22c55e;
+          box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+        }
+
+        .btn-ctl {
           width: 26px;
           height: 26px;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.06);
+          background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 13px;
           color: #a1a1aa;
@@ -235,93 +238,92 @@
           transition: all 0.15s ease;
         }
 
-        .btn-icon-ctl:hover {
-          background: rgba(255, 255, 255, 0.14);
+        .btn-ctl:hover {
+          background: rgba(255, 255, 255, 0.12);
           color: #ffffff;
         }
 
-        .btn-icon-ctl svg {
+        .btn-ctl svg {
           width: 14px;
           height: 14px;
           fill: currentColor;
         }
 
         /* 2. Tabs */
-        .glass-tabs {
+        .tabs {
           display: flex;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.05);
           border-radius: 16px;
           padding: 4px;
           gap: 4px;
         }
 
-        .glass-tab-btn {
+        .tab-btn {
           flex: 1;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 6px;
-          padding: 8px 10px;
+          padding: 7px 10px;
           background: transparent;
           border: none;
           border-radius: 12px;
           color: #a1a1aa;
           font-size: 11.5px;
-          font-weight: 700;
+          font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: all 0.15s ease;
         }
 
-        .glass-tab-btn svg {
+        .tab-btn svg {
           width: 14px;
           height: 14px;
           fill: currentColor;
         }
 
-        .glass-tab-btn:hover {
+        .tab-btn:hover {
           color: #ffffff;
         }
 
-        .glass-tab-btn.active {
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.22) 100%);
-          border: 1px solid rgba(139, 92, 246, 0.4);
+        .tab-btn.active {
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.28) 0%, rgba(236, 72, 153, 0.2) 100%);
+          border: 1px solid rgba(139, 92, 246, 0.38);
           color: #ffffff;
-          box-shadow: 0 2px 10px rgba(139, 92, 246, 0.25);
+          box-shadow: 0 2px 10px rgba(139, 92, 246, 0.2);
         }
 
         /* 3. Tab Contents */
-        .glass-view {
+        .tab-content {
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 10px;
         }
 
-        /* Card */
-        .glass-card {
+        .media-card {
           background: rgba(255, 255, 255, 0.03);
           border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 18px;
+          border-radius: 16px;
           overflow: hidden;
           display: flex;
           flex-direction: column;
         }
 
-        .media-preview-box {
+        .media-thumb-box {
           position: relative;
           width: 100%;
-          height: 110px;
-          background: #09090c;
+          height: 105px;
+          background: #09090b;
           overflow: hidden;
         }
 
-        .media-preview-img {
+        #media-thumb {
           width: 100%;
           height: 100%;
           object-fit: cover;
         }
 
-        .media-preview-placeholder {
+        .media-ph {
           width: 100%;
           height: 100%;
           display: flex;
@@ -332,40 +334,46 @@
           color: #71717a;
           font-size: 11px;
           font-weight: 500;
-          background: #111116;
+          background: #101014;
         }
 
-        .media-preview-placeholder svg {
-          width: 26px;
-          height: 26px;
+        .media-ph svg {
+          width: 24px;
+          height: 24px;
           fill: #71717a;
         }
 
-        .media-details {
+        .media-info {
           padding: 10px 12px;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
         }
 
-        .media-details-title {
-          font-size: 12.5px;
+        .media-title {
+          font-size: 12px;
           font-weight: 700;
           color: #ffffff;
+          line-height: 1.35;
+        }
+
+        .media-sub {
+          font-size: 10.5px;
+          color: #a1a1aa;
+          margin-top: 2px;
+        }
+
+        .truncate {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
 
-        .media-details-sub {
-          font-size: 10.5px;
-          color: #a1a1aa;
+        .custom-url-box {
+          padding: 0 12px 10px 12px;
         }
 
-        .custom-url-input {
-          margin: 0 12px 10px 12px;
+        #custom-url-input {
+          width: 100%;
           padding: 8px 12px;
-          background: rgba(0, 0, 0, 0.4);
+          background: rgba(0, 0, 0, 0.45);
           border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 10px;
           color: #ffffff;
@@ -373,15 +381,14 @@
           outline: none;
         }
 
-        .custom-url-input:focus {
+        #custom-url-input:focus {
           border-color: #8b5cf6;
         }
 
-        /* Format selector row */
-        .format-row {
+        .formats-row {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 6px;
+          gap: 5px;
         }
 
         .format-chip {
@@ -389,8 +396,8 @@
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 2px;
-          padding: 8px 4px;
+          gap: 1px;
+          padding: 7px 4px;
           background: rgba(255, 255, 255, 0.03);
           border: 1px solid rgba(255, 255, 255, 0.06);
           border-radius: 12px;
@@ -405,11 +412,11 @@
         .format-chip.active {
           background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #ec4899 100%);
           border-color: transparent;
-          box-shadow: 0 3px 12px rgba(139, 92, 246, 0.4);
+          box-shadow: 0 2px 8px rgba(139, 92, 246, 0.35);
         }
 
         .format-chip strong {
-          font-size: 11.5px;
+          font-size: 11px;
           font-weight: 800;
           color: #ffffff;
         }
@@ -420,46 +427,46 @@
         }
 
         .format-chip.active small {
-          color: rgba(255, 255, 255, 0.95);
+          color: rgba(255, 255, 255, 0.9);
         }
 
-        /* Buttons */
-        .btn-action-primary {
+        .btn-main {
           width: 100%;
-          padding: 11px;
+          padding: 9.5px;
           background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #ec4899 100%);
           border: none;
           border-radius: 18px;
           color: #ffffff;
-          font-size: 12.5px;
-          font-weight: 800;
+          font-size: 12px;
+          font-weight: 700;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 7px;
+          gap: 6px;
           cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 4px 18px rgba(139, 92, 246, 0.4);
+          transition: all 0.15s ease;
+          box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
         }
 
-        .btn-action-primary:hover {
+        .btn-main:hover {
           background: linear-gradient(135deg, #9333ea 0%, #818cf8 50%, #f472b6 100%);
-          box-shadow: 0 6px 24px rgba(139, 92, 246, 0.55);
-          transform: translateY(-1px);
+          box-shadow: 0 6px 18px rgba(139, 92, 246, 0.5);
         }
 
-        .btn-action-primary:active {
+        .btn-main:active {
           transform: scale(0.98);
         }
 
-        .btn-action-primary.success {
+        .btn-main.success-state {
           background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-          box-shadow: 0 0 25px rgba(16, 185, 129, 0.6) !important;
+          box-shadow: 0 0 25px rgba(16, 185, 129, 0.65), 0 4px 14px rgba(5, 150, 105, 0.4) !important;
+          transform: scale(1.02);
+          pointer-events: none;
         }
 
-        .btn-action-secondary {
+        .btn-sub {
           width: 100%;
-          padding: 8.5px;
+          padding: 8px;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 18px;
@@ -474,89 +481,85 @@
           transition: all 0.15s ease;
         }
 
-        .btn-action-secondary:hover {
+        .btn-sub:hover {
           background: rgba(255, 255, 255, 0.1);
           color: #ffffff;
         }
 
-        .btn-action-primary svg, .btn-action-secondary svg {
+        .btn-main svg, .btn-sub svg {
           width: 15px;
           height: 15px;
           fill: currentColor;
         }
 
-        /* 4. Shazam View */
-        .shazam-studio {
+        /* 4. Tab 2: Shazam AI with Full Voice-Powered Orb */
+        .shazam-view {
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           padding: 12px 6px;
-          gap: 14px;
+          gap: 12px;
         }
 
-        .shazam-orb-wrapper {
+        .shazam-btn-wrapper {
           position: relative;
-          width: 150px;
-          height: 150px;
+          width: 220px;
+          height: 220px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(236, 72, 153, 0.1) 60%, transparent 100%);
-          border: 1px solid rgba(139, 92, 246, 0.35);
-          box-shadow: 0 0 35px rgba(139, 92, 246, 0.35);
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
         }
 
-        .shazam-orb-wrapper:hover {
-          transform: scale(1.05);
-          box-shadow: 0 0 45px rgba(236, 72, 153, 0.5);
-          border-color: rgba(236, 72, 153, 0.6);
+        .shazam-btn-wrapper:hover {
+          transform: scale(1.04);
+          filter: drop-shadow(0 0 25px rgba(139, 92, 246, 0.45));
         }
 
-        .shazam-orb-wrapper.listening {
-          animation: orb-pulse 1.6s infinite ease-in-out;
-          border-color: rgba(236, 72, 153, 0.8);
-          box-shadow: 0 0 50px rgba(236, 72, 153, 0.65);
+        .shazam-btn-wrapper:active {
+          transform: scale(0.96);
         }
 
-        @keyframes orb-pulse {
-          0% { transform: scale(1); box-shadow: 0 0 35px rgba(139, 92, 246, 0.4); }
-          50% { transform: scale(1.08); box-shadow: 0 0 60px rgba(236, 72, 153, 0.7); }
-          100% { transform: scale(1); box-shadow: 0 0 35px rgba(139, 92, 246, 0.4); }
+        .shazam-ai-canvas {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 220px;
+          height: 220px;
+          pointer-events: none;
+          z-index: 1;
+          border-radius: 50%;
         }
 
-        .shazam-orb-icon {
-          width: 48px;
-          height: 48px;
-          fill: #ffffff;
-          filter: drop-shadow(0 2px 14px rgba(236, 72, 153, 0.6));
-          transition: transform 0.2s ease;
+        .shazam-meta {
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
         }
 
-        .shazam-orb-wrapper:hover .shazam-orb-icon {
-          transform: scale(1.1);
-        }
-
-        /* Live Studio Equalizer Pill */
-        .eq-pill {
+        /* Studio Equalizer Pill */
+        .shazam-eq-pill {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 3px;
-          height: 28px;
+          gap: 3.5px;
+          height: 26px;
           padding: 0 14px;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(168, 85, 247, 0.35);
-          border-radius: 14px;
+          border-radius: 13px;
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          box-shadow: 0 0 16px rgba(168, 85, 247, 0.3);
+          box-shadow: 0 0 14px rgba(168, 85, 247, 0.25);
         }
 
-        .eq-bar {
+        .shazam-eq-pill .eq-bar {
           width: 2.5px;
           height: 6px;
           min-height: 4px;
@@ -566,146 +569,304 @@
           transition: height 0.08s ease-out;
         }
 
-        .shazam-meta {
-          text-align: center;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .shazam-headline {
+        .shazam-title {
           font-size: 15px;
           font-weight: 700;
           color: #ffffff;
         }
 
-        .shazam-subtext {
-          font-size: 11px;
-          color: #a1a1aa;
-          max-width: 270px;
-          line-height: 1.4;
-        }
-
-        .btn-stop-listening {
+        .btn-stop {
           display: flex;
           align-items: center;
           gap: 6px;
           padding: 6px 16px;
           background: rgba(239, 68, 68, 0.15);
           border: 1px solid rgba(239, 68, 68, 0.3);
-          border-radius: 16px;
+          border-radius: 18px;
           color: #f87171;
           font-size: 11px;
           font-weight: 600;
           cursor: pointer;
         }
 
-        .btn-stop-listening:hover {
+        .btn-stop:hover {
           background: rgba(239, 68, 68, 0.25);
           color: #ffffff;
         }
 
-        /* Result Card */
-        .recognized-card {
+        .btn-stop svg {
+          width: 12px;
+          height: 12px;
+          fill: currentColor;
+        }
+
+        .btn-extract {
           width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          padding: 9px 12px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 18px;
+          color: #c4b5fd;
+          font-size: 11.5px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+
+        .btn-extract:hover {
+          background: rgba(255, 255, 255, 0.08);
+          border-color: #8b5cf6;
+          color: #ffffff;
+        }
+
+        .btn-extract svg {
+          width: 14px;
+          height: 14px;
+          fill: currentColor;
+        }
+
+        .btn-extract.success-state {
+          background: rgba(16, 185, 129, 0.25) !important;
+          border-color: rgba(16, 185, 129, 0.8) !important;
+          color: #34d399 !important;
+          pointer-events: none;
+        }
+
+        /* Result Card */
+        .result-card {
           background: rgba(255, 255, 255, 0.03);
           border: 1px solid rgba(139, 92, 246, 0.35);
-          border-radius: 18px;
+          border-radius: 16px;
           padding: 12px;
           display: flex;
           flex-direction: column;
           gap: 10px;
-          box-shadow: 0 8px 25px rgba(139, 92, 246, 0.25);
-          animation: rec-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          box-shadow: 0 4px 20px rgba(139, 92, 246, 0.25);
+          animation: result-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes rec-pop {
-          0% { opacity: 0; transform: scale(0.9) translateY(8px); }
+        @keyframes result-pop {
+          0% { opacity: 0; transform: scale(0.9) translateY(6px); }
           100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        .rec-top {
+        .result-top {
           display: flex;
           gap: 12px;
           align-items: center;
         }
 
-        .rec-cover {
+        .result-thumb {
           width: 64px;
           height: 64px;
           border-radius: 12px;
-          object-fit: cover;
-          background: #09090c;
-          border: 1px solid rgba(255, 255, 255, 0.12);
+          overflow: hidden;
+          background: #09090b;
+          flex-shrink: 0;
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .rec-info {
+        .result-thumb img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .result-info {
           display: flex;
           flex-direction: column;
           gap: 2px;
           overflow: hidden;
         }
 
-        .rec-badge {
+        .result-badge {
           align-self: flex-start;
           font-size: 8.5px;
           font-weight: 800;
           padding: 2.5px 8px;
           border-radius: 8px;
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.25) 100%);
-          border: 1px solid rgba(139, 92, 246, 0.4);
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(236, 72, 153, 0.2) 100%);
+          border: 1px solid rgba(139, 92, 246, 0.35);
           color: #e9d5ff;
         }
 
-        .rec-title {
+        .result-title {
           font-size: 13.5px;
           font-weight: 700;
           color: #ffffff;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
         }
 
-        .rec-artist {
+        .result-artist {
           font-size: 11.5px;
           font-weight: 600;
           color: #a78bfa;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
         }
 
-        .rec-buttons {
+        .result-album {
+          font-size: 10px;
+          color: #71717a;
+        }
+
+        .result-btn-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 6px;
         }
 
-        /* Toast Notice */
-        .glass-toast {
+        .btn-ytm {
+          background: rgba(255, 0, 0, 0.1) !important;
+          border: 1px solid rgba(255, 0, 0, 0.25) !important;
+          color: #ff8a8a !important;
+        }
+
+        .btn-ytm:hover {
+          background: rgba(255, 0, 0, 0.2) !important;
+          color: #ffffff !important;
+          border-color: rgba(255, 0, 0, 0.45) !important;
+        }
+
+        .ytm-icon-red {
+          fill: #ef4444 !important;
+        }
+
+        /* History List */
+        .history-section {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          margin-top: 4px;
+          padding: 10px;
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 14px;
+        }
+
+        .history-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .history-title {
+          font-size: 10px;
+          font-weight: 700;
+          color: #a1a1aa;
+          letter-spacing: 0.3px;
+        }
+
+        .history-clear-btn {
+          background: transparent;
+          border: none;
+          color: #71717a;
+          font-size: 9.5px;
+          cursor: pointer;
+          padding: 2px 4px;
+        }
+
+        .history-clear-btn:hover {
+          color: #f87171;
+        }
+
+        .history-list {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          max-height: 125px;
+          overflow-y: auto;
+          padding-right: 2px;
+          scrollbar-width: thin;
+        }
+
+        .history-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 10px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.04);
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+
+        .history-item:hover {
+          background: rgba(255, 255, 255, 0.08);
+          border-color: #8b5cf6;
+        }
+
+        .history-item-thumb {
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          object-fit: cover;
+          background: #09090b;
+          flex-shrink: 0;
+        }
+
+        .history-item-info {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          flex: 1;
+        }
+
+        .history-item-title {
+          font-size: 11px;
+          font-weight: 600;
+          color: #f4f4f5;
+          line-height: 1.2;
+        }
+
+        .history-item-artist {
+          font-size: 9.5px;
+          color: #a1a1aa;
+        }
+
+        .history-item-dl-icon {
+          width: 13px;
+          height: 13px;
+          fill: #8b5cf6;
+          opacity: 0.8;
+        }
+
+        /* Toast Feedback */
+        .toast {
           display: none;
           padding: 8px 12px;
           border-radius: 12px;
-          font-size: 11px;
-          font-weight: 600;
+          font-size: 10.5px;
+          font-weight: 500;
           text-align: center;
         }
 
-        .glass-toast.show {
+        .toast.show {
           display: block;
         }
 
-        .glass-toast.success {
+        .toast.success {
           background: rgba(34, 197, 94, 0.15);
           color: #4ade80;
           border: 1px solid rgba(34, 197, 94, 0.3);
         }
 
-        .glass-toast.error {
+        .toast.error {
           background: rgba(239, 68, 68, 0.15);
           color: #f87171;
           border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .footer {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          font-size: 9.5px;
+          color: #71717a;
+          padding-top: 2px;
         }
       </style>
 
@@ -719,150 +880,469 @@
       <!-- Main In-Page Floating Glass Studio Panel -->
       <div class="glass-panel" id="glass-panel">
         <!-- 1. Header with Drag Handle -->
-        <div class="glass-header" id="glass-drag-handle">
-          <div class="glass-brand">
-            <img src="${iconUrl}" class="glass-logo" alt="StreamPulse">
-            <span class="glass-title">StreamPulse</span>
+        <div class="header" id="drag-header">
+          <div class="brand">
+            <img src="${iconUrl}" class="logo" alt="StreamPulse">
+            <span class="title">StreamPulse</span>
           </div>
-          <div class="glass-controls">
-            <div class="glass-status" id="glass-desktop-status">
+          <div class="header-actions">
+            <div class="status" id="app-status">
               <span class="dot"></span>
-              <span id="glass-desktop-status-text">Bağlanıyor...</span>
+              <span id="status-text">Bağlanıyor...</span>
             </div>
-            <button class="btn-icon-ctl" id="btn-minimize" title="Küçült">
+            <button class="btn-ctl" id="btn-minimize" title="Küçült">
               <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
             </button>
-            <button class="btn-icon-ctl" id="btn-close" title="Kapat (Esc)">
+            <button class="btn-ctl" id="btn-close" title="Kapat (Esc)">
               <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
             </button>
           </div>
         </div>
 
         <!-- 2. Segmented Pill Tabs -->
-        <div class="glass-tabs">
-          <button class="glass-tab-btn active" id="tab-btn-grabber">
+        <div class="tabs">
+          <button class="tab-btn active" id="tab-btn-grabber">
             <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
             <span>Medya İndirici</span>
           </button>
-          <button class="glass-tab-btn" id="tab-btn-shazam">
+          <button class="tab-btn" id="tab-btn-shazam">
             <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
             <span>Müzik Tanı (AI)</span>
           </button>
         </div>
 
-        <!-- 3. Tab 1: Grabber View -->
-        <div class="glass-view" id="view-grabber">
-          <div class="glass-card">
-            <div class="media-preview-box">
-              <img id="media-preview-img" class="media-preview-img" style="display: none;" alt="Preview">
-              <div class="media-preview-placeholder" id="media-placeholder">
+        <!-- 3. TAB 1: GRABBER -->
+        <div class="tab-content" id="view-grabber">
+          <div class="media-card">
+            <div class="media-thumb-box">
+              <img id="media-thumb" src="" alt="Thumbnail" style="display: none;">
+              <div class="media-ph" id="media-placeholder">
                 <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zm-11-2l6-4-6-4v8z"/></svg>
-                <span id="media-placeholder-text">Aktif Sayfa Medyası</span>
+                <span>Aktif Sekme Medyası</span>
               </div>
             </div>
-            <div class="media-details">
-              <span class="media-details-title" id="media-title">Sayfa Taranıyor...</span>
-              <span class="media-details-sub" id="media-sub">YouTube, YouTube Music veya Doğrudan Link</span>
+            <div class="media-info">
+              <h2 id="media-title" class="media-title truncate">Sekme taranıyor...</h2>
+              <p id="media-channel" class="media-sub truncate">YouTube & YouTube Music</p>
             </div>
-            <input type="text" id="custom-url-input" class="custom-url-input" placeholder="Farklı bir YouTube linki veya şarkı adı girin...">
+            <div class="custom-url-box" id="custom-url-box">
+              <input type="text" id="custom-url-input" placeholder="YouTube linki veya şarkı adı girin...">
+            </div>
           </div>
 
-          <!-- Format chips -->
-          <div class="format-row">
-            <div class="format-chip active" data-type="mp3" data-quality="320">
+          <div class="formats-row">
+            <button class="format-chip active" data-type="mp3" data-quality="320">
               <strong>MP3</strong>
               <small>320k</small>
-            </div>
-            <div class="format-chip" data-type="flac" data-quality="320">
+            </button>
+            <button class="format-chip" data-type="flac" data-quality="320">
               <strong>FLAC</strong>
               <small>Kayıpsız</small>
-            </div>
-            <div class="format-chip" data-type="video" data-quality="1080">
+            </button>
+            <button class="format-chip" data-type="video" data-quality="1080">
               <strong>1080p</strong>
               <small>FHD</small>
-            </div>
-            <div class="format-chip" data-type="video" data-quality="2160">
+            </button>
+            <button class="format-chip" data-type="video" data-quality="2160">
               <strong>4K</strong>
               <small>UHD</small>
-            </div>
-          </div>
-
-          <!-- Action buttons -->
-          <button class="btn-action-primary" id="btn-download">
-            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-            <span id="btn-download-label">Masaüstünde İndir</span>
-          </button>
-
-          <button class="btn-action-secondary" id="btn-open-desktop">
-            <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-            <span>Uygulamayı Aç</span>
-          </button>
-        </div>
-
-        <!-- 4. Tab 2: Shazam View -->
-        <div class="glass-view" id="view-shazam" style="display: none;">
-          <div class="shazam-studio">
-            <div class="shazam-orb-wrapper" id="shazam-orb">
-              <svg class="shazam-orb-icon" viewBox="0 0 24 24">
-                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-              </svg>
-            </div>
-
-            <!-- Live Equalizer Capsule (Shown while listening) -->
-            <div class="eq-pill" id="shazam-eq-pill" style="display: none;">
-              <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
-              <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
-              <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
-              <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
-            </div>
-
-            <div class="shazam-meta">
-              <span class="shazam-headline" id="shazam-status-title">Müziği Tanı</span>
-              <span class="shazam-subtext" id="shazam-status-desc">TikTok, Instagram, YouTube veya sekmede çalan şarkıyı dinleyip anında tanıyın.</span>
-            </div>
-
-            <button class="btn-stop-listening" id="btn-stop-listening" style="display: none;">
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
-              <span>Dinlemeyi Durdur</span>
             </button>
           </div>
 
-          <!-- Result Card (Shown when recognized) -->
-          <div class="recognized-card" id="shazam-result-card" style="display: none;">
-            <div class="rec-top">
-              <img id="rec-cover" class="rec-cover" src="" alt="Album Art">
-              <div class="rec-info">
-                <span class="rec-badge" id="rec-badge">SHAZAM AI</span>
-                <span class="rec-title" id="rec-title">Şarkı Adı</span>
-                <span class="rec-artist" id="rec-artist">Sanatçı</span>
+          <button class="btn-main" id="btn-download">
+            <svg viewBox="0 0 24 24"><path d="M17 18v1H6v-1h11zm-.5-6.6l-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-5z"/></svg>
+            <span class="btn-label" id="btn-download-label">Masaüstünde İndir</span>
+          </button>
+
+          <button class="btn-sub" id="btn-open-app">
+            <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+            <span>Masaüstü Uygulamasını Aç</span>
+          </button>
+        </div>
+
+        <!-- 4. TAB 2: CLEAN SHAZAM RECOGNITION WITH FULL VOICE-POWERED ORB -->
+        <div class="tab-content" id="view-shazam" style="display: none;">
+          <div class="shazam-view" id="shazam-stage-idle">
+            <!-- Full WebGL Voice-Powered Orb Container -->
+            <div class="shazam-btn-wrapper" id="btn-start-recognition" title="Müziği Tanı">
+              <canvas id="shazam-ai-canvas" width="240" height="240" class="shazam-ai-canvas"></canvas>
+            </div>
+
+            <div class="shazam-meta">
+              <!-- Live Equalizer Visualizer Pill (Strictly shows while listening) -->
+              <div class="shazam-eq-pill" id="shazam-eq-pill" style="display: none;">
+                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+              </div>
+              <h3 class="shazam-title" id="shazam-status-title">Müziği Tanı</h3>
+            </div>
+
+            <button class="btn-stop" id="btn-stop-listening" style="display: none;">
+              <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+              <span id="btn-label-stop">Dinlemeyi Durdur</span>
+            </button>
+
+            <!-- Direct Video Audio Extract Button -->
+            <button class="btn-extract" id="btn-extract-direct">
+              <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+              <span id="btn-label-extract">🎬 Bu Editin / Videonun Sesini İndir</span>
+            </button>
+          </div>
+
+          <!-- Result Card with Full Metadata & YouTube Music -->
+          <div class="result-card" id="shazam-result-card" style="display: none;">
+            <div class="result-top">
+              <div class="result-thumb">
+                <img id="result-cover" src="" alt="Album Artwork">
+              </div>
+              <div class="result-info">
+                <span class="result-badge" id="result-engine-badge">STREAMPULSE AI CORE</span>
+                <h3 id="result-song-title" class="result-title truncate">Şarkı Başlığı</h3>
+                <p id="result-artist-name" class="result-artist truncate">Sanatçı Adı</p>
+                <p id="result-album-name" class="result-album truncate">Albüm Adı</p>
               </div>
             </div>
-            <div class="rec-buttons">
-              <button class="btn-action-primary" id="btn-rec-download">
-                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                <span>320k İndir</span>
+
+            <button class="btn-main" id="btn-download-recognized">
+              <svg viewBox="0 0 24 24"><path d="M17 18v1H6v-1h11zm-.5-6.6l-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-5z"/></svg>
+              <span id="btn-label-rec-download">StreamPulse ile 320kbps İndir</span>
+            </button>
+
+            <div class="result-btn-row">
+              <button class="btn-sub btn-ytm" id="btn-open-ytm">
+                <svg viewBox="0 0 24 24" class="ytm-icon-red"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+                <span>YouTube Music</span>
               </button>
-              <button class="btn-action-secondary" id="btn-rec-again">
-                <span>Tekrar Tanı</span>
+
+              <button class="btn-sub" id="btn-re-recognize">
+                <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                <span id="btn-label-rec-again">Başka Şarkı Tanı</span>
               </button>
             </div>
           </div>
+
+          <!-- Son Keşfedilenler / History Section -->
+          <div class="history-section" id="shazam-history-section" style="display: none;">
+            <div class="history-header">
+              <span class="history-title">🕒 Son Tanınanlar</span>
+              <button class="history-clear-btn" id="btn-clear-history">Temizle</button>
+            </div>
+            <div class="history-list" id="shazam-history-list"></div>
+          </div>
         </div>
 
-        <!-- Toast -->
-        <div class="glass-toast" id="glass-toast"></div>
+        <!-- Toast Feedback -->
+        <div class="toast" id="feedback-msg"></div>
+
+        <!-- Footer -->
+        <footer class="footer">
+          <span>StreamPulse</span>
+          <span>•</span>
+          <span>v1.3.0 Cam Studio</span>
+        </footer>
       </div>
     `;
 
-    bindGlassEvents(root);
-    detectPageMedia(root);
-    checkDesktopStatus(root);
+    bindStudioEvents(root);
+    setupDragging(root);
+    detectCurrentPageMedia(root);
+    checkDesktopConnection(root);
+    loadShazamHistory(root);
+
+    // Initialize Voice-Powered WebGL Orb
+    const orbCanvas = root.getElementById('shazam-ai-canvas');
+    if (orbCanvas) {
+      orbInstance = initVoicePoweredOrb(orbCanvas);
+    }
   }
 
-  function bindGlassEvents(root) {
+  // =========================================================================
+  // VOICE-POWERED WEBGL GLSL SHADER ORB
+  // =========================================================================
+  function initVoicePoweredOrb(canvas) {
+    const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: true }) ||
+               canvas.getContext('experimental-webgl');
+
+    if (!gl) {
+      console.warn('WebGL unsupported for Orb');
+      return null;
+    }
+
+    let state = 'idle';
+    let targetHover = 0.0;
+    let currentHover = 0.0;
+    let targetHoverIntensity = 0.0;
+    let currentHoverIntensity = 0.0;
+    let currentRot = 0.0;
+    let audioEnergy = 0.0;
+    let targetAudioEnergy = 0.0;
+    let animId = null;
+    let isRunning = false;
+    let lastTime = 0;
+
+    const vertSrc = `
+      precision highp float;
+      attribute vec2 position;
+      varying vec2 vUv;
+      void main() {
+        vUv = (position + 1.0) * 0.5;
+        gl_Position = vec4(position, 0.0, 1.0);
+      }
+    `;
+
+    const fragSrc = `
+      precision highp float;
+      uniform float iTime;
+      uniform vec3 iResolution;
+      uniform float hue;
+      uniform float hover;
+      uniform float rot;
+      uniform float hoverIntensity;
+      varying vec2 vUv;
+
+      vec3 rgb2yiq(vec3 c) {
+        float y = dot(c, vec3(0.299, 0.587, 0.114));
+        float i = dot(c, vec3(0.596, -0.274, -0.322));
+        float q = dot(c, vec3(0.211, -0.523, 0.312));
+        return vec3(y, i, q);
+      }
+
+      vec3 yiq2rgb(vec3 c) {
+        float r = c.x + 0.956 * c.y + 0.621 * c.z;
+        float g = c.x - 0.272 * c.y - 0.647 * c.z;
+        float b = c.x - 1.106 * c.y + 1.703 * c.z;
+        return vec3(r, g, b);
+      }
+
+      vec3 adjustHue(vec3 color, float hueDeg) {
+        float hueRad = hueDeg * 3.14159265 / 180.0;
+        vec3 yiq = rgb2yiq(color);
+        float cosA = cos(hueRad);
+        float sinA = sin(hueRad);
+        float i = yiq.y * cosA - yiq.z * sinA;
+        float q = yiq.y * sinA + yiq.z * cosA;
+        yiq.y = i;
+        yiq.z = q;
+        return yiq2rgb(yiq);
+      }
+
+      vec3 hash33(vec3 p3) {
+        p3 = fract(p3 * vec3(0.1031, 0.11369, 0.13787));
+        p3 += dot(p3, p3.yxz + 19.19);
+        return -1.0 + 2.0 * fract(vec3(p3.x + p3.y, p3.x + p3.z, p3.y + p3.z) * p3.zyx);
+      }
+
+      float snoise3(vec3 p) {
+        const float K1 = 0.333333333;
+        const float K2 = 0.166666667;
+        vec3 i = floor(p + (p.x + p.y + p.z) * K1);
+        vec3 d0 = p - (i - (i.x + i.y + i.z) * K2);
+        vec3 e = step(vec3(0.0), d0 - d0.yzx);
+        vec3 i1 = e * (1.0 - e.zxy);
+        vec3 i2 = 1.0 - e.zxy * (1.0 - e);
+        vec3 d1 = d0 - (i1 - K2);
+        vec3 d2 = d0 - (i2 - K1);
+        vec3 d3 = d0 - 0.5;
+        vec4 h = max(0.6 - vec4(dot(d0, d0), dot(d1, d1), dot(d2, d2), dot(d3, d3)), 0.0);
+        vec4 n = h * h * h * h * vec4(dot(d0, hash33(i)), dot(d1, hash33(i + i1)), dot(d2, hash33(i + i2)), dot(d3, hash33(i + 1.0)));
+        return dot(vec4(31.316), n);
+      }
+
+      vec4 extractAlpha(vec3 colorIn) {
+        float a = max(max(colorIn.r, colorIn.g), colorIn.b);
+        return vec4(colorIn.rgb / (a + 1e-5), a);
+      }
+
+      const vec3 baseColor1 = vec3(0.611765, 0.262745, 0.996078);
+      const vec3 baseColor2 = vec3(0.298039, 0.760784, 0.913725);
+      const vec3 baseColor3 = vec3(0.062745, 0.078431, 0.600000);
+      const float innerRadius = 0.6;
+      const float noiseScale = 0.65;
+
+      float light1(float intensity, float attenuation, float dist) {
+        return intensity / (1.0 + dist * attenuation);
+      }
+
+      float light2(float intensity, float attenuation, float dist) {
+        return intensity / (1.0 + dist * dist * attenuation);
+      }
+
+      vec4 draw(vec2 uv) {
+        vec3 color1 = adjustHue(baseColor1, hue);
+        vec3 color2 = adjustHue(baseColor2, hue);
+        vec3 color3 = adjustHue(baseColor3, hue);
+
+        float ang = atan(uv.y, uv.x);
+        float len = length(uv);
+        float invLen = len > 0.0 ? 1.0 / len : 0.0;
+
+        float n0 = snoise3(vec3(uv * noiseScale, iTime * 0.5)) * 0.5 + 0.5;
+        float r0 = mix(mix(innerRadius, 1.0, 0.4), mix(innerRadius, 1.0, 0.6), n0);
+        float d0 = distance(uv, (r0 * invLen) * uv);
+        float v0 = light1(1.0, 10.0, d0);
+        v0 *= smoothstep(r0 * 1.05, r0, len);
+        float cl = cos(ang + iTime * 2.0) * 0.5 + 0.5;
+
+        float a = iTime * -1.0;
+        vec2 pos = vec2(cos(a), sin(a)) * r0;
+        float d = distance(uv, pos);
+        float v1 = light2(1.5, 5.0, d);
+        v1 *= light1(1.0, 50.0, d0);
+
+        float v2 = smoothstep(1.0, mix(innerRadius, 1.0, n0 * 0.5), len);
+        float v3 = smoothstep(innerRadius, mix(innerRadius, 1.0, 0.5), len);
+
+        vec3 col = mix(color1, color2, cl);
+        col = mix(color3, col, v0);
+        col = (col + v1) * v2 * v3;
+        col = clamp(col, 0.0, 1.0);
+
+        return extractAlpha(col);
+      }
+
+      vec4 mainImage(vec2 fragCoord) {
+        vec2 center = iResolution.xy * 0.5;
+        float size = min(iResolution.x, iResolution.y);
+        vec2 uv = (fragCoord - center) / size * 2.0;
+
+        float angle = rot;
+        float s = sin(angle);
+        float c = cos(angle);
+        uv = vec2(c * uv.x - s * uv.y, s * uv.x + c * uv.y);
+
+        uv.x += hover * hoverIntensity * 0.1 * sin(uv.y * 10.0 + iTime);
+        uv.y += hover * hoverIntensity * 0.1 * sin(uv.x * 10.0 + iTime);
+
+        return draw(uv);
+      }
+
+      void main() {
+        vec2 fragCoord = vUv * iResolution.xy;
+        vec4 col = mainImage(fragCoord);
+        gl_FragColor = vec4(col.rgb * col.a, col.a);
+      }
+    `;
+
+    function compileShader(type, src) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      return s;
+    }
+
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compileShader(gl.VERTEX_SHADER, vertSrc));
+    gl.attachShader(prog, compileShader(gl.FRAGMENT_SHADER, fragSrc));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    const posBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+
+    const aPos = gl.getAttribLocation(prog, 'position');
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+    const uTime = gl.getUniformLocation(prog, 'iTime');
+    const uRes = gl.getUniformLocation(prog, 'iResolution');
+    const uHue = gl.getUniformLocation(prog, 'hue');
+    const uHover = gl.getUniformLocation(prog, 'hover');
+    const uRot = gl.getUniformLocation(prog, 'rot');
+    const uHoverInt = gl.getUniformLocation(prog, 'hoverIntensity');
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.clearColor(0, 0, 0, 0);
+
+    function render(timeMs) {
+      if (!isRunning) return;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const pw = Math.round(220 * dpr);
+      const ph = Math.round(220 * dpr);
+      if (canvas.width !== pw || canvas.height !== ph) {
+        canvas.width = pw;
+        canvas.height = ph;
+      }
+      gl.viewport(0, 0, canvas.width, canvas.height);
+
+      const t = timeMs * 0.00045;
+      const dt = lastTime ? Math.min(0.1, (timeMs - lastTime) * 0.001) : 0.016;
+      lastTime = timeMs;
+
+      audioEnergy += (targetAudioEnergy - audioEnergy) * 0.20;
+
+      if (state === 'thinking') {
+        if (audioEnergy > 0.03) {
+          currentRot += dt * (0.08 + audioEnergy * 0.25);
+          targetHover = Math.min(audioEnergy * 1.6, 1.0);
+          targetHoverIntensity = Math.min(audioEnergy * 0.75, 0.75);
+        } else {
+          currentRot += dt * 0.03;
+          targetHover = 0.0;
+          targetHoverIntensity = 0.0;
+        }
+      } else {
+        currentRot += dt * 0.03;
+        targetHover = 0.0;
+        targetHoverIntensity = 0.0;
+      }
+
+      currentHover += (targetHover - currentHover) * 0.12;
+      currentHoverIntensity += (targetHoverIntensity - currentHoverIntensity) * 0.12;
+
+      gl.useProgram(prog);
+      gl.uniform1f(uTime, t);
+      gl.uniform3f(uRes, canvas.width, canvas.height, 1.0);
+      gl.uniform1f(uHue, 0.0);
+      gl.uniform1f(uHover, currentHover);
+      gl.uniform1f(uRot, currentRot);
+      gl.uniform1f(uHoverInt, currentHoverIntensity);
+
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+      animId = requestAnimationFrame(render);
+    }
+
+    function start() {
+      if (isRunning) return;
+      isRunning = true;
+      lastTime = 0;
+      animId = requestAnimationFrame(render);
+    }
+
+    function stop() {
+      isRunning = false;
+      if (animId) {
+        cancelAnimationFrame(animId);
+        animId = null;
+      }
+    }
+
+    start();
+
+    return {
+      setState: (s) => { state = s; },
+      setAudioLevels: (levels) => {
+        if (levels) {
+          targetAudioEnergy = Math.min(1.0, (levels.energy || 0) * 1.2 + (levels.kick || 0) * 0.8);
+        }
+      },
+      start,
+      stop
+    };
+  }
+
+  // =========================================================================
+  // STUDIO INTERACTION & EVENT BINDINGS
+  // =========================================================================
+  function bindStudioEvents(root) {
     const panel = root.getElementById('glass-panel');
     const pill = root.getElementById('glass-pill');
-    const dragHandle = root.getElementById('glass-drag-handle');
     const btnMinimize = root.getElementById('btn-minimize');
     const btnClose = root.getElementById('btn-close');
     const tabBtnGrabber = root.getElementById('tab-btn-grabber');
@@ -871,22 +1351,16 @@
     const viewShazam = root.getElementById('view-shazam');
     const formatChips = root.querySelectorAll('.format-chip');
     const btnDownload = root.getElementById('btn-download');
-    const btnOpenDesktop = root.getElementById('btn-open-desktop');
-    const shazamOrb = root.getElementById('shazam-orb');
+    const btnOpenApp = root.getElementById('btn-open-app');
+    const btnStartRec = root.getElementById('btn-start-recognition');
     const btnStopListening = root.getElementById('btn-stop-listening');
-    const btnRecDownload = root.getElementById('btn-rec-download');
-    const btnRecAgain = root.getElementById('btn-rec-again');
-    const toast = root.getElementById('glass-toast');
+    const btnExtractDirect = root.getElementById('btn-extract-direct');
+    const btnDownloadRecognized = root.getElementById('btn-download-recognized');
+    const btnOpenYtm = root.getElementById('btn-open-ytm');
+    const btnReRecognize = root.getElementById('btn-re-recognize');
+    const btnClearHistory = root.getElementById('btn-clear-history');
 
-    function showToast(msg, type = 'success') {
-      toast.textContent = msg;
-      toast.className = `glass-toast show ${type}`;
-      setTimeout(() => {
-        toast.className = 'glass-toast';
-      }, 3500);
-    }
-
-    // Toggle minimize
+    // Minimize & Close
     btnMinimize.addEventListener('click', () => {
       isMinimized = true;
       panel.classList.remove('show');
@@ -899,17 +1373,17 @@
       panel.classList.add('show');
     });
 
-    // Close panel
     btnClose.addEventListener('click', () => {
       hideGlassPanel();
     });
 
-    // Tabs switching
+    // Tab Switching
     tabBtnGrabber.addEventListener('click', () => {
       tabBtnGrabber.classList.add('active');
       tabBtnShazam.classList.remove('active');
       viewGrabber.style.display = 'flex';
       viewShazam.style.display = 'none';
+      if (orbInstance) orbInstance.stop(); // Save GPU while on grabber
     });
 
     tabBtnShazam.addEventListener('click', () => {
@@ -917,9 +1391,10 @@
       tabBtnGrabber.classList.remove('active');
       viewShazam.style.display = 'flex';
       viewGrabber.style.display = 'none';
+      if (orbInstance) orbInstance.start(); // Resume Orb
     });
 
-    // Format chip selection
+    // Format Chips
     formatChips.forEach(chip => {
       chip.addEventListener('click', () => {
         formatChips.forEach(c => c.classList.remove('active'));
@@ -929,15 +1404,14 @@
       });
     });
 
-    // Download button action
+    // Tab 1: Download Media Button
     btnDownload.addEventListener('click', () => {
       const customUrl = root.getElementById('custom-url-input').value.trim();
       const targetUrl = customUrl || window.location.href;
       const mediaTitle = root.getElementById('media-title').textContent || document.title;
-      const thumb = root.getElementById('media-preview-img').src || '';
+      const thumb = root.getElementById('media-thumb').src || '';
 
-      btnDownload.classList.add('success');
-      btnDownload.querySelector('#btn-download-label').textContent = 'Kuyruğa Eklendi ✓';
+      animateSuccess(btnDownload, 'İndirme Başlatıldı!');
 
       if (typeof chrome !== 'undefined' && chrome.runtime) {
         chrome.runtime.sendMessage({
@@ -946,28 +1420,23 @@
           formatType: selectedType,
           quality: selectedQuality,
           metadata: { title: mediaTitle, artwork: thumb }
-        }, (res) => {
-          showToast('İndirme StreamPulse uygulamasına aktarıldı! ⚡', 'success');
+        }, () => {
+          showToast(root, 'İndirme StreamPulse uygulamasına aktarıldı! ⚡', 'success');
         });
       }
-
-      setTimeout(() => {
-        btnDownload.classList.remove('success');
-        btnDownload.querySelector('#btn-download-label').textContent = 'Masaüstünde İndir';
-      }, 3000);
     });
 
-    // Open desktop app
-    btnOpenDesktop.addEventListener('click', () => {
+    // Tab 1: Open Desktop App
+    btnOpenApp.addEventListener('click', () => {
       if (typeof chrome !== 'undefined' && chrome.runtime) {
         chrome.runtime.sendMessage({ type: 'OPEN_APP' });
       }
       window.location.href = 'streampulse://open';
-      showToast('StreamPulse Masaüstü başlatılıyor...', 'success');
+      showToast(root, 'StreamPulse Masaüstü başlatılıyor...', 'success');
     });
 
-    // Shazam recognition trigger
-    shazamOrb.addEventListener('click', () => {
+    // Tab 2: Start Shazam Recognition
+    btnStartRec.addEventListener('click', () => {
       if (isRecognizing) return;
       startShazamRecognition(root);
     });
@@ -976,67 +1445,329 @@
       stopShazamRecognition(root);
     });
 
-    btnRecAgain.addEventListener('click', () => {
+    // Tab 2: Extract Current Tab Audio Directly
+    btnExtractDirect.addEventListener('click', () => {
+      animateSuccess(btnExtractDirect, 'Ses Kuyruğa Eklendi!');
+      const targetUrl = window.location.href;
+      const mediaTitle = document.title || 'Video Edit Sesi';
+
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        chrome.runtime.sendMessage({
+          type: 'START_DOWNLOAD',
+          url: targetUrl,
+          formatType: 'mp3',
+          quality: '320',
+          metadata: { title: mediaTitle }
+        });
+      }
+      showToast(root, 'Bu videonun sesi 320kbps MP3 olarak kuyruğa alındı! 🎵', 'success');
+    });
+
+    // Tab 2: Download Recognized Track
+    btnDownloadRecognized.addEventListener('click', () => {
+      if (!currentRecognizedTrack) return;
+      animateSuccess(btnDownloadRecognized, 'İndirme Başlatıldı!');
+      const downloadQuery = currentRecognizedTrack.youtubeQuery || `${currentRecognizedTrack.artist} - ${currentRecognizedTrack.title}`;
+
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        chrome.runtime.sendMessage({
+          type: 'START_DOWNLOAD',
+          url: downloadQuery,
+          formatType: 'mp3',
+          quality: '320',
+          metadata: currentRecognizedTrack
+        });
+      }
+      showToast(root, `"${currentRecognizedTrack.title}" indiriliyor! ⚡`, 'success');
+    });
+
+    // Tab 2: Direct YouTube Music Open
+    btnOpenYtm.addEventListener('click', async () => {
+      if (!currentRecognizedTrack) return;
+      btnOpenYtm.disabled = true;
+      btnOpenYtm.style.opacity = '0.7';
+
+      let directUrl = currentRecognizedTrack.directMusicUrl;
+      if (!directUrl || !directUrl.includes('/watch?v=')) {
+        directUrl = await resolveDirectYouTubeMusicUrl(currentRecognizedTrack.title, currentRecognizedTrack.artist);
+      }
+      btnOpenYtm.disabled = false;
+      btnOpenYtm.style.opacity = '1';
+
+      if (directUrl) {
+        window.open(directUrl, '_blank');
+      }
+    });
+
+    // Tab 2: Re-Recognize
+    btnReRecognize.addEventListener('click', () => {
+      currentRecognizedTrack = null;
       root.getElementById('shazam-result-card').style.display = 'none';
+      root.getElementById('shazam-stage-idle').style.display = 'flex';
       startShazamRecognition(root);
     });
 
-    btnRecDownload.addEventListener('click', () => {
-      if (!currentRecognizedTrack) return;
-      const query = currentRecognizedTrack.youtubeQuery || `${currentRecognizedTrack.artist} ${currentRecognizedTrack.title}`;
-      chrome.runtime.sendMessage({
-        type: 'START_DOWNLOAD',
-        url: query,
-        formatType: 'mp3',
-        quality: '320',
-        metadata: {
-          title: currentRecognizedTrack.title,
-          artist: currentRecognizedTrack.artist,
-          artwork: currentRecognizedTrack.artwork
-        }
-      });
-      showToast(`"${currentRecognizedTrack.title}" 320kbps MP3 olarak indiriliyor!`, 'success');
+    // Tab 2: Clear History
+    btnClearHistory.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        await chrome.storage.local.remove('streampulse_rec_history');
+      }
+      root.getElementById('shazam-history-section').style.display = 'none';
     });
-
-    // Make Panel Draggable
-    setupDragging(panel, dragHandle);
   }
 
-  function setupDragging(panel, handle) {
+  // =========================================================================
+  // SHAZAM RECOGNITION WORKFLOW & YOUTUBE MUSIC RESOLVER
+  // =========================================================================
+  function startShazamRecognition(root) {
+    isRecognizing = true;
+    if (orbInstance) orbInstance.setState('thinking');
+
+    const eqPill = root.getElementById('shazam-eq-pill');
+    const title = root.getElementById('shazam-status-title');
+    const btnStop = root.getElementById('btn-stop-listening');
+    const resultCard = root.getElementById('shazam-result-card');
+
+    resultCard.style.display = 'none';
+    eqPill.style.display = 'flex';
+    title.textContent = 'Sekme Dinleniyor...';
+    btnStop.style.display = 'flex';
+
+    if (typeof chrome !== 'undefined' && chrome.runtime) {
+      chrome.runtime.sendMessage({ type: 'RECOGNIZE_AUDIO' }, (res) => {
+        if (!isRecognizing) return;
+        isRecognizing = false;
+        if (orbInstance) orbInstance.setState('idle');
+        eqPill.style.display = 'none';
+        btnStop.style.display = 'none';
+
+        if (res && res.success && res.track) {
+          currentRecognizedTrack = res.track;
+          renderRecognizedTrack(root, res.track);
+        } else {
+          title.textContent = 'Müzik Tespit Edilemedi';
+          showToast(root, res?.error || 'Müzik net duyulamadı, ses çalarken tekrar deneyin.', 'error');
+        }
+      });
+    }
+  }
+
+  function stopShazamRecognition(root) {
+    isRecognizing = false;
+    if (orbInstance) orbInstance.setState('idle');
+
+    root.getElementById('shazam-eq-pill').style.display = 'none';
+    root.getElementById('btn-stop-listening').style.display = 'none';
+    root.getElementById('shazam-status-title').textContent = 'Dinleme Durduruldu';
+
+    if (typeof chrome !== 'undefined' && chrome.runtime) {
+      chrome.runtime.sendMessage({ target: 'offscreen', type: 'STOP_RECORDING' });
+    }
+  }
+
+  function renderRecognizedTrack(root, track) {
+    root.getElementById('shazam-stage-idle').style.display = 'none';
+    const card = root.getElementById('shazam-result-card');
+    card.style.display = 'flex';
+
+    root.getElementById('result-song-title').textContent = track.title || 'Bilinmeyen Şarkı';
+    root.getElementById('result-artist-name').textContent = track.artist || 'Bilinmeyen Sanatçı';
+    root.getElementById('result-album-name').textContent = track.album || '';
+    root.getElementById('result-cover').src = track.artwork || '';
+
+    saveShazamHistory(root, track);
+
+    // Pre-resolve YouTube Music exact link
+    resolveDirectYouTubeMusicUrl(track.title, track.artist).then(url => {
+      if (url && url.includes('/watch?v=')) {
+        track.directMusicUrl = url;
+      }
+    });
+  }
+
+  async function resolveDirectYouTubeMusicUrl(title, artist) {
+    const query = `${artist} ${title}`.trim();
+    try {
+      const res = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        const html = await res.text();
+        const vIdx = html.indexOf('/watch?v=');
+        if (vIdx !== -1) {
+          const vid = html.substring(vIdx + 9, vIdx + 20);
+          if (vid && vid.length === 11 && !vid.includes('"') && !vid.includes('&') && !vid.includes('\\')) {
+            return `https://music.youtube.com/watch?v=${vid}`;
+          }
+        }
+      }
+    } catch (e) {}
+    return `https://music.youtube.com/search?q=${encodeURIComponent(query)}`;
+  }
+
+  async function loadShazamHistory(root) {
+    try {
+      if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) return;
+      const stored = await chrome.storage.local.get('streampulse_rec_history');
+      const list = stored.streampulse_rec_history || [];
+      const historySec = root.getElementById('shazam-history-section');
+      const historyList = root.getElementById('shazam-history-list');
+
+      if (!list || list.length === 0) {
+        if (historySec) historySec.style.display = 'none';
+        return;
+      }
+      if (historySec) historySec.style.display = 'flex';
+      if (historyList) {
+        historyList.innerHTML = '';
+        list.forEach(item => {
+          const el = document.createElement('div');
+          el.className = 'history-item';
+          el.innerHTML = `
+            <img class="history-item-thumb" src="${item.artwork || ''}" alt="cover">
+            <div class="history-item-info">
+              <span class="history-item-title truncate">${item.title}</span>
+              <span class="history-item-artist truncate">${item.artist}</span>
+            </div>
+            <svg class="history-item-dl-icon" viewBox="0 0 24 24"><path d="M17 18v1H6v-1h11zm-.5-6.6l-.7-.7-3.8 3.7V4h-1v10.4l-3.8-3.8-.7.7 5 5 5-5z"/></svg>
+          `;
+          el.addEventListener('click', () => {
+            currentRecognizedTrack = item;
+            renderRecognizedTrack(root, item);
+          });
+          historyList.appendChild(el);
+        });
+      }
+    } catch (e) {}
+  }
+
+  async function saveShazamHistory(root, track) {
+    try {
+      if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) return;
+      const stored = await chrome.storage.local.get('streampulse_rec_history');
+      let list = stored.streampulse_rec_history || [];
+      list = list.filter(i => !(i.title.toLowerCase() === track.title.toLowerCase() && (i.artist || '').toLowerCase() === (track.artist || '').toLowerCase()));
+      list.unshift(track);
+      if (list.length > 6) list = list.slice(0, 6);
+      await chrome.storage.local.set({ streampulse_rec_history: list });
+      loadShazamHistory(root);
+    } catch (e) {}
+  }
+
+  // =========================================================================
+  // AUDIO LEVEL & MESSAGE BUS DISPATCHER
+  // =========================================================================
+  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+    chrome.runtime.onMessage.addListener((msg) => {
+      if (msg.action === 'TOGGLE_STREAM_PULSE_GLASS') {
+        toggleGlassPanel();
+        return;
+      }
+
+      if (msg.type === 'AUDIO_LEVELS' && shadowRoot) {
+        // Feed into Voice-Powered WebGL Orb
+        if (orbInstance) {
+          orbInstance.setAudioLevels(msg.levels);
+        }
+
+        // Feed into Live Equalizer Capsule
+        if (isRecognizing) {
+          const eqBars = shadowRoot.querySelectorAll('#shazam-eq-pill .eq-bar');
+          if (eqBars && eqBars.length > 0 && msg.levels) {
+            const bands = [
+              msg.levels.subBass || 0,
+              msg.levels.kick || 0,
+              msg.levels.lowMids || 0,
+              msg.levels.mids || 0,
+              msg.levels.treble || 0,
+              msg.levels.energy || 0
+            ];
+            for (let i = 0; i < eqBars.length; i++) {
+              const bandIdx = i < 6 ? i : 11 - i;
+              const val = bands[bandIdx] || 0.08;
+              const h = Math.max(4, Math.min(18, Math.round(val * 20)));
+              eqBars[i].style.height = `${h}px`;
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function detectCurrentPageMedia(root) {
+    const titleEl = root.getElementById('media-title');
+    const channelEl = root.getElementById('media-channel');
+    const thumbEl = root.getElementById('media-thumb');
+    const phEl = root.getElementById('media-placeholder');
+
+    const url = window.location.href;
+    const videoIdMatch = url.match(/(?:v=|\/embed\/|\/shorts\/|youtu\.be\/|\/v\/)([^&?#/]+)/);
+
+    if (videoIdMatch && videoIdMatch[1]) {
+      const videoId = videoIdMatch[1];
+      thumbEl.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+      thumbEl.style.display = 'block';
+      phEl.style.display = 'none';
+
+      const pageTitle =
+        document.querySelector('h1.ytd-watch-metadata yt-formatted-string')?.innerText ||
+        document.querySelector('ytmusic-player-bar .title')?.innerText ||
+        document.title.replace(/ - YouTube.*$/i, '').trim();
+
+      const channelName =
+        document.querySelector('#owner #channel-name a')?.innerText ||
+        document.querySelector('ytmusic-player-bar .byline a')?.innerText ||
+        'YouTube & YouTube Music';
+
+      titleEl.textContent = pageTitle || 'YouTube Medyası';
+      channelEl.textContent = channelName;
+    } else {
+      titleEl.textContent = document.title || 'Aktif Web Sayfası';
+      channelEl.textContent = window.location.hostname;
+    }
+  }
+
+  function checkDesktopConnection(root) {
+    const statusBox = root.getElementById('app-status');
+    const statusText = root.getElementById('status-text');
+
+    if (typeof chrome !== 'undefined' && chrome.runtime) {
+      chrome.runtime.sendMessage({ type: 'CHECK_DESKTOP_STATUS' }, (res) => {
+        if (res && res.online) {
+          statusBox.className = 'status online';
+          statusText.textContent = 'Masaüstü Bağlı';
+        } else {
+          statusBox.className = 'status';
+          statusText.textContent = 'Masaüstü Kapalı';
+        }
+      });
+    }
+  }
+
+  function setupDragging(root) {
+    const panel = root.getElementById('glass-panel');
+    const header = root.getElementById('drag-header');
     let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let initialLeft = 0;
-    let initialTop = 0;
+    let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
 
-    handle.addEventListener('mousedown', (e) => {
-      // Don't drag if clicking buttons
+    header.addEventListener('mousedown', (e) => {
       if (e.target.closest('button')) return;
-
       isDragging = true;
       const rect = panel.getBoundingClientRect();
       startX = e.clientX;
       startY = e.clientY;
       initialLeft = rect.left;
       initialTop = rect.top;
-
-      panel.style.transition = 'none'; // Instant response while dragging
+      panel.style.transition = 'none';
 
       function onMouseMove(moveEvent) {
         if (!isDragging) return;
-        const dx = moveEvent.clientX - startX;
-        const dy = moveEvent.clientY - startY;
-
-        let newLeft = initialLeft + dx;
-        let newTop = initialTop + dy;
-
-        // Keep inside screen viewport
+        let newLeft = initialLeft + (moveEvent.clientX - startX);
+        let newTop = initialTop + (moveEvent.clientY - startY);
         newLeft = Math.max(10, Math.min(window.innerWidth - panel.offsetWidth - 10, newLeft));
         newTop = Math.max(10, Math.min(window.innerHeight - panel.offsetHeight - 10, newTop));
-
         panel.style.left = `${newLeft}px`;
         panel.style.top = `${newTop}px`;
-        panel.style.right = 'auto'; // Clear right anchor
+        panel.style.right = 'auto';
       }
 
       function onMouseUp() {
@@ -1051,138 +1782,26 @@
     });
   }
 
-  function detectPageMedia(root) {
-    const titleEl = root.getElementById('media-title');
-    const thumbEl = root.getElementById('media-preview-img');
-    const placeholder = root.getElementById('media-placeholder');
-
-    const url = window.location.href;
-    const videoIdMatch = url.match(/(?:v=|\/embed\/|\/shorts\/|youtu\.be\/|\/v\/)([^&?#/]+)/);
-
-    if (videoIdMatch && videoIdMatch[1]) {
-      const videoId = videoIdMatch[1];
-      const thumbUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-      thumbEl.src = thumbUrl;
-      thumbEl.style.display = 'block';
-      placeholder.style.display = 'none';
-
-      // Grab title from page
-      const ytTitle =
-        document.querySelector('h1.ytd-watch-metadata yt-formatted-string')?.innerText ||
-        document.querySelector('ytmusic-player-bar .title')?.innerText ||
-        document.title.replace(/ - YouTube.*$/i, '').trim();
-
-      titleEl.textContent = ytTitle || 'YouTube Medyası';
-    } else {
-      titleEl.textContent = document.title || 'Mevcut Sekme';
-    }
+  function animateSuccess(btn, text) {
+    const orig = btn.innerHTML;
+    btn.classList.add('success-state');
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      <span>${text}</span>
+    `;
+    setTimeout(() => {
+      btn.classList.remove('success-state');
+      btn.innerHTML = orig;
+    }, 2800);
   }
 
-  function checkDesktopStatus(root) {
-    const statusBox = root.getElementById('glass-desktop-status');
-    const statusText = root.getElementById('glass-desktop-status-text');
-
-    if (typeof chrome !== 'undefined' && chrome.runtime) {
-      chrome.runtime.sendMessage({ type: 'CHECK_DESKTOP_STATUS' }, (res) => {
-        if (res && res.online) {
-          statusBox.classList.add('online');
-          statusText.textContent = 'Masaüstü Bağlı';
-        } else {
-          statusBox.classList.remove('online');
-          statusText.textContent = 'Masaüstü Kapalı';
-        }
-      });
-    }
-  }
-
-  function startShazamRecognition(root) {
-    isRecognizing = true;
-    const orb = root.getElementById('shazam-orb');
-    const eqPill = root.getElementById('shazam-eq-pill');
-    const title = root.getElementById('shazam-status-title');
-    const desc = root.getElementById('shazam-status-desc');
-    const btnStop = root.getElementById('btn-stop-listening');
-    const resultCard = root.getElementById('shazam-result-card');
-
-    resultCard.style.display = 'none';
-    orb.classList.add('listening');
-    eqPill.style.display = 'flex';
-    title.textContent = 'Sekme Dinleniyor...';
-    desc.textContent = 'Akustik parmak izi analiz ediliyor, lütfen sesi kısmayın...';
-    btnStop.style.display = 'flex';
-
-    if (typeof chrome !== 'undefined' && chrome.runtime) {
-      chrome.runtime.sendMessage({ type: 'RECOGNIZE_AUDIO' }, (res) => {
-        if (!isRecognizing) return;
-        isRecognizing = false;
-        orb.classList.remove('listening');
-        eqPill.style.display = 'none';
-        btnStop.style.display = 'none';
-
-        if (res && res.success && res.track) {
-          currentRecognizedTrack = res.track;
-          title.textContent = 'Müzik Tanındı! 🎵';
-          desc.textContent = `${res.track.artist} - ${res.track.title}`;
-
-          root.getElementById('rec-title').textContent = res.track.title;
-          root.getElementById('rec-artist').textContent = res.track.artist;
-          root.getElementById('rec-cover').src = res.track.artwork || '';
-          resultCard.style.display = 'flex';
-        } else {
-          title.textContent = 'Tespit Edilemedi';
-          desc.textContent = res?.error || 'Müzik net duyulamadı, ses çalarken tekrar deneyin.';
-        }
-      });
-    }
-  }
-
-  function stopShazamRecognition(root) {
-    isRecognizing = false;
-    const orb = root.getElementById('shazam-orb');
-    const eqPill = root.getElementById('shazam-eq-pill');
-    const title = root.getElementById('shazam-status-title');
-    const desc = root.getElementById('shazam-status-desc');
-    const btnStop = root.getElementById('btn-stop-listening');
-
-    orb.classList.remove('listening');
-    eqPill.style.display = 'none';
-    btnStop.style.display = 'none';
-    title.textContent = 'Dinleme Durduruldu';
-    desc.textContent = 'Tekrar dinlemek için orb simgesine tıklayın.';
-
-    if (typeof chrome !== 'undefined' && chrome.runtime) {
-      chrome.runtime.sendMessage({ target: 'offscreen', type: 'STOP_RECORDING' });
-    }
-  }
-
-  // Live Audio Equalizer Listener
-  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
-    chrome.runtime.onMessage.addListener((msg) => {
-      if (msg.action === 'TOGGLE_STREAM_PULSE_GLASS') {
-        toggleGlassPanel();
-        return;
-      }
-
-      if (msg.type === 'AUDIO_LEVELS' && isRecognizing && shadowRoot) {
-        const eqBars = shadowRoot.querySelectorAll('#shazam-eq-pill .eq-bar');
-        if (eqBars && eqBars.length > 0 && msg.levels) {
-          const bands = [
-            msg.levels.subBass || 0,
-            msg.levels.kick || 0,
-            msg.levels.lowMids || 0,
-            msg.levels.mids || 0,
-            msg.levels.treble || 0,
-            msg.levels.energy || 0
-          ];
-          for (let i = 0; i < eqBars.length; i++) {
-            const bandIdx = i < 6 ? i : 11 - i;
-            const val = bands[bandIdx] || 0.08;
-            const h = Math.max(4, Math.min(18, Math.round(val * 20)));
-            eqBars[i].style.height = `${h}px`;
-          }
-        }
-      }
-    });
+  function showToast(root, msg, type = 'success') {
+    const t = root.getElementById('feedback-msg');
+    t.textContent = msg;
+    t.className = `toast show ${type}`;
+    setTimeout(() => {
+      t.className = 'toast';
+    }, 3500);
   }
 
   function showGlassPanel() {
@@ -1194,8 +1813,9 @@
     isMinimized = false;
     pill.classList.remove('show');
     panel.classList.add('show');
-    detectPageMedia(root);
-    checkDesktopStatus(root);
+    detectCurrentPageMedia(root);
+    checkDesktopConnection(root);
+    if (orbInstance) orbInstance.start();
   }
 
   function hideGlassPanel() {
@@ -1207,6 +1827,7 @@
     isMinimized = false;
     panel.classList.remove('show');
     pill.classList.remove('show');
+    if (orbInstance) orbInstance.stop();
   }
 
   function toggleGlassPanel() {
@@ -1217,7 +1838,7 @@
     }
   }
 
-  // Keyboard shortcut listener: Escape closes panel, Alt+S toggles
+  // Escape to close, Alt+S to toggle
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && isPanelVisible) {
       hideGlassPanel();
@@ -1227,14 +1848,5 @@
     }
   });
 
-  // Auto-listen for navigation events on YouTube
-  ['yt-navigate-finish', 'sp-navigate-finish'].forEach(evt => {
-    window.addEventListener(evt, () => {
-      if (shadowRoot && isPanelVisible) {
-        detectPageMedia(shadowRoot);
-      }
-    });
-  });
-
-  console.log('⚡ StreamPulse In-Page Glass Studio Ready (Shadow DOM)');
+  console.log('⚡ StreamPulse In-Page Glass Studio Ready (Shadow DOM + Voice Powered Orb)');
 })();
