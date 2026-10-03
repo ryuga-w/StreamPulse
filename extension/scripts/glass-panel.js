@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  const SCRIPT_VERSION = '1.3.7';
+  const SCRIPT_VERSION = '1.3.8';
   const HOST_ID = 'streampulse-glass-host';
 
   // Always clean up any stale container from previous injections
@@ -576,88 +576,35 @@
           gap: 6px;
         }
 
-        /* Apple VisionOS Frosted Liquid Glass Button */
+        /* Center Icon Container (Invisible & Purely Centered, No Round Plate) */
         .orb-center-btn {
           position: absolute;
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 74px;
-          height: 74px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(28px) saturate(190%);
-          -webkit-backdrop-filter: blur(28px) saturate(190%);
-          border: 1px solid rgba(255, 255, 255, 0.22);
-          box-shadow: 
-            0 12px 32px rgba(0, 0, 0, 0.4),
-            inset 0 1px 1.5px rgba(255, 255, 255, 0.35),
-            inset 0 -1px 2px rgba(0, 0, 0, 0.25);
+          width: 90px;
+          height: 90px;
+          background: transparent;
+          border: none;
+          box-shadow: none;
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 2;
-          cursor: pointer;
-          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+          pointer-events: none;
         }
 
-        .shazam-btn-wrapper:hover .orb-center-btn {
-          transform: translate(-50%, -50%) scale(1.08);
-          background: rgba(255, 255, 255, 0.14);
-          border-color: rgba(255, 255, 255, 0.4);
-          box-shadow: 
-            0 14px 40px rgba(0, 0, 0, 0.5),
-            0 0 25px rgba(139, 92, 246, 0.4),
-            inset 0 1px 2px rgba(255, 255, 255, 0.5);
-        }
-
-        .shazam-btn-wrapper:active .orb-center-btn {
-          transform: translate(-50%, -50%) scale(0.94);
-        }
-
-        /* Listening State (Pause) */
-        .orb-center-btn.listening {
-          background: rgba(239, 68, 68, 0.16);
-          border-color: rgba(239, 68, 68, 0.45);
-          box-shadow: 
-            0 12px 32px rgba(0, 0, 0, 0.4),
-            0 0 30px rgba(239, 68, 68, 0.45),
-            inset 0 1px 1.5px rgba(255, 255, 255, 0.4);
-          animation: apple-listening-pulse 2s infinite ease-in-out;
-        }
-
-        @keyframes apple-listening-pulse {
-          0%, 100% {
-            box-shadow: 
-              0 12px 32px rgba(0, 0, 0, 0.4),
-              0 0 20px rgba(239, 68, 68, 0.35),
-              inset 0 1px 1.5px rgba(255, 255, 255, 0.4);
-          }
-          50% {
-            box-shadow: 
-              0 14px 40px rgba(0, 0, 0, 0.5),
-              0 0 35px rgba(239, 68, 68, 0.65),
-              inset 0 1px 2px rgba(255, 255, 255, 0.6);
-          }
-        }
-
-        .shazam-btn-wrapper:hover .orb-center-btn.listening {
-          background: rgba(239, 68, 68, 0.24);
-          border-color: rgba(239, 68, 68, 0.65);
-          box-shadow: 
-            0 14px 40px rgba(0, 0, 0, 0.5),
-            0 0 40px rgba(239, 68, 68, 0.75),
-            inset 0 1px 2px rgba(255, 255, 255, 0.6);
-        }
-
+        /* Large Pure Liquid Glass Play & Pause Icons */
         .orb-icon {
-          width: 32px;
-          height: 32px;
-          fill: #ffffff;
-          filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
-          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+          width: 58px;
+          height: 58px;
+          filter: 
+            drop-shadow(0 0 16px rgba(168, 85, 247, 0.85))
+            drop-shadow(0 0 32px rgba(139, 92, 246, 0.55))
+            drop-shadow(0 4px 18px rgba(0, 0, 0, 0.75));
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease, opacity 0.2s ease;
           position: relative;
-          z-index: 1;
+          z-index: 2;
           display: block;
           margin: 0 !important;
           padding: 0;
@@ -665,10 +612,48 @@
           flex-shrink: 0;
         }
 
+        .shazam-btn-wrapper:hover .orb-icon {
+          transform: scale(1.15);
+          filter: 
+            drop-shadow(0 0 24px rgba(192, 132, 252, 1))
+            drop-shadow(0 0 45px rgba(236, 72, 153, 0.8))
+            drop-shadow(0 6px 22px rgba(0, 0, 0, 0.85));
+        }
+
+        .shazam-btn-wrapper:active .orb-icon {
+          transform: scale(0.92);
+        }
+
+        /* Listening State (Pause) Liquid Glass Glow Pulse */
+        .orb-icon-pause {
+          filter: 
+            drop-shadow(0 0 18px rgba(244, 63, 94, 0.95))
+            drop-shadow(0 0 35px rgba(239, 68, 68, 0.8))
+            drop-shadow(0 4px 18px rgba(0, 0, 0, 0.8));
+          animation: liquid-icon-pulse 1.8s infinite ease-in-out;
+        }
+
+        @keyframes liquid-icon-pulse {
+          0%, 100% {
+            transform: scale(1);
+            filter: 
+              drop-shadow(0 0 16px rgba(244, 63, 94, 0.85))
+              drop-shadow(0 0 30px rgba(239, 68, 68, 0.65))
+              drop-shadow(0 4px 18px rgba(0, 0, 0, 0.8));
+          }
+          50% {
+            transform: scale(1.09);
+            filter: 
+              drop-shadow(0 0 28px rgba(244, 63, 94, 1))
+              drop-shadow(0 0 50px rgba(239, 68, 68, 0.95))
+              drop-shadow(0 0 65px rgba(251, 113, 133, 0.65))
+              drop-shadow(0 6px 24px rgba(0, 0, 0, 0.9));
+          }
+        }
+
         .orb-icon-start,
         .orb-icon-pause {
           margin: 0 !important;
-          fill: #ffffff;
         }
 
         .shazam-title {
@@ -1044,13 +1029,27 @@
             <div class="shazam-btn-wrapper" id="btn-start-recognition" title="Müziği Tanı / Durdur">
               <canvas id="shazam-ai-canvas" width="240" height="240" class="shazam-ai-canvas"></canvas>
               <div class="orb-center-btn" id="orb-center-btn" title="Başlat / Duraklat">
-                <!-- Play Icon (Idle) - Symmetrically Centered -->
+                <!-- Large Pure Liquid Glass Play Icon (Idle) -->
                 <svg class="orb-icon orb-icon-start" id="orb-icon-start" viewBox="0 0 24 24">
-                  <path d="M7 5.5a1.2 1.2 0 0 1 1.8-1.04l9 5.5a1.2 1.2 0 0 1 0 2.08l-9 5.5A1.2 1.2 0 0 1 7 16.5v-11z"/>
+                  <defs>
+                    <linearGradient id="liquid-glass-play" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+                      <stop offset="45%" stop-color="#e0e7ff" stop-opacity="0.88"/>
+                      <stop offset="100%" stop-color="#c084fc" stop-opacity="0.95"/>
+                    </linearGradient>
+                  </defs>
+                  <path fill="url(#liquid-glass-play)" stroke="rgba(255, 255, 255, 0.75)" stroke-width="0.75" d="M7 5.5a1.2 1.2 0 0 1 1.8-1.04l9 5.5a1.2 1.2 0 0 1 0 2.08l-9 5.5A1.2 1.2 0 0 1 7 16.5v-11z"/>
                 </svg>
-                <!-- Pause Icon (Listening) - Symmetrically Centered -->
+                <!-- Large Pure Liquid Glass Pause Icon (Listening) -->
                 <svg class="orb-icon orb-icon-pause" id="orb-icon-pause" viewBox="0 0 24 24" style="display: none;">
-                  <path d="M6.5 5a1.5 1.5 0 0 1 1.5-1.5h1A1.5 1.5 0 0 1 10.5 5v14a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 6.5 19V5zm7 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5V5z"/>
+                  <defs>
+                    <linearGradient id="liquid-glass-pause" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+                      <stop offset="45%" stop-color="#fed7aa" stop-opacity="0.88"/>
+                      <stop offset="100%" stop-color="#f43f5e" stop-opacity="0.95"/>
+                    </linearGradient>
+                  </defs>
+                  <path fill="url(#liquid-glass-pause)" stroke="rgba(255, 255, 255, 0.75)" stroke-width="0.75" d="M6.5 5a1.5 1.5 0 0 1 1.5-1.5h1A1.5 1.5 0 0 1 10.5 5v14a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 6.5 19V5zm7 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5V5z"/>
                 </svg>
               </div>
             </div>
